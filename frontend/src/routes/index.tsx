@@ -3,28 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Link } from '@tanstack/react-router'
 import { useAuth } from '@/lib/auth-context'
-import React from 'react'
 
 export const Route = createFileRoute('/')({
   component: Index,
 })
 
 function Index() {
-  const { user, isAuthenticated, isLoading } = useAuth()
-
-  React.useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      // Можно показать редирект, но пока оставим так
-    }
-  }, [isLoading, isAuthenticated])
-
-  if (isLoading) {
-    return (
-      <div className="text-center py-8 text-muted-foreground">
-        Загрузка...
-      </div>
-    )
-  }
+  const { user } = useAuth()
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

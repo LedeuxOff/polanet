@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { api } from '@/lib/api'
+import { useAuth } from '@/lib/auth-context'
 import type { Role, User } from '@/lib/types'
 
 const userSchema = z.object({
@@ -31,11 +32,13 @@ export const Route = createFileRoute('/users/$userId')({
 function EditUserPage() {
   const { userId } = useParams({ from: '/users/$userId' })
   const navigate = useNavigate()
+  const { user: currentUser } = useAuth()
   const [user, setUser] = React.useState<User | null>(null)
   const [roles, setRoles] = React.useState<Role[]>([])
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = React.useState(false)
 
   const {
     register,
@@ -89,6 +92,22 @@ function EditUserPage() {
     }
   }
 
+  const handleDelete = async () => {
+    if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      await api.users.delete(Number(userId))
+      navigate({ to: '/users' })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ошибка при удалении')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   if (isLoading) {
     return (
       <Card>
@@ -112,7 +131,21 @@ function EditUserPage() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Редактирование пользователя</CardTitle>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Редактирование пользователя</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              {user.firstName} {user.lastName} ({user.email})
+            </p>
+          </div>
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={isDeleting || user.id === currentUser?.id}
+          >
+            {isDeleting ? 'Удаление...' : 'Удалить'}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

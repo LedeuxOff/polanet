@@ -1,122 +1,106 @@
-import { createFileRoute } from '@tanstack/react-router'
-import React from 'react'
-import { DataTable } from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import type { ColumnDef } from '@tanstack/react-table'
-import { Link } from '@tanstack/react-router'
-import { useAuth } from '@/lib/auth-context'
-import { api } from '@/lib/api'
-import type { User } from '@/lib/types'
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import React from "react";
+import { DataTable } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { ColumnDef } from "@tanstack/react-table";
+import { useAuth } from "@/lib/auth-context";
+import { api } from "@/lib/api";
+import type { User } from "@/lib/types";
 
-export const Route = createFileRoute('/users/')({
+export const Route = createFileRoute("/users/")({
   component: UsersPage,
-})
+});
 
 function UsersPage() {
-  const [users, setUsers] = React.useState<User[]>([])
-  const [isLoading, setIsLoading] = React.useState(true)
-  const { user: currentUser, isAuthenticated } = useAuth()
+  const navigate = useNavigate();
+  const [users, setUsers] = React.useState<User[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const { user: currentUser } = useAuth();
 
   const loadUsers = async () => {
     try {
-      const data = await api.users.list()
-      setUsers(data)
+      const data = await api.users.list();
+      setUsers(data);
     } catch (error) {
-      console.error('Ошибка загрузки пользователей:', error)
+      console.error("Ошибка загрузки пользователей:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   React.useEffect(() => {
-    loadUsers()
-  }, [])
+    loadUsers();
+  }, []);
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Вы уверены, что хотите удалить этого пользователя?')) {
-      return
+    if (!confirm("Вы уверены, что хотите удалить этого пользователя?")) {
+      return;
     }
 
     try {
-      await api.users.delete(id)
-      setUsers(users.filter((u) => u.id !== id))
+      await api.users.delete(id);
+      setUsers(users.filter((u) => u.id !== id));
     } catch (error) {
-      alert('Ошибка при удалении: ' + (error as Error).message)
+      alert("Ошибка при удалении: " + (error as Error).message);
     }
-  }
+  };
 
   const columns: ColumnDef<User>[] = [
     {
-      accessorKey: 'lastName',
-      header: 'Фамилия',
-    },
-    {
-      accessorKey: 'firstName',
-      header: 'Имя',
-    },
-    {
-      accessorKey: 'middleName',
-      header: 'Отчество',
-      cell: ({ getValue }) => getValue<string>() || '—',
-    },
-    {
-      accessorKey: 'email',
-      header: 'Email',
-    },
-    {
-      accessorKey: 'phone',
-      header: 'Телефон',
-      cell: ({ getValue }) => getValue<string>() || '—',
-    },
-    {
-      accessorKey: 'roleName',
-      header: 'Роль',
-      cell: ({ getValue }) => getValue<string>() || '—',
-    },
-    {
-      id: 'actions',
-      header: 'Действия',
-      cell: ({ row }) => (
-        <div className="flex gap-2">
-          <Link to="/users/$userId" params={{ userId: String(row.original.id) }}>
-            <Button variant="outline" size="sm">
-              Редактировать
-            </Button>
-          </Link>
-          {row.original.id !== currentUser?.id && (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => handleDelete(row.original.id)}
-            >
-              Удалить
-            </Button>
-          )}
-        </div>
-      ),
-    },
-  ]
+      accessorKey: "fullName",
+      header: "ФИО",
+      cell: ({ row }) => {
+        const lastName = row.original.lastName;
+        const firstName = row.original.firstName;
+        const middleName = row.original.middleName;
 
-  if (!isAuthenticated) {
-    return (
-      <Card>
-        <CardContent className="py-8 text-center">
-          <p className="text-muted-foreground">
-            Пожалуйста, войдите в систему для просмотра пользователей.
-          </p>
-        </CardContent>
-      </Card>
-    )
-  }
+        const initials = [firstName?.charAt(0), middleName?.charAt(0)]
+          .filter(Boolean)
+          .join(".");
+
+        const fullName = initials ? `${lastName} ${initials}.` : lastName;
+
+        return (
+          <button
+            onClick={() =>
+              navigate({
+                to: "/users/$userId",
+                params: { userId: String(row.original.id) },
+              })
+            }
+            className="inline-flex items-center gap-2 px-2 py-1 rounded-md border bg-background hover:bg-muted/50 transition-colors shadow-sm text-sm"
+          >
+            <span className="font-medium">{fullName}</span>
+          </button>
+        );
+      },
+    },
+    {
+      accessorKey: "email",
+      header: "Email",
+    },
+    {
+      accessorKey: "phone",
+      header: "Телефон",
+      cell: ({ getValue }) => getValue<string>() || "—",
+    },
+    {
+      accessorKey: "roleName",
+      header: "Роль",
+      cell: ({ getValue }) => getValue<string>() || "—",
+    },
+  ];
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Пользователи</CardTitle>
-        <Link to="/users/new">
-          <Button>Добавить пользователя</Button>
-        </Link>
+    <Card className="border-none">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle>Пользователи</CardTitle>
+          <Link to="/users/new">
+            <Button>Добавить пользователя</Button>
+          </Link>
+        </div>
       </CardHeader>
       <CardContent>
         {isLoading ? (
@@ -128,5 +112,5 @@ function UsersPage() {
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

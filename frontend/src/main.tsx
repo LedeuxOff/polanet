@@ -7,17 +7,6 @@ import './styles/globals.css'
 
 const router = createRouter({
   routeTree,
-  context: {
-    auth: {
-      user: null,
-      token: null,
-      isAuthenticated: false,
-      isLoading: true,
-      login: async () => {},
-      logout: () => {},
-      refreshUser: async () => {},
-    },
-  },
 })
 
 declare module '@tanstack/react-router' {
