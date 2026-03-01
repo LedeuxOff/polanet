@@ -1,4 +1,4 @@
-import type { LoginInput, RegisterInput, User, Role, AuthTokens, CreateCarInput, Car, CreateDriverInput, Driver, CreateClientInput, Client } from './types'
+import type { LoginInput, RegisterInput, User, Role, AuthTokens, CreateCarInput, Car, CreateDriverInput, Driver, CreateClientInput, Client, CreateOrderInput, Order, CreatePaymentInput, Payment, OrderHistory } from './types'
 
 const API_BASE = '/api'
 
@@ -118,5 +118,28 @@ export const api = {
       body: JSON.stringify(data),
     }),
     delete: (id: number) => request(`/clients/${id}`, { method: 'DELETE' }),
+  },
+
+  // Заявки
+  orders: {
+    list: () => request<(Order & { payments: Payment[]; totalPaid: number; debt: number; isPaid: boolean; paymentStatus: 'unpaid' | 'paid' | 'partial' })[]>('/orders'),
+    get: (id: number) => request<Order & { payments: Payment[]; totalPaid: number; debt: number; isPaid: boolean; paymentStatus: 'unpaid' | 'paid' | 'partial'; history: OrderHistory[] }>(`/orders/${id}`),
+    create: (data: CreateOrderInput) => request<Order>('/orders', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+    update: (id: number, data: Partial<CreateOrderInput>) => request<Order>(`/orders/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+    delete: (id: number) => request(`/orders/${id}`, { method: 'DELETE' }),
+    // Выплаты
+    addPayment: (orderId: number, data: CreatePaymentInput) => request<Payment>(`/orders/${orderId}/payments`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+    removePayment: (orderId: number, paymentId: number) => request(`/orders/${orderId}/payments/${paymentId}`, { method: 'DELETE' }),
+    // История
+    getHistory: (orderId: number) => request<OrderHistory[]>(`/orders/${orderId}/history`),
   },
 }

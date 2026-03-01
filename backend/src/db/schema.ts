@@ -64,15 +64,125 @@ export const clients = sqliteTable('clients', {
   updatedAt: text('updated_at').default('CURRENT_TIMESTAMP').notNull(),
 })
 
+export const orders = sqliteTable('orders', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  // Тип заявки
+  type: text('type', { enum: ['delivery', 'pickup'] }).notNull(),
+  // Адрес
+  address: text('address').notNull(),
+  // Стоимость
+  cost: integer('cost').notNull(),
+  // Плательщик
+  payerLastName: text('payer_last_name').notNull(),
+  payerFirstName: text('payer_first_name').notNull(),
+  payerMiddleName: text('payer_middle_name'),
+  // Приемщик
+  receiverLastName: text('receiver_last_name').notNull(),
+  receiverFirstName: text('receiver_first_name').notNull(),
+  receiverMiddleName: text('receiver_middle_name'),
+  // Дата и время
+  dateTime: text('date_time').notNull(),
+  // Пропуск
+  hasPass: integer('has_pass', { mode: 'boolean' }).notNull().default(false),
+  // Комментарий
+  addressComment: text('address_comment'),
+  // Статус заявки
+  status: text('status', { 
+    enum: ['new', 'in_progress', 'completed', 'cancelled', 'archived', 'draft'] 
+  }).notNull().default('new'),
+  // Тип оплаты
+  paymentType: text('payment_type', { enum: ['cash', 'bank_transfer'] }).notNull(),
+  // Связи
+  clientId: integer('client_id').references(() => clients.id),
+  driverId: integer('driver_id').references(() => drivers.id),
+  carId: integer('car_id').references(() => cars.id),
+  // Аудит
+  createdById: integer('created_by_id').references(() => users.id),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+})
+
+export const payments = sqliteTable('payments', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  orderId: integer('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
+  amount: integer('amount').notNull(),
+  paymentDate: text('payment_date').notNull(),
+  createdAt: text('created_at').notNull(),
+})
+
+export const orderHistory = sqliteTable('order_history', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  orderId: integer('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
+  userId: integer('user_id').notNull().references(() => users.id),
+  action: text('action').notNull(), // 'created', 'updated', 'status_changed', 'payment_added'
+  fieldName: text('field_name'), // какое поле изменено
+  oldValue: text('old_value'), // старое значение
+  newValue: text('new_value'), // новое значение
+  createdAt: text('created_at').notNull(),
+})
+
 // Relations
 export const rolesRelations = relations(roles, ({ many }) => ({
   users: many(users),
 }))
 
-export const usersRelations = relations(users, ({ one }) => ({
+export const usersRelations = relations(users, ({ one, many }) => ({
   role: one(roles, {
     fields: [users.roleId],
     references: [roles.id],
+  }),
+  createdOrders: many(orders),
+  orderHistory: many(orderHistory),
+}))
+
+export const clientsRelations = relations(clients, ({ many }) => ({
+  orders: many(orders),
+}))
+
+export const driversRelations = relations(drivers, ({ many }) => ({
+  orders: many(orders),
+}))
+
+export const carsRelations = relations(cars, ({ many }) => ({
+  orders: many(orders),
+}))
+
+export const ordersRelations = relations(orders, ({ one, many }) => ({
+  client: one(clients, {
+    fields: [orders.clientId],
+    references: [clients.id],
+  }),
+  driver: one(drivers, {
+    fields: [orders.driverId],
+    references: [drivers.id],
+  }),
+  car: one(cars, {
+    fields: [orders.carId],
+    references: [cars.id],
+  }),
+  createdBy: one(users, {
+    fields: [orders.createdById],
+    references: [users.id],
+  }),
+  payments: many(payments),
+  history: many(orderHistory),
+}))
+
+export const paymentsRelations = relations(payments, ({ one }) => ({
+  order: one(orders, {
+    fields: [payments.orderId],
+    references: [orders.id],
+  }),
+}))
+
+export const orderHistoryRelations = relations(orderHistory, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderHistory.orderId],
+    references: [orders.id],
+  }),
+  user: one(users, {
+    fields: [orderHistory.userId],
+    references: [users.id],
   }),
 }))
 
@@ -89,3 +199,9 @@ export type Driver = typeof drivers.$inferSelect
 export type NewDriver = typeof drivers.$inferInsert
 export type Client = typeof clients.$inferSelect
 export type NewClient = typeof clients.$inferInsert
+export type Order = typeof orders.$inferSelect
+export type NewOrder = typeof orders.$inferInsert
+export type Payment = typeof payments.$inferSelect
+export type NewPayment = typeof payments.$inferInsert
+export type OrderHistory = typeof orderHistory.$inferSelect
+export type NewOrderHistory = typeof orderHistory.$inferInsert

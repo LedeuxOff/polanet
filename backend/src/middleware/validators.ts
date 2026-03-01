@@ -106,6 +106,72 @@ export const updateClientSchema = z.object({
   email: z.string().email('Неверный формат email').optional(),
 })
 
+export const createOrderSchema = z.object({
+  // Тип заявки
+  type: z.enum(['delivery', 'pickup'], {
+    errorMap: () => ({ message: 'Тип заявки обязателен' }),
+  }),
+  // Адрес
+  address: z.string().min(1, 'Адрес обязателен').max(500),
+  // Стоимость
+  cost: z.number().int().positive('Стоимость должна быть положительной'),
+  // Плательщик
+  payerLastName: z.string().min(1, 'Фамилия плательщика обязательна').max(100),
+  payerFirstName: z.string().min(1, 'Имя плательщика обязательно').max(100),
+  payerMiddleName: z.string().max(100).optional(),
+  // Приемщик
+  receiverLastName: z.string().min(1, 'Фамилия приемщика обязательна').max(100),
+  receiverFirstName: z.string().min(1, 'Имя приемщика обязательно').max(100),
+  receiverMiddleName: z.string().max(100).optional(),
+  // Дата и время
+  dateTime: z.string().min(1, 'Дата и время обязательны'),
+  // Пропуск
+  hasPass: z.boolean().default(false),
+  // Комментарий
+  addressComment: z.string().max(1000).optional(),
+  // Статус заявки
+  status: z.enum(['new', 'in_progress', 'completed', 'cancelled', 'archived', 'draft']).default('new'),
+  // Тип оплаты
+  paymentType: z.enum(['cash', 'bank_transfer'], {
+    errorMap: () => ({ message: 'Тип оплаты обязателен' }),
+  }),
+  // Связи
+  clientId: z.number().int().positive().optional().nullable(),
+  driverId: z.number().int().positive().optional().nullable(),
+  carId: z.number().int().positive().optional().nullable(),
+})
+
+export const updateOrderSchema = z.object({
+  type: z.enum(['delivery', 'pickup']).optional(),
+  address: z.string().min(1, 'Адрес обязателен').max(500).optional(),
+  cost: z.number().int().positive('Стоимость должна быть положительной').optional(),
+  payerLastName: z.string().min(1, 'Фамилия плательщика обязательна').max(100).optional(),
+  payerFirstName: z.string().min(1, 'Имя плательщика обязательно').max(100).optional(),
+  payerMiddleName: z.string().max(100).optional(),
+  receiverLastName: z.string().min(1, 'Фамилия приемщика обязательна').max(100).optional(),
+  receiverFirstName: z.string().min(1, 'Имя приемщика обязательно').max(100).optional(),
+  receiverMiddleName: z.string().max(100).optional(),
+  dateTime: z.string().min(1, 'Дата и время обязательны').optional(),
+  hasPass: z.boolean().optional(),
+  addressComment: z.string().max(1000).optional(),
+  status: z.enum(['new', 'in_progress', 'completed', 'cancelled', 'archived', 'draft']).optional(),
+  paymentType: z.enum(['cash', 'bank_transfer']).optional(),
+  clientId: z.number().int().positive().optional().nullable(),
+  driverId: z.number().int().positive().optional().nullable(),
+  carId: z.number().int().positive().optional().nullable(),
+})
+
+export const createPaymentSchema = z.object({
+  orderId: z.number().int().positive(),
+  amount: z.number().int().positive('Сумма выплаты должна быть положительной'),
+  paymentDate: z.string().min(1, 'Дата выплаты обязательна'),
+})
+
+export const updatePaymentSchema = z.object({
+  amount: z.number().int().positive('Сумма выплаты должна быть положительной').optional(),
+  paymentDate: z.string().min(1, 'Дата выплаты обязательна').optional(),
+})
+
 export type LoginInput = z.infer<typeof loginSchema>
 export type RegisterInput = z.infer<typeof registerSchema>
 export type UpdateUserInput = z.infer<typeof updateUserSchema>
@@ -116,3 +182,7 @@ export type CreateDriverInput = z.infer<typeof createDriverSchema>
 export type UpdateDriverInput = z.infer<typeof updateDriverSchema>
 export type CreateClientInput = z.infer<typeof createClientSchema>
 export type UpdateClientInput = z.infer<typeof updateClientSchema>
+export type CreateOrderInput = z.infer<typeof createOrderSchema>
+export type UpdateOrderInput = z.infer<typeof updateOrderSchema>
+export type CreatePaymentInput = z.infer<typeof createPaymentSchema>
+export type UpdatePaymentInput = z.infer<typeof updatePaymentSchema>

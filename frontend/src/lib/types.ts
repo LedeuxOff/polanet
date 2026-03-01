@@ -101,3 +101,82 @@ export interface CreateClientInput {
   phone?: string
   email?: string
 }
+
+export interface Order {
+  id: number
+  type: 'delivery' | 'pickup'
+  address: string
+  cost: number
+  payerLastName: string
+  payerFirstName: string
+  payerMiddleName: string | null
+  receiverLastName: string
+  receiverFirstName: string
+  receiverMiddleName: string | null
+  dateTime: string
+  hasPass: boolean
+  addressComment: string | null
+  status: 'new' | 'in_progress' | 'completed' | 'cancelled' | 'archived' | 'draft'
+  paymentType: 'cash' | 'bank_transfer'
+  clientId: number | null
+  driverId: number | null
+  carId: number | null
+  createdById: number | null
+  createdAt: string
+  updatedAt: string
+  // Вычисляемые поля
+  payments?: Payment[]
+  totalPaid?: number
+  debt?: number
+  isPaid?: boolean
+  paymentStatus?: 'unpaid' | 'paid' | 'partial'
+  history?: OrderHistory[]
+}
+
+export interface Payment {
+  id: number
+  orderId: number
+  amount: number
+  paymentDate: string
+  createdAt: string
+}
+
+export interface OrderHistory {
+  id: number
+  orderId: number
+  userId: number
+  action: string
+  fieldName: string | null
+  oldValue: string | null
+  newValue: string | null
+  createdAt: string
+  userLastName?: string
+  userFirstName?: string
+  userMiddleName?: string
+}
+
+export interface CreateOrderInput {
+  type: 'delivery' | 'pickup'
+  address: string
+  cost: number
+  payerLastName: string
+  payerFirstName: string
+  payerMiddleName?: string
+  receiverLastName: string
+  receiverFirstName: string
+  receiverMiddleName?: string
+  dateTime: string
+  hasPass?: boolean
+  addressComment?: string
+  status?: 'new' | 'in_progress' | 'completed' | 'cancelled' | 'archived' | 'draft'
+  paymentType: 'cash' | 'bank_transfer'
+  clientId?: number | null
+  driverId?: number | null
+  carId?: number | null
+}
+
+export interface CreatePaymentInput {
+  orderId: number
+  amount: number
+  paymentDate: string
+}
