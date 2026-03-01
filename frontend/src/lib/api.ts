@@ -1,4 +1,4 @@
-import type { LoginInput, RegisterInput, User, Role, AuthTokens } from './types'
+import type { LoginInput, RegisterInput, User, Role, AuthTokens, CreateCarInput, Car, CreateDriverInput, Driver, CreateClientInput, Client } from './types'
 
 const API_BASE = '/api'
 
@@ -63,9 +63,60 @@ export const api = {
   // Роли
   roles: {
     list: () => request<Role[]>('/roles'),
+    get: (id: number) => request<Role>(`/roles/${id}`),
     create: (data: { code: string; name: string }) => request<Role>('/roles', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
+    update: (id: number, data: { code?: string; name?: string }) => request<Role>(`/roles/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+    delete: (id: number) => request(`/roles/${id}`, { method: 'DELETE' }),
+  },
+
+  // Автомобили
+  cars: {
+    list: () => request<Car[]>('/cars'),
+    get: (id: number) => request<Car>(`/cars/${id}`),
+    create: (data: CreateCarInput) => request<Car>('/cars', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+    update: (id: number, data: Partial<CreateCarInput>) => request<Car>(`/cars/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+    delete: (id: number) => request(`/cars/${id}`, { method: 'DELETE' }),
+  },
+
+  // Водители
+  drivers: {
+    list: () => request<Driver[]>('/drivers'),
+    get: (id: number) => request<Driver>(`/drivers/${id}`),
+    create: (data: CreateDriverInput) => request<Driver>('/drivers', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+    update: (id: number, data: Partial<CreateDriverInput>) => request<Driver>(`/drivers/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+    delete: (id: number) => request(`/drivers/${id}`, { method: 'DELETE' }),
+  },
+
+  // Клиенты
+  clients: {
+    list: () => request<Client[]>('/clients'),
+    get: (id: number) => request<Client>(`/clients/${id}`),
+    create: (data: CreateClientInput) => request<Client>('/clients', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+    update: (id: number, data: Partial<CreateClientInput>) => request<Client>(`/clients/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+    delete: (id: number) => request(`/clients/${id}`, { method: 'DELETE' }),
   },
 }

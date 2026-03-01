@@ -30,6 +30,40 @@ export const sessions = sqliteTable('sessions', {
   createdAt: text('created_at').default('CURRENT_TIMESTAMP').notNull(),
 })
 
+export const cars = sqliteTable('cars', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  brand: text('brand').notNull(),
+  licensePlate: text('license_plate').notNull().unique(),
+  createdAt: text('created_at').default('CURRENT_TIMESTAMP').notNull(),
+  updatedAt: text('updated_at').default('CURRENT_TIMESTAMP').notNull(),
+})
+
+export const drivers = sqliteTable('drivers', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  lastName: text('last_name').notNull(),
+  firstName: text('first_name').notNull(),
+  middleName: text('middle_name'),
+  phone: text('phone'),
+  createdAt: text('created_at').default('CURRENT_TIMESTAMP').notNull(),
+  updatedAt: text('updated_at').default('CURRENT_TIMESTAMP').notNull(),
+})
+
+export const clients = sqliteTable('clients', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  type: text('type', { enum: ['individual', 'legal'] }).notNull(),
+  // Для физического лица
+  lastName: text('last_name'),
+  firstName: text('first_name'),
+  middleName: text('middle_name'),
+  // Для юридического лица
+  organizationName: text('organization_name'),
+  // Общие поля
+  phone: text('phone'),
+  email: text('email'),
+  createdAt: text('created_at').default('CURRENT_TIMESTAMP').notNull(),
+  updatedAt: text('updated_at').default('CURRENT_TIMESTAMP').notNull(),
+})
+
 // Relations
 export const rolesRelations = relations(roles, ({ many }) => ({
   users: many(users),
@@ -49,3 +83,9 @@ export type Role = typeof roles.$inferSelect
 export type NewRole = typeof roles.$inferInsert
 export type Session = typeof sessions.$inferSelect
 export type NewSession = typeof sessions.$inferInsert
+export type Car = typeof cars.$inferSelect
+export type NewCar = typeof cars.$inferInsert
+export type Driver = typeof drivers.$inferSelect
+export type NewDriver = typeof drivers.$inferInsert
+export type Client = typeof clients.$inferSelect
+export type NewClient = typeof clients.$inferInsert

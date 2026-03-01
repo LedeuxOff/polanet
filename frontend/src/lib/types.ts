@@ -21,6 +21,24 @@ export interface Role {
   updatedAt: string
 }
 
+export interface Car {
+  id: number
+  brand: string
+  licensePlate: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Driver {
+  id: number
+  lastName: string
+  firstName: string
+  middleName: string | null
+  phone: string | null
+  createdAt: string
+  updatedAt: string
+}
+
 export interface AuthTokens {
   token: string
   user: {
@@ -47,4 +65,39 @@ export interface RegisterInput {
   phone?: string
   password: string
   roleId: number
+}
+
+export interface CreateCarInput {
+  brand: string
+  licensePlate: string
+}
+
+export interface CreateDriverInput {
+  lastName: string
+  firstName: string
+  middleName?: string
+  phone?: string
+}
+
+export interface Client {
+  id: number
+  type: 'individual' | 'legal'
+  lastName: string | null
+  firstName: string | null
+  middleName: string | null
+  organizationName: string | null
+  phone: string | null
+  email: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateClientInput {
+  type: 'individual' | 'legal'
+  lastName?: string
+  firstName?: string
+  middleName?: string
+  organizationName?: string
+  phone?: string
+  email?: string
 }

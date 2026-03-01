@@ -1,6 +1,14 @@
 import express from 'express'
 import cors from 'cors'
 
+// Импорт роутов
+import authRoutes from './routes/auth.js'
+import userRoutes from './routes/users.js'
+import roleRoutes from './routes/roles.js'
+import carRoutes from './routes/cars.js'
+import driverRoutes from './routes/drivers.js'
+import clientRoutes from './routes/clients.js'
+
 const app = express()
 const PORT = process.env.PORT || 3000
 
@@ -12,15 +20,13 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// Импорт роутов
-import authRoutes from './routes/auth.js'
-import userRoutes from './routes/users.js'
-import roleRoutes from './routes/roles.js'
-
 // API роуты
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/roles', roleRoutes)
+app.use('/api/cars', carRoutes)
+app.use('/api/drivers', driverRoutes)
+app.use('/api/clients', clientRoutes)
 
 app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на http://localhost:${PORT}`)
