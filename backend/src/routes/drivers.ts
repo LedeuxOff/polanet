@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { db } from '../db/index.js'
-import { drivers } from '../db/schema.js'
+import { drivers, transportCards, transportCardExpenses } from '../db/schema.js'
 import { authenticate, type AuthRequest } from '../middleware/auth.js'
 import { createDriverSchema, updateDriverSchema } from '../middleware/validators.js'
 import { eq } from 'drizzle-orm'
@@ -31,7 +31,28 @@ router.get('/:id', authenticate, (req: AuthRequest, res) => {
       return res.status(404).json({ error: 'Водитель не найден' })
     }
 
-    res.json(driver)
+    // Получаем транспортную карту если есть
+    const transportCard = db.select().from(transportCards).where(eq(transportCards.driverId, driver.id)).get()
+
+    // Если карта есть, получаем расходы
+    if (transportCard) {
+      const expenses = db.select().from(transportCardExpenses).where(eq(transportCardExpenses.cardId, transportCard.id)).all()
+      const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0)
+      
+      res.json({
+        ...driver,
+        transportCard: {
+          ...transportCard,
+          expenses,
+          totalExpenses,
+        },
+      })
+    } else {
+      res.json({
+        ...driver,
+        transportCard: null,
+      })
+    }
   } catch (error) {
     console.error('Error getting driver:', error)
     res.status(500).json({ error: 'Ошибка сервера', details: error instanceof Error ? error.message : error })

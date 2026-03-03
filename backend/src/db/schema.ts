@@ -139,10 +139,6 @@ export const clientsRelations = relations(clients, ({ many }) => ({
   orders: many(orders),
 }))
 
-export const driversRelations = relations(drivers, ({ many }) => ({
-  orders: many(orders),
-}))
-
 export const carsRelations = relations(cars, ({ many }) => ({
   orders: many(orders),
 }))
@@ -186,6 +182,66 @@ export const orderHistoryRelations = relations(orderHistory, ({ one }) => ({
   }),
 }))
 
+export const transportCards = sqliteTable('transport_cards', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  cardNumber: text('card_number').notNull().unique(),
+  driverId: integer('driver_id').references(() => drivers.id, { onDelete: 'set null' }),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+})
+
+export const transportCardExpenses = sqliteTable('transport_card_expenses', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  cardId: integer('card_id').notNull().references(() => transportCards.id, { onDelete: 'cascade' }),
+  amount: integer('amount').notNull(),
+  paymentDate: text('payment_date').notNull(),
+  createdAt: text('created_at').notNull(),
+})
+
+export const transportCardHistory = sqliteTable('transport_card_history', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  cardId: integer('card_id').notNull().references(() => transportCards.id, { onDelete: 'cascade' }),
+  userId: integer('user_id').notNull().references(() => users.id),
+  action: text('action').notNull(), // 'created', 'updated', 'deleted', 'expense_added', 'expense_removed', 'driver_assigned', 'driver_unassigned'
+  fieldName: text('field_name'),
+  oldValue: text('old_value'),
+  newValue: text('new_value'),
+  createdAt: text('created_at').notNull(),
+})
+
+// Relations
+export const transportCardsRelations = relations(transportCards, ({ one, many }) => ({
+  driver: one(drivers, {
+    fields: [transportCards.driverId],
+    references: [drivers.id],
+  }),
+  expenses: many(transportCardExpenses),
+  history: many(transportCardHistory),
+}))
+
+export const driversRelations = relations(drivers, ({ one, many }) => ({
+  orders: many(orders),
+  transportCard: one(transportCards),
+}))
+
+export const transportCardExpensesRelations = relations(transportCardExpenses, ({ one }) => ({
+  card: one(transportCards, {
+    fields: [transportCardExpenses.cardId],
+    references: [transportCards.id],
+  }),
+}))
+
+export const transportCardHistoryRelations = relations(transportCardHistory, ({ one }) => ({
+  card: one(transportCards, {
+    fields: [transportCardHistory.cardId],
+    references: [transportCards.id],
+  }),
+  user: one(users, {
+    fields: [transportCardHistory.userId],
+    references: [users.id],
+  }),
+}))
+
 // Types
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
@@ -205,3 +261,9 @@ export type Payment = typeof payments.$inferSelect
 export type NewPayment = typeof payments.$inferInsert
 export type OrderHistory = typeof orderHistory.$inferSelect
 export type NewOrderHistory = typeof orderHistory.$inferInsert
+export type TransportCard = typeof transportCards.$inferSelect
+export type NewTransportCard = typeof transportCards.$inferInsert
+export type TransportCardExpense = typeof transportCardExpenses.$inferSelect
+export type NewTransportCardExpense = typeof transportCardExpenses.$inferInsert
+export type TransportCardHistory = typeof transportCardHistory.$inferSelect
+export type NewTransportCardHistory = typeof transportCardHistory.$inferInsert

@@ -1,4 +1,4 @@
-import type { LoginInput, RegisterInput, User, Role, AuthTokens, CreateCarInput, Car, CreateDriverInput, Driver, CreateClientInput, Client, CreateOrderInput, Order, CreatePaymentInput, Payment, OrderHistory } from './types'
+import type { LoginInput, RegisterInput, User, Role, AuthTokens, CreateCarInput, Car, CreateDriverInput, Driver, CreateClientInput, Client, CreateOrderInput, Order, CreatePaymentInput, Payment, OrderHistory, CreateTransportCardInput, TransportCard, CreateTransportCardExpenseInput, TransportCardExpense, TransportCardHistory } from './types'
 
 const API_BASE = '/api'
 
@@ -141,5 +141,26 @@ export const api = {
     removePayment: (orderId: number, paymentId: number) => request(`/orders/${orderId}/payments/${paymentId}`, { method: 'DELETE' }),
     // История
     getHistory: (orderId: number) => request<OrderHistory[]>(`/orders/${orderId}/history`),
+  },
+
+  // Транспортные карты
+  transportCards: {
+    list: () => request<(TransportCard & { expenses: TransportCardExpense[]; totalExpenses: number })[]>('/transport-cards'),
+    get: (id: number) => request<TransportCard & { expenses: TransportCardExpense[]; totalExpenses: number; history: TransportCardHistory[] }>(`/transport-cards/${id}`),
+    create: (data: CreateTransportCardInput) => request<TransportCard>('/transport-cards', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+    update: (id: number, data: Partial<CreateTransportCardInput>) => request<TransportCard>(`/transport-cards/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+    delete: (id: number) => request(`/transport-cards/${id}`, { method: 'DELETE' }),
+    // Расходы
+    addExpense: (cardId: number, data: CreateTransportCardExpenseInput) => request<TransportCardExpense>(`/transport-cards/${cardId}/expenses`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+    removeExpense: (cardId: number, expenseId: number) => request(`/transport-cards/${cardId}/expenses/${expenseId}`, { method: 'DELETE' }),
   },
 }

@@ -3,7 +3,7 @@ import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarGroupCon
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/lib/auth-context'
 import React from 'react'
-import { Home, Users, LogOut, Car, User, Shield, Building, ClipboardList } from 'lucide-react'
+import { Home, Users, LogOut, Car, User, Shield, Building, ClipboardList, CreditCard } from 'lucide-react'
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -39,6 +39,11 @@ const menuItems = [
     title: 'Клиенты',
     url: '/clients',
     icon: Building,
+  },
+  {
+    title: 'Транспортные карты',
+    url: '/transport-cards',
+    icon: CreditCard,
   },
   {
     title: 'Роли',

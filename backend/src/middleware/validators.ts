@@ -172,6 +172,27 @@ export const updatePaymentSchema = z.object({
   paymentDate: z.string().min(1, 'Дата выплаты обязательна').optional(),
 })
 
+export const createTransportCardSchema = z.object({
+  cardNumber: z.string().min(1, 'Номер карты обязателен').max(50),
+  driverId: z.number().int().positive().optional().nullable(),
+})
+
+export const updateTransportCardSchema = z.object({
+  cardNumber: z.string().min(1, 'Номер карты обязателен').max(50).optional(),
+  driverId: z.number().int().positive().optional().nullable(),
+})
+
+export const createTransportCardExpenseSchema = z.object({
+  cardId: z.number().int().positive(),
+  amount: z.number().int().positive('Сумма должна быть положительной'),
+  paymentDate: z.string().min(1, 'Дата оплаты обязательна'),
+})
+
+export const updateTransportCardExpenseSchema = z.object({
+  amount: z.number().int().positive('Сумма должна быть положительной').optional(),
+  paymentDate: z.string().min(1, 'Дата оплаты обязательна').optional(),
+})
+
 export type LoginInput = z.infer<typeof loginSchema>
 export type RegisterInput = z.infer<typeof registerSchema>
 export type UpdateUserInput = z.infer<typeof updateUserSchema>
@@ -186,3 +207,7 @@ export type CreateOrderInput = z.infer<typeof createOrderSchema>
 export type UpdateOrderInput = z.infer<typeof updateOrderSchema>
 export type CreatePaymentInput = z.infer<typeof createPaymentSchema>
 export type UpdatePaymentInput = z.infer<typeof updatePaymentSchema>
+export type CreateTransportCardInput = z.infer<typeof createTransportCardSchema>
+export type UpdateTransportCardInput = z.infer<typeof updateTransportCardSchema>
+export type CreateTransportCardExpenseInput = z.infer<typeof createTransportCardExpenseSchema>
+export type UpdateTransportCardExpenseInput = z.infer<typeof updateTransportCardExpenseSchema>
