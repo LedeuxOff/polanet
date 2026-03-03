@@ -58,7 +58,7 @@ router.post('/', authenticate, (req: AuthRequest, res) => {
     const newRole = db
       .select()
       .from(roles)
-      .where(eq(roles.id, result.lastInsertRowid))
+      .where(eq(roles.id, Number(result.lastInsertRowid)))
       .get()
 
     res.status(201).json(newRole)
@@ -105,12 +105,6 @@ router.put('/:id', authenticate, (req: AuthRequest, res) => {
 router.delete('/:id', authenticate, (req: AuthRequest, res) => {
   try {
     const roleId = Number(req.params.id)
-
-    // Проверка: нельзя удалить роль если она используется
-    const usersWithRole = db
-      .select()
-      .from(db.select().from(roles).where(eq(roles.id, roleId)))
-      .all()
 
     db.delete(roles).where(eq(roles.id, roleId)).run()
 

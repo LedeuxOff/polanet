@@ -122,7 +122,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
     const newOrder = db
       .select()
       .from(orders)
-      .where(eq(orders.id, result.lastInsertRowid))
+      .where(eq(orders.id, Number(result.lastInsertRowid)))
       .get()
 
     // Запись в историю
@@ -260,7 +260,7 @@ router.post('/:id/payments', authenticate, async (req: AuthRequest, res) => {
     const newPayment = db
       .select()
       .from(payments)
-      .where(eq(payments.id, result.lastInsertRowid))
+      .where(eq(payments.id, Number(result.lastInsertRowid)))
       .get()
 
     // Запись в историю

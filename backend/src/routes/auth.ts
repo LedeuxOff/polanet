@@ -88,7 +88,7 @@ router.post('/register', async (req, res) => {
     const newUser = db
       .select()
       .from(users)
-      .where(eq(users.id, result.lastInsertRowid))
+      .where(eq(users.id, Number(result.lastInsertRowid)))
       .get()
 
     const token = generateToken({

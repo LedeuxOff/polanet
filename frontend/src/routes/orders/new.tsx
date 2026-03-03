@@ -100,7 +100,7 @@ function NewOrderPage() {
               <Label htmlFor="type">Тип заявки *</Label>
               <Select
                 value={watch('type')}
-                onValueChange={(value) => setValue('type', value)}
+                onValueChange={(value: 'delivery' | 'pickup') => setValue('type', value)}
               >
                 <SelectTrigger disabled={isSubmitting}>
                   <SelectValue placeholder="Выберите тип" />
@@ -119,7 +119,7 @@ function NewOrderPage() {
               <Label htmlFor="status">Статус *</Label>
               <Select
                 value={watch('status')}
-                onValueChange={(value) => setValue('status', value)}
+                onValueChange={(value: 'new' | 'in_progress' | 'completed' | 'cancelled' | 'archived' | 'draft') => setValue('status', value)}
               >
                 <SelectTrigger disabled={isSubmitting}>
                   <SelectValue placeholder="Выберите статус" />
@@ -265,7 +265,7 @@ function NewOrderPage() {
               <Label htmlFor="paymentType">Тип оплаты *</Label>
               <Select
                 value={watch('paymentType')}
-                onValueChange={(value) => setValue('paymentType', value)}
+                onValueChange={(value: 'cash' | 'bank_transfer') => setValue('paymentType', value)}
               >
                 <SelectTrigger disabled={isSubmitting}>
                   <SelectValue placeholder="Выберите тип оплаты" />

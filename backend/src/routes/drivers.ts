@@ -51,7 +51,7 @@ router.post('/', authenticate, (req: AuthRequest, res) => {
     const newDriver = db
       .select()
       .from(drivers)
-      .where(eq(drivers.id, result.lastInsertRowid))
+      .where(eq(drivers.id, Number(result.lastInsertRowid)))
       .get()
 
     res.status(201).json(newDriver)

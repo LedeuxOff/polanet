@@ -22,9 +22,13 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
   const token = authHeader.substring(7)
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number; email: string; roleId: number }
+    const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload
     req.userId = decoded.userId
-    req.user = decoded
+    req.user = {
+      id: decoded.id || decoded.userId,
+      email: decoded.email,
+      roleId: decoded.roleId,
+    }
     next()
   } catch (error) {
     return res.status(401).json({ error: 'Неверный токен' })
@@ -33,10 +37,17 @@ export function authenticate(req: AuthRequest, res: Response, next: NextFunction
 
 export function generateToken(user: { id: number; email: string; roleId: number }): string {
   return jwt.sign(
-    { userId: user.id, email: user.email, roleId: user.roleId },
+    { id: user.id, userId: user.id, email: user.email, roleId: user.roleId },
     JWT_SECRET,
     { expiresIn: '24h' }
   )
+}
+
+export interface JWTPayload {
+  userId: number
+  email: string
+  roleId: number
+  id?: number
 }
 
 export { JWT_SECRET }
