@@ -4,3 +4,6 @@ export * from "./user-types";
 export * from "./car-types";
 export * from "./client-types";
 export * from "./role-types";
+export * from "./delivery-types";
+export * from "./order-types";
+export * from "./payment-types";

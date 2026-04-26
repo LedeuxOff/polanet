@@ -1,8 +1,4 @@
-import {
-  createFileRoute,
-  useNavigate,
-  useParams,
-} from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -30,7 +26,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { api } from "@/lib/api";
 import type {
   Order,
   Client,
@@ -39,7 +34,10 @@ import type {
   Delivery,
   CreateDeliveryInput,
   CreatePaymentInput,
+  Driver,
+  Car,
 } from "@/lib/types";
+import { carsApi, clientsApi, deliveriesApi, driversApi, ordersApi } from "@/lib/api";
 
 const orderSchema = z.object({
   type: z.enum(["delivery", "pickup"]),
@@ -54,14 +52,7 @@ const orderSchema = z.object({
   dateTime: z.string().min(1, "Дата и время обязательны"),
   hasPass: z.boolean().default(false),
   addressComment: z.string().optional(),
-  status: z.enum([
-    "new",
-    "in_progress",
-    "completed",
-    "cancelled",
-    "archived",
-    "draft",
-  ]),
+  status: z.enum(["new", "in_progress", "completed", "cancelled", "archived", "draft"]),
   paymentType: z.enum(["cash", "bank_transfer"]),
   clientId: z.coerce.number().optional().nullable(),
 });
@@ -139,21 +130,16 @@ function OrderDetailPage() {
   // Выплаты
   const [showPaymentDialog, setShowPaymentDialog] = React.useState(false);
   const [paymentAmount, setPaymentAmount] = React.useState("");
-  const [paymentDate, setPaymentDate] = React.useState(
-    new Date().toISOString().split("T")[0],
+  const [paymentDate, setPaymentDate] = React.useState(new Date().toISOString().split("T")[0]);
+  const [paymentType, setPaymentType] = React.useState<"prepayment" | "transfer" | "delivery">(
+    "transfer",
   );
-  const [paymentType, setPaymentType] = React.useState<
-    "prepayment" | "transfer" | "delivery"
-  >("transfer");
-  const [selectedDeliveryId, setSelectedDeliveryId] =
-    React.useState<string>("");
+  const [selectedDeliveryId, setSelectedDeliveryId] = React.useState<string>("");
   const [isAddingPayment, setIsAddingPayment] = React.useState(false);
 
   // Доставка
   const [showDeliveryDialog, setShowDeliveryDialog] = React.useState(false);
-  const [editingDelivery, setEditingDelivery] = React.useState<Delivery | null>(
-    null,
-  );
+  const [editingDelivery, setEditingDelivery] = React.useState<Delivery | null>(null);
 
   const {
     register,
@@ -192,13 +178,13 @@ function OrderDetailPage() {
 
   React.useEffect(() => {
     Promise.all([
-      api.clients.list().then(setClients).catch(console.error),
-      api.drivers.list().then(setDrivers).catch(console.error),
-      api.cars.list().then(setCars).catch(console.error),
+      clientsApi.list().then(setClients).catch(console.error),
+      driversApi.list().then(setDrivers).catch(console.error),
+      carsApi.list().then(setCars).catch(console.error),
     ]).catch(console.error);
 
     if (!isNewOrder) {
-      api.orders
+      ordersApi
         .get(Number(orderId))
         .then((data) => {
           setOrder(data);
@@ -222,10 +208,7 @@ function OrderDetailPage() {
         .finally(() => setIsLoading(false));
 
       // Загружаем доставки
-      api.deliveries
-        .list(Number(orderId))
-        .then(setDeliveries)
-        .catch(console.error);
+      deliveriesApi.list(Number(orderId)).then(setDeliveries).catch(console.error);
     } else {
       setIsLoading(false);
       setValue("status", "draft");
@@ -238,9 +221,9 @@ function OrderDetailPage() {
     setIsSubmitting(true);
     try {
       if (isNewOrder) {
-        await api.orders.create(data);
+        await ordersApi.create(data);
       } else {
-        await api.orders.update(Number(orderId), data);
+        await ordersApi.update(Number(orderId), data);
       }
       navigate({ to: "/orders" });
     } catch (err) {
@@ -257,7 +240,7 @@ function OrderDetailPage() {
 
     setIsDeleting(true);
     try {
-      await api.orders.delete(Number(orderId));
+      await ordersApi.delete(Number(orderId));
       navigate({ to: "/orders" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка при удалении");
@@ -277,7 +260,7 @@ function OrderDetailPage() {
         type: data.type,
         deliveryId: data.type === "delivery" ? data.deliveryId : null,
       };
-      await api.orders.addPayment(Number(orderId), paymentData);
+      await ordersApi.addPayment(Number(orderId), paymentData);
       setShowPaymentDialog(false);
       resetPayment();
       setPaymentAmount("");
@@ -285,12 +268,10 @@ function OrderDetailPage() {
       setPaymentType("transfer");
       setSelectedDeliveryId("");
       // Обновляем данные заявки
-      const updated = await api.orders.get(Number(orderId));
+      const updated = await ordersApi.get(Number(orderId));
       setOrder(updated);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Ошибка при добавлении выплаты",
-      );
+      setError(err instanceof Error ? err.message : "Ошибка при добавлении выплаты");
     } finally {
       setIsAddingPayment(false);
     }
@@ -302,13 +283,11 @@ function OrderDetailPage() {
     }
 
     try {
-      await api.orders.removePayment(Number(orderId), paymentId);
-      const updated = await api.orders.get(Number(orderId));
+      await ordersApi.removePayment(Number(orderId), paymentId);
+      const updated = await ordersApi.get(Number(orderId));
       setOrder(updated);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Ошибка при удалении выплаты",
-      );
+      setError(err instanceof Error ? err.message : "Ошибка при удалении выплаты");
     }
   };
 
@@ -322,23 +301,21 @@ function OrderDetailPage() {
     setError(null);
     try {
       if (editingDelivery) {
-        await api.deliveries.update(editingDelivery.id, data);
+        await deliveriesApi.update(editingDelivery.id, data);
       } else {
-        await api.deliveries.create({ ...data, orderId: Number(orderId) });
+        await deliveriesApi.create({ ...data, orderId: Number(orderId) });
       }
       setShowDeliveryDialog(false);
       setEditingDelivery(null);
       resetDelivery();
       // Обновляем список доставок
-      const updatedDeliveries = await api.deliveries.list(Number(orderId));
+      const updatedDeliveries = await deliveriesApi.list(Number(orderId));
       setDeliveries(updatedDeliveries);
       // Обновляем заявку для пересчета долгов
-      const updated = await api.orders.get(Number(orderId));
+      const updated = await ordersApi.get(Number(orderId));
       setOrder(updated);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Ошибка при сохранении доставки",
-      );
+      setError(err instanceof Error ? err.message : "Ошибка при сохранении доставки");
     }
   };
 
@@ -364,31 +341,27 @@ function OrderDetailPage() {
     }
 
     try {
-      await api.deliveries.delete(deliveryId);
-      const updatedDeliveries = await api.deliveries.list(Number(orderId));
+      await deliveriesApi.delete(deliveryId);
+      const updatedDeliveries = await deliveriesApi.list(Number(orderId));
       setDeliveries(updatedDeliveries);
       // Обновляем заявку для пересчета долгов
-      const updated = await api.orders.get(Number(orderId));
+      const updated = await ordersApi.get(Number(orderId));
       setOrder(updated);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Ошибка при удалении доставки",
-      );
+      setError(err instanceof Error ? err.message : "Ошибка при удалении доставки");
     }
   };
 
   const handleMarkAsPaid = async (deliveryId: number) => {
     try {
-      await api.deliveries.pay(deliveryId);
-      const updatedDeliveries = await api.deliveries.list(Number(orderId));
+      await deliveriesApi.pay(deliveryId);
+      const updatedDeliveries = await deliveriesApi.list(Number(orderId));
       setDeliveries(updatedDeliveries);
       // Обновляем заявку
-      const updated = await api.orders.get(Number(orderId));
+      const updated = await ordersApi.get(Number(orderId));
       setOrder(updated);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Ошибка при отметке оплаты",
-      );
+      setError(err instanceof Error ? err.message : "Ошибка при отметке оплаты");
     }
   };
 
@@ -406,9 +379,7 @@ function OrderDetailPage() {
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">
-          Загрузка...
-        </CardContent>
+        <CardContent className="py-8 text-center text-muted-foreground">Загрузка...</CardContent>
       </Card>
     );
   }
@@ -425,9 +396,7 @@ function OrderDetailPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>
-                {isNewOrder ? "Новая заявка" : `Заявка #${orderId}`}
-              </CardTitle>
+              <CardTitle>{isNewOrder ? "Новая заявка" : `Заявка #${orderId}`}</CardTitle>
               {order && !isNewOrder && (
                 <p className="text-sm text-muted-foreground mt-1">
                   {typeLabels[order.type]} • {order.address}
@@ -435,11 +404,7 @@ function OrderDetailPage() {
               )}
             </div>
             {!isNewOrder && (
-              <Button
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={isDeleting}
-              >
+              <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
                 {isDeleting ? "Удаление..." : "Удалить"}
               </Button>
             )}
@@ -459,9 +424,7 @@ function OrderDetailPage() {
                 <Label htmlFor="type">Тип заявки *</Label>
                 <Select
                   value={watch("type")}
-                  onValueChange={(value: "delivery" | "pickup") =>
-                    setValue("type", value)
-                  }
+                  onValueChange={(value: "delivery" | "pickup") => setValue("type", value)}
                 >
                   <SelectTrigger disabled={isSubmitting}>
                     <SelectValue placeholder="Выберите тип" />
@@ -471,11 +434,7 @@ function OrderDetailPage() {
                     <SelectItem value="pickup">Вывоз</SelectItem>
                   </SelectContent>
                 </Select>
-                {errors.type && (
-                  <p className="text-sm text-destructive">
-                    {errors.type.message}
-                  </p>
-                )}
+                {errors.type && <p className="text-sm text-destructive">{errors.type.message}</p>}
               </div>
 
               <div className="space-y-2">
@@ -483,13 +442,7 @@ function OrderDetailPage() {
                 <Select
                   value={watch("status")}
                   onValueChange={(
-                    value:
-                      | "new"
-                      | "in_progress"
-                      | "completed"
-                      | "cancelled"
-                      | "archived"
-                      | "draft",
+                    value: "new" | "in_progress" | "completed" | "cancelled" | "archived" | "draft",
                   ) => setValue("status", value)}
                 >
                   <SelectTrigger disabled={isSubmitting}>
@@ -505,9 +458,7 @@ function OrderDetailPage() {
                   </SelectContent>
                 </Select>
                 {errors.status && (
-                  <p className="text-sm text-destructive">
-                    {errors.status.message}
-                  </p>
+                  <p className="text-sm text-destructive">{errors.status.message}</p>
                 )}
               </div>
             </div>
@@ -516,32 +467,16 @@ function OrderDetailPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="address">Адрес *</Label>
-                <Textarea
-                  id="address"
-                  disabled={isSubmitting}
-                  {...register("address")}
-                  rows={2}
-                />
+                <Textarea id="address" disabled={isSubmitting} {...register("address")} rows={2} />
                 {errors.address && (
-                  <p className="text-sm text-destructive">
-                    {errors.address.message}
-                  </p>
+                  <p className="text-sm text-destructive">{errors.address.message}</p>
                 )}
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="cost">Стоимость (₽) *</Label>
-                <Input
-                  id="cost"
-                  type="number"
-                  disabled={isSubmitting}
-                  {...register("cost")}
-                />
-                {errors.cost && (
-                  <p className="text-sm text-destructive">
-                    {errors.cost.message}
-                  </p>
-                )}
+                <Input id="cost" type="number" disabled={isSubmitting} {...register("cost")} />
+                {errors.cost && <p className="text-sm text-destructive">{errors.cost.message}</p>}
               </div>
             </div>
 
@@ -557,9 +492,7 @@ function OrderDetailPage() {
                     {...register("payerLastName")}
                   />
                   {errors.payerLastName && (
-                    <p className="text-sm text-destructive">
-                      {errors.payerLastName.message}
-                    </p>
+                    <p className="text-sm text-destructive">{errors.payerLastName.message}</p>
                   )}
                 </div>
 
@@ -571,9 +504,7 @@ function OrderDetailPage() {
                     {...register("payerFirstName")}
                   />
                   {errors.payerFirstName && (
-                    <p className="text-sm text-destructive">
-                      {errors.payerFirstName.message}
-                    </p>
+                    <p className="text-sm text-destructive">{errors.payerFirstName.message}</p>
                   )}
                 </div>
 
@@ -600,9 +531,7 @@ function OrderDetailPage() {
                     {...register("receiverLastName")}
                   />
                   {errors.receiverLastName && (
-                    <p className="text-sm text-destructive">
-                      {errors.receiverLastName.message}
-                    </p>
+                    <p className="text-sm text-destructive">{errors.receiverLastName.message}</p>
                   )}
                 </div>
 
@@ -614,9 +543,7 @@ function OrderDetailPage() {
                     {...register("receiverFirstName")}
                   />
                   {errors.receiverFirstName && (
-                    <p className="text-sm text-destructive">
-                      {errors.receiverFirstName.message}
-                    </p>
+                    <p className="text-sm text-destructive">{errors.receiverFirstName.message}</p>
                   )}
                 </div>
 
@@ -642,9 +569,7 @@ function OrderDetailPage() {
                   {...register("dateTime")}
                 />
                 {errors.dateTime && (
-                  <p className="text-sm text-destructive">
-                    {errors.dateTime.message}
-                  </p>
+                  <p className="text-sm text-destructive">{errors.dateTime.message}</p>
                 )}
               </div>
 
@@ -661,15 +586,11 @@ function OrderDetailPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="cash">Наличные</SelectItem>
-                    <SelectItem value="bank_transfer">
-                      Безналичный расчет
-                    </SelectItem>
+                    <SelectItem value="bank_transfer">Безналичный расчет</SelectItem>
                   </SelectContent>
                 </Select>
                 {errors.paymentType && (
-                  <p className="text-sm text-destructive">
-                    {errors.paymentType.message}
-                  </p>
+                  <p className="text-sm text-destructive">{errors.paymentType.message}</p>
                 )}
               </div>
             </div>
@@ -704,9 +625,7 @@ function OrderDetailPage() {
               <Label htmlFor="clientId">Клиент</Label>
               <Select
                 value={String(watch("clientId") || "")}
-                onValueChange={(value) =>
-                  setValue("clientId", value ? Number(value) : null)
-                }
+                onValueChange={(value) => setValue("clientId", value ? Number(value) : null)}
               >
                 <SelectTrigger disabled={isSubmitting}>
                   <SelectValue placeholder="Не выбран" />
@@ -727,11 +646,7 @@ function OrderDetailPage() {
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Сохранение..." : "Сохранить"}
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => navigate({ to: "/orders" })}
-              >
+              <Button type="button" variant="outline" onClick={() => navigate({ to: "/orders" })}>
                 Отмена
               </Button>
             </div>
@@ -753,28 +668,18 @@ function OrderDetailPage() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">
-                    Стоимость заявки
-                  </p>
+                  <p className="text-sm text-muted-foreground">Стоимость заявки</p>
                   <p className="text-2xl font-bold">{order.cost} ₽</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Получено</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {received} ₽
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Сумма выплат от клиента
-                  </p>
+                  <p className="text-2xl font-bold text-green-600">{received} ₽</p>
+                  <p className="text-xs text-muted-foreground mt-1">Сумма выплат от клиента</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Реализовано</p>
-                  <p className="text-2xl font-bold text-blue-600">
-                    {completed} ₽
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Сумма выполненных доставок
-                  </p>
+                  <p className="text-2xl font-bold text-blue-600">{completed} ₽</p>
+                  <p className="text-xs text-muted-foreground mt-1">Сумма выполненных доставок</p>
                 </div>
               </div>
 
@@ -783,12 +688,8 @@ function OrderDetailPage() {
               <div className="grid grid-cols-2 gap-4">
                 {customerDebt > 0 && (
                   <div className="p-4 border rounded-md bg-destructive/10">
-                    <p className="text-sm text-muted-foreground">
-                      Долг клиента
-                    </p>
-                    <p className="text-2xl font-bold text-destructive">
-                      {customerDebt} ₽
-                    </p>
+                    <p className="text-sm text-muted-foreground">Долг клиента</p>
+                    <p className="text-2xl font-bold text-destructive">{customerDebt} ₽</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Реализовано больше получено
                     </p>
@@ -796,12 +697,8 @@ function OrderDetailPage() {
                 )}
                 {companyDebt > 0 && (
                   <div className="p-4 border rounded-md bg-green-50">
-                    <p className="text-sm text-muted-foreground">
-                      Долг компании
-                    </p>
-                    <p className="text-2xl font-bold text-green-600">
-                      {companyDebt} ₽
-                    </p>
+                    <p className="text-sm text-muted-foreground">Долг компании</p>
+                    <p className="text-2xl font-bold text-green-600">{companyDebt} ₽</p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Получено больше реализовано
                     </p>
@@ -809,12 +706,8 @@ function OrderDetailPage() {
                 )}
                 {customerDebt === 0 && companyDebt === 0 && (
                   <div className="p-4 border rounded-md bg-green-50 col-span-2">
-                    <p className="text-sm text-muted-foreground">
-                      Статус расчетов
-                    </p>
-                    <p className="text-2xl font-bold text-green-600">
-                      Все расчеты завершены
-                    </p>
+                    <p className="text-sm text-muted-foreground">Статус расчетов</p>
+                    <p className="text-2xl font-bold text-green-600">Все расчеты завершены</p>
                   </div>
                 )}
               </div>
@@ -834,14 +727,10 @@ function OrderDetailPage() {
                         <div>
                           <div className="flex items-center gap-2">
                             <p className="font-medium">{payment.amount} ₽</p>
-                            <Badge variant="outline">
-                              {paymentTypeLabels[payment.type]}
-                            </Badge>
+                            <Badge variant="outline">{paymentTypeLabels[payment.type]}</Badge>
                           </div>
                           <p className="text-sm text-muted-foreground">
-                            {new Date(payment.paymentDate).toLocaleDateString(
-                              "ru-RU",
-                            )}
+                            {new Date(payment.paymentDate).toLocaleDateString("ru-RU")}
                           </p>
                         </div>
                         <Button
@@ -864,14 +753,9 @@ function OrderDetailPage() {
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Добавить выплату</DialogTitle>
-                <DialogDescription>
-                  Заполните данные о выплате
-                </DialogDescription>
+                <DialogDescription>Заполните данные о выплате</DialogDescription>
               </DialogHeader>
-              <form
-                onSubmit={handlePaymentSubmit(handleAddPayment)}
-                className="space-y-4"
-              >
+              <form onSubmit={handlePaymentSubmit(handleAddPayment)} className="space-y-4">
                 {error && (
                   <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
                     {error}
@@ -880,29 +764,17 @@ function OrderDetailPage() {
 
                 <div className="space-y-2">
                   <Label htmlFor="paymentAmount">Сумма выплаты *</Label>
-                  <Input
-                    id="paymentAmount"
-                    type="number"
-                    {...registerPayment("amount")}
-                  />
+                  <Input id="paymentAmount" type="number" {...registerPayment("amount")} />
                   {paymentErrors.amount && (
-                    <p className="text-sm text-destructive">
-                      {paymentErrors.amount.message}
-                    </p>
+                    <p className="text-sm text-destructive">{paymentErrors.amount.message}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="paymentDate">Дата выплаты *</Label>
-                  <Input
-                    id="paymentDate"
-                    type="date"
-                    {...registerPayment("paymentDate")}
-                  />
+                  <Input id="paymentDate" type="date" {...registerPayment("paymentDate")} />
                   {paymentErrors.paymentDate && (
-                    <p className="text-sm text-destructive">
-                      {paymentErrors.paymentDate.message}
-                    </p>
+                    <p className="text-sm text-destructive">{paymentErrors.paymentDate.message}</p>
                   )}
                 </div>
 
@@ -910,9 +782,7 @@ function OrderDetailPage() {
                   <Label htmlFor="paymentType">Тип выплаты *</Label>
                   <Select
                     value={watchPayment("type")}
-                    onValueChange={(
-                      value: "prepayment" | "transfer" | "delivery",
-                    ) => {
+                    onValueChange={(value: "prepayment" | "transfer" | "delivery") => {
                       setPaymentValue("type", value);
                       if (value !== "delivery") {
                         setPaymentValue("deliveryId", null);
@@ -931,9 +801,7 @@ function OrderDetailPage() {
                     </SelectContent>
                   </Select>
                   {paymentErrors.type && (
-                    <p className="text-sm text-destructive">
-                      {paymentErrors.type.message}
-                    </p>
+                    <p className="text-sm text-destructive">{paymentErrors.type.message}</p>
                   )}
                 </div>
 
@@ -942,9 +810,7 @@ function OrderDetailPage() {
                     <Label htmlFor="deliveryId">Доставка *</Label>
                     <Select
                       value={String(watchPayment("deliveryId") || "")}
-                      onValueChange={(value) =>
-                        setPaymentValue("deliveryId", Number(value))
-                      }
+                      onValueChange={(value) => setPaymentValue("deliveryId", Number(value))}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Выберите доставку" />
@@ -953,32 +819,21 @@ function OrderDetailPage() {
                         {deliveries
                           .filter((d) => !d.isPaid)
                           .map((delivery) => (
-                            <SelectItem
-                              key={delivery.id}
-                              value={String(delivery.id)}
-                            >
-                              {new Date(delivery.dateTime).toLocaleDateString(
-                                "ru-RU",
-                              )}{" "}
-                              - {delivery.cost} ₽
+                            <SelectItem key={delivery.id} value={String(delivery.id)}>
+                              {new Date(delivery.dateTime).toLocaleDateString("ru-RU")} -{" "}
+                              {delivery.cost} ₽
                             </SelectItem>
                           ))}
                       </SelectContent>
                     </Select>
                     {paymentErrors.deliveryId && (
-                      <p className="text-sm text-destructive">
-                        {paymentErrors.deliveryId.message}
-                      </p>
+                      <p className="text-sm text-destructive">{paymentErrors.deliveryId.message}</p>
                     )}
                   </div>
                 )}
 
                 <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleCancelPayment}
-                  >
+                  <Button type="button" variant="outline" onClick={handleCancelPayment}>
                     Отмена
                   </Button>
                   <Button type="submit" disabled={isAddingPayment}>
@@ -1013,21 +868,14 @@ function OrderDetailPage() {
               ) : (
                 <div className="space-y-4">
                   {deliveries.map((delivery) => (
-                    <div
-                      key={delivery.id}
-                      className="border rounded-md p-4 space-y-3"
-                    >
+                    <div key={delivery.id} className="border rounded-md p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <Badge
-                            variant={delivery.isPaid ? "default" : "outline"}
-                          >
+                          <Badge variant={delivery.isPaid ? "default" : "outline"}>
                             {delivery.isPaid ? "Оплачено" : "Не оплачено"}
                           </Badge>
                           <span className="font-medium">
-                            {new Date(delivery.dateTime).toLocaleString(
-                              "ru-RU",
-                            )}
+                            {new Date(delivery.dateTime).toLocaleString("ru-RU")}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
@@ -1059,39 +907,30 @@ function OrderDetailPage() {
 
                       <div className="grid grid-cols-3 gap-4 text-sm">
                         <div>
-                          <span className="text-muted-foreground">
-                            Стоимость:{" "}
-                          </span>
+                          <span className="text-muted-foreground">Стоимость: </span>
                           {delivery.cost} ₽
                         </div>
                         {delivery.volume && (
                           <div>
-                            <span className="text-muted-foreground">
-                              Объем:{" "}
-                            </span>
+                            <span className="text-muted-foreground">Объем: </span>
                             {delivery.volume} м³
                           </div>
                         )}
                         {delivery.comment && (
                           <div className="col-span-2">
-                            <span className="text-muted-foreground">
-                              Комментарий:{" "}
-                            </span>
+                            <span className="text-muted-foreground">Комментарий: </span>
                             {delivery.comment}
                           </div>
                         )}
                       </div>
 
-                      {(delivery.isCashPayment ||
-                        delivery.isUnloadingBeforeUnloading) && (
+                      {(delivery.isCashPayment || delivery.isUnloadingBeforeUnloading) && (
                         <div className="flex gap-4 text-sm">
                           {delivery.isCashPayment && (
                             <Badge variant="secondary">Оплата наличными</Badge>
                           )}
                           {delivery.isUnloadingBeforeUnloading && (
-                            <Badge variant="secondary">
-                              Выгрузка до выгрузки
-                            </Badge>
+                            <Badge variant="secondary">Выгрузка до выгрузки</Badge>
                           )}
                         </div>
                       )}
@@ -1103,25 +942,15 @@ function OrderDetailPage() {
           </Card>
 
           {/* Модальное окно добавления/редактирования доставки */}
-          <Dialog
-            open={showDeliveryDialog}
-            onOpenChange={setShowDeliveryDialog}
-          >
+          <Dialog open={showDeliveryDialog} onOpenChange={setShowDeliveryDialog}>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>
-                  {editingDelivery
-                    ? "Редактирование доставки"
-                    : "Добавление доставки"}
+                  {editingDelivery ? "Редактирование доставки" : "Добавление доставки"}
                 </DialogTitle>
-                <DialogDescription>
-                  Заполните данные о доставке
-                </DialogDescription>
+                <DialogDescription>Заполните данные о доставке</DialogDescription>
               </DialogHeader>
-              <form
-                onSubmit={handleDeliverySubmit(handleSaveDelivery)}
-                className="space-y-4"
-              >
+              <form onSubmit={handleDeliverySubmit(handleSaveDelivery)} className="space-y-4">
                 {error && (
                   <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
                     {error}
@@ -1133,9 +962,7 @@ function OrderDetailPage() {
                     <Label>Водитель *</Label>
                     <Select
                       value={String(watchDelivery("driverId") || "")}
-                      onValueChange={(value) =>
-                        setDeliveryValue("driverId", Number(value))
-                      }
+                      onValueChange={(value) => setDeliveryValue("driverId", Number(value))}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Выберите водителя" />
@@ -1143,8 +970,7 @@ function OrderDetailPage() {
                       <SelectContent>
                         {drivers.map((driver) => (
                           <SelectItem key={driver.id} value={String(driver.id)}>
-                            {driver.lastName} {driver.firstName}{" "}
-                            {driver.middleName}
+                            {driver.lastName} {driver.firstName} {driver.middleName}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1155,9 +981,7 @@ function OrderDetailPage() {
                     <Label>Автомобиль *</Label>
                     <Select
                       value={String(watchDelivery("carId") || "")}
-                      onValueChange={(value) =>
-                        setDeliveryValue("carId", Number(value))
-                      }
+                      onValueChange={(value) => setDeliveryValue("carId", Number(value))}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Выберите автомобиль" />
@@ -1176,10 +1000,7 @@ function OrderDetailPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Дата и время *</Label>
-                    <Input
-                      type="datetime-local"
-                      {...registerDelivery("dateTime")}
-                    />
+                    <Input type="datetime-local" {...registerDelivery("dateTime")} />
                   </div>
 
                   <div className="space-y-2">
@@ -1191,11 +1012,7 @@ function OrderDetailPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label>Объем груза (м³)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      {...registerDelivery("volume")}
-                    />
+                    <Input type="number" step="0.1" {...registerDelivery("volume")} />
                   </div>
 
                   <div className="space-y-2">
@@ -1208,9 +1025,7 @@ function OrderDetailPage() {
                   <Label className="flex items-center gap-2">
                     <Checkbox
                       checked={watchDelivery("isPaid")}
-                      onCheckedChange={(checked: boolean) =>
-                        setDeliveryValue("isPaid", checked)
-                      }
+                      onCheckedChange={(checked: boolean) => setDeliveryValue("isPaid", checked)}
                     />
                     Оплата произведена
                   </Label>
@@ -1241,16 +1056,10 @@ function OrderDetailPage() {
                 </div>
 
                 <DialogFooter>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleCancelDelivery}
-                  >
+                  <Button type="button" variant="outline" onClick={handleCancelDelivery}>
                     Отмена
                   </Button>
-                  <Button type="submit">
-                    {editingDelivery ? "Сохранить" : "Добавить"}
-                  </Button>
+                  <Button type="submit">{editingDelivery ? "Сохранить" : "Добавить"}</Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -1268,17 +1077,13 @@ function OrderDetailPage() {
                     const userName = [
                       item.userLastName,
                       item.userFirstName && item.userFirstName.charAt(0) + ".",
-                      item.userMiddleName &&
-                        item.userMiddleName.charAt(0) + ".",
+                      item.userMiddleName && item.userMiddleName.charAt(0) + ".",
                     ]
                       .filter(Boolean)
                       .join(" ");
 
                     return (
-                      <div
-                        key={item.id}
-                        className="p-3 border rounded-md bg-muted/50"
-                      >
+                      <div key={item.id} className="p-3 border rounded-md bg-muted/50">
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-2">
                             <Badge
@@ -1292,19 +1097,12 @@ function OrderDetailPage() {
                             >
                               {item.action === "created" && "Создана"}
                               {item.action === "updated" && "Изменена"}
-                              {item.action === "status_changed" &&
-                                "Статус изменён"}
-                              {item.action === "payment_added" &&
-                                "Выплата добавлена"}
-                              {item.action === "payment_removed" &&
-                                "Выплата удалена"}
+                              {item.action === "status_changed" && "Статус изменён"}
+                              {item.action === "payment_added" && "Выплата добавлена"}
+                              {item.action === "payment_removed" && "Выплата удалена"}
                               {item.action === "deleted" && "Удалена"}
                             </Badge>
-                            {userName && (
-                              <span className="text-sm font-medium">
-                                {userName}
-                              </span>
-                            )}
+                            {userName && <span className="text-sm font-medium">{userName}</span>}
                           </div>
                           <span className="text-sm text-muted-foreground">
                             {new Date(item.createdAt).toLocaleString("ru-RU")}
@@ -1312,20 +1110,14 @@ function OrderDetailPage() {
                         </div>
                         {item.fieldName && (
                           <p className="text-sm">
-                            <span className="font-medium">
-                              {item.fieldName}:
-                            </span>{" "}
+                            <span className="font-medium">{item.fieldName}:</span>{" "}
                             {item.oldValue && (
                               <span className="text-muted-foreground line-through">
                                 {item.oldValue}
                               </span>
                             )}
                             {item.oldValue && item.newValue && " → "}
-                            {item.newValue && (
-                              <span className="font-medium">
-                                {item.newValue}
-                              </span>
-                            )}
+                            {item.newValue && <span className="font-medium">{item.newValue}</span>}
                           </p>
                         )}
                         {item.newValue && !item.fieldName && (

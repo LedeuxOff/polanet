@@ -4,9 +4,9 @@ import { DataTable } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ColumnDef } from "@tanstack/react-table";
-import { api } from "@/lib/api";
 import type { Order } from "@/lib/types";
 import { QuickCreateOrderButton } from "@/components/quick-create-order-button";
+import { ordersApi } from "@/lib/api";
 
 export const Route = createFileRoute("/orders/")({
   component: OrdersPage,
@@ -49,7 +49,7 @@ function OrdersPage() {
 
   const loadOrders = async () => {
     try {
-      const data = await api.orders.list();
+      const data = await ordersApi.list();
       setOrders(data);
     } catch (error) {
       console.error("Ошибка загрузки заявок:", error);
@@ -68,7 +68,7 @@ function OrdersPage() {
     }
 
     try {
-      await api.orders.delete(id);
+      await ordersApi.delete(id);
       setOrders(orders.filter((o) => o.id !== id));
     } catch (error) {
       alert("Ошибка при удалении: " + (error as Error).message);
@@ -84,8 +84,7 @@ function OrdersPage() {
     {
       accessorKey: "type",
       header: "Тип",
-      cell: ({ getValue }) =>
-        typeLabels[getValue<string>()] || getValue<string>(),
+      cell: ({ getValue }) => typeLabels[getValue<string>()] || getValue<string>(),
     },
     {
       accessorKey: "address",
@@ -129,9 +128,7 @@ function OrdersPage() {
           partial: "text-yellow-600",
         };
         return (
-          <span
-            className={`text-sm font-medium ${colors[status as keyof typeof colors] || ""}`}
-          >
+          <span className={`text-sm font-medium ${colors[status as keyof typeof colors] || ""}`}>
             {paymentStatusLabels[status] || status}
           </span>
         );
@@ -166,11 +163,7 @@ function OrdersPage() {
           >
             Открыть
           </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => handleDelete(row.original.id)}
-          >
+          <Button variant="destructive" size="sm" onClick={() => handleDelete(row.original.id)}>
             Удалить
           </Button>
         </div>
@@ -191,9 +184,7 @@ function OrdersPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Загрузка...
-            </div>
+            <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
           ) : (
             <DataTable columns={columns} data={orders} />
           )}

@@ -1,3 +1,5 @@
+import { Payment } from "./payment-types";
+
 export interface Order {
   id: number;
   type: "delivery" | "pickup";
@@ -27,16 +29,6 @@ export interface Order {
   isPaid?: boolean;
   paymentStatus?: "unpaid" | "paid" | "partial";
   history?: OrderHistory[];
-}
-
-export interface Payment {
-  id: number;
-  orderId: number;
-  deliveryId: number | null;
-  amount: number;
-  paymentDate: string;
-  type: "prepayment" | "transfer" | "delivery";
-  createdAt: string;
 }
 
 export interface OrderHistory {
@@ -69,41 +61,4 @@ export interface CreateOrderInput {
   status?: "new" | "in_progress" | "completed" | "cancelled" | "archived" | "draft";
   paymentType: "cash" | "bank_transfer";
   clientId?: number | null;
-}
-
-export interface CreatePaymentInput {
-  orderId: number;
-  deliveryId?: number | null;
-  amount: number;
-  paymentDate: string;
-  type: "prepayment" | "transfer" | "delivery";
-}
-
-export interface Delivery {
-  id: number;
-  orderId: number;
-  driverId: number;
-  carId: number;
-  dateTime: string;
-  cost: number;
-  volume: number | null;
-  comment: string | null;
-  isPaid: boolean;
-  isCashPayment: boolean;
-  isUnloadingBeforeUnloading: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateDeliveryInput {
-  orderId: number;
-  driverId: number;
-  carId: number;
-  dateTime: string;
-  cost: number;
-  volume?: number | null;
-  comment?: string;
-  isPaid?: boolean;
-  isCashPayment?: boolean;
-  isUnloadingBeforeUnloading?: boolean;
 }
