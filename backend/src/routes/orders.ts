@@ -400,7 +400,6 @@ router.post("/:id/payments", authenticate, async (req: AuthRequest, res) => {
       db.update(deliveries)
         .set({
           isPaid: true,
-          paymentId: Number(result.lastInsertRowid),
           updatedAt: now,
         })
         .where(eq(deliveries.id, data.deliveryId))
@@ -461,7 +460,7 @@ router.delete(
       // Если выплата связана с доставкой, помечаем доставку как неоплаченную
       if (payment.deliveryId) {
         db.update(deliveries)
-          .set({ isPaid: false, paymentId: null, updatedAt: now })
+          .set({ isPaid: false, updatedAt: now })
           .where(eq(deliveries.id, payment.deliveryId))
           .run();
       }

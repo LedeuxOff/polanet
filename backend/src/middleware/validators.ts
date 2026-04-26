@@ -301,6 +301,60 @@ export const updateDeliverySchema = z.object({
   isUnloadingBeforeUnloading: z.boolean().optional(),
 });
 
+// === Incomes (Доходы) Validators ===
+
+export const createIncomeSchema = z
+  .object({
+    // Вид дохода - предоплата | оплата доставки
+    incomeType: z.enum(["prepayment", "delivery_payment"], {
+      errorMap: () => ({ message: "Вид дохода обязателен" }),
+    }),
+    // Тип дохода - наличный расчет | безналичный расчет
+    paymentMethod: z.enum(["cash", "bank_transfer"], {
+      errorMap: () => ({ message: "Тип оплаты обязателен" }),
+    }),
+    // Оплата произведена - true или false
+    isPaid: z.boolean().optional().default(false),
+    // Айди заявки к которой привязан доход
+    orderId: z.number().int().positive("ID заявки обязателен"),
+    // Айди доставки (опционально, только для delivery_payment)
+    deliveryId: z.number().int().positive().optional().nullable(),
+    // Сумма дохода
+    amount: z.number().int().positive("Сумма должна быть положительной"),
+    // Дата оплаты
+    paymentDate: z.string().min(1, "Дата оплаты обязательна"),
+  })
+  .refine(
+    (data) => {
+      // Если вид дохода - оплата доставки, deliveryId обязателен
+      if (data.incomeType === "delivery_payment" && !data.deliveryId) {
+        return false;
+      }
+      return true;
+    },
+    {
+      message:
+        "Для вида дохода 'оплата доставки' необходимо указать deliveryId",
+      path: ["deliveryId"],
+    },
+  );
+
+export const updateIncomeSchema = z.object({
+  incomeType: z.enum(["prepayment", "delivery_payment"]).optional(),
+  paymentMethod: z.enum(["cash", "bank_transfer"]).optional(),
+  isPaid: z.boolean().optional(),
+  orderId: z.number().int().positive().optional(),
+  deliveryId: z.number().int().positive().optional().nullable(),
+  amount: z
+    .number()
+    .int()
+    .positive("Сумма должна быть положительной")
+    .optional(),
+  paymentDate: z.string().min(1, "Дата оплаты обязательна").optional(),
+});
+
+export type CreateIncomeInput = z.infer<typeof createIncomeSchema>;
+export type UpdateIncomeInput = z.infer<typeof updateIncomeSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
