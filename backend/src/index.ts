@@ -10,6 +10,7 @@ import driverRoutes from './routes/drivers.js'
 import clientRoutes from './routes/clients.js'
 import orderRoutes from './routes/orders.js'
 import transportCardRoutes from './routes/transportCards.js'
+import deliveryRoutes from './routes/deliveries.js'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -31,6 +32,7 @@ app.use('/api/drivers', driverRoutes)
 app.use('/api/clients', clientRoutes)
 app.use('/api/orders', orderRoutes)
 app.use('/api/transport-cards', transportCardRoutes)
+app.use('/api/deliveries', deliveryRoutes)
 
 app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на http://localhost:${PORT}`)

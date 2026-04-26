@@ -1,84 +1,108 @@
-import { createRootRoute, Outlet, Link, useNavigate, useLocation } from '@tanstack/react-router'
-import { SidebarProvider, Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar'
-import { Button } from '@/components/ui/button'
-import { useAuth } from '@/lib/auth-context'
-import React from 'react'
-import { Home, Users, LogOut, Car, User, Shield, Building, ClipboardList, CreditCard } from 'lucide-react'
+import { createRootRoute, Outlet, Link, useNavigate, useLocation } from "@tanstack/react-router";
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarHeader,
+  SidebarFooter,
+  SidebarTrigger,
+  SidebarInset,
+} from "@/components/ui/sidebar";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/contexts/auth-context";
+import React from "react";
+import {
+  Home,
+  Users,
+  LogOut,
+  Car,
+  User,
+  Shield,
+  Building,
+  ClipboardList,
+  CreditCard,
+} from "lucide-react";
 
 export const Route = createRootRoute({
   component: RootLayout,
-})
+});
 
 const menuItems = [
   {
-    title: 'Главная',
-    url: '/',
+    title: "Главная",
+    url: "/",
     icon: Home,
   },
   {
-    title: 'Пользователи',
-    url: '/users',
+    title: "Пользователи",
+    url: "/users",
     icon: Users,
   },
   {
-    title: 'Заявки',
-    url: '/orders',
+    title: "Заявки",
+    url: "/orders",
     icon: ClipboardList,
   },
   {
-    title: 'Автомобили',
-    url: '/cars',
+    title: "Автомобили",
+    url: "/cars",
     icon: Car,
   },
   {
-    title: 'Водители',
-    url: '/drivers',
+    title: "Водители",
+    url: "/drivers",
     icon: User,
   },
   {
-    title: 'Клиенты',
-    url: '/clients',
+    title: "Клиенты",
+    url: "/clients",
     icon: Building,
   },
   {
-    title: 'Транспортные карты',
-    url: '/transport-cards',
+    title: "Транспортные карты",
+    url: "/transport-cards",
     icon: CreditCard,
   },
   {
-    title: 'Роли',
-    url: '/roles',
+    title: "Роли",
+    url: "/roles",
     icon: Shield,
   },
-]
+];
 
 function RootLayout() {
-  const { isAuthenticated, logout, user, isLoading } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const { isAuthenticated, logout, user, isLoading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const isLoginPage = location.pathname === '/login'
+  const isLoginPage = location.pathname === "/login";
 
   React.useEffect(() => {
     if (!isLoading && !isAuthenticated && !isLoginPage) {
       navigate({
-        to: '/login',
+        to: "/login",
         search: { redirect: location.href },
         replace: true,
-      })
+      });
     }
-    
+
     if (isAuthenticated && isLoginPage) {
-      navigate({ to: '/' })
+      navigate({ to: "/" });
     }
-  }, [isAuthenticated, isLoginPage, navigate, location.href, isLoading])
+  }, [isAuthenticated, isLoginPage, navigate, location.href, isLoading]);
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-muted-foreground">Загрузка...</div>
       </div>
-    )
+    );
   }
 
   if (!isAuthenticated && isLoginPage) {
@@ -86,7 +110,7 @@ function RootLayout() {
       <div className="min-h-screen bg-background">
         <Outlet />
       </div>
-    )
+    );
   }
 
   if (!isAuthenticated && !isLoginPage) {
@@ -94,12 +118,12 @@ function RootLayout() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-muted-foreground">Перенаправление...</div>
       </div>
-    )
+    );
   }
 
   if (isAuthenticated && isLoginPage) {
-    navigate({ to: '/' })
-    return null
+    navigate({ to: "/" });
+    return null;
   }
 
   return (
@@ -115,10 +139,7 @@ function RootLayout() {
               <SidebarMenu>
                 {menuItems.map((item) => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={location.pathname === item.url}
-                    >
+                    <SidebarMenuButton asChild isActive={location.pathname === item.url}>
                       <Link to={item.url}>
                         <item.icon className="h-4 w-4" />
                         <span>{item.title}</span>
@@ -139,9 +160,7 @@ function RootLayout() {
                     <p className="text-sm font-medium truncate">
                       {user?.firstName} {user?.lastName}
                     </p>
-                    <p className="text-xs text-muted-foreground truncate">
-                      {user?.email}
-                    </p>
+                    <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                   </div>
                 </div>
               </SidebarMenuButton>
@@ -149,8 +168,8 @@ function RootLayout() {
             <SidebarMenuItem>
               <SidebarMenuButton
                 onClick={() => {
-                  logout()
-                  navigate({ to: '/login' })
+                  logout();
+                  navigate({ to: "/login" });
                 }}
               >
                 <LogOut className="h-4 w-4" />
@@ -169,5 +188,5 @@ function RootLayout() {
         </main>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
