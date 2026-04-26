@@ -1,7 +1,6 @@
-import { Driver, TransportCard } from "@/lib/types";
+import { Driver, DriverForm, driverSchema, TransportCard } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { DriverForm, driverSchema } from "./types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { driversApi, transportCardsApi } from "@/lib/api/index";
 import { useNavigate, useParams } from "@tanstack/react-router";

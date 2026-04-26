@@ -1,3 +1,4 @@
+import z from "zod";
 import { TransportCard } from "./transport-card-types";
 
 export interface Driver {
@@ -17,3 +18,21 @@ export interface CreateDriverInput {
   middleName?: string;
   phone?: string;
 }
+
+export const driverSchema = z.object({
+  lastName: z.string().min(1, "Фамилия обязательна").optional(),
+  firstName: z.string().min(1, "Имя обязательно").optional(),
+  middleName: z.string().optional(),
+  phone: z.string().optional(),
+});
+
+export type DriverForm = z.infer<typeof driverSchema>;
+
+export const newDriverSchema = z.object({
+  lastName: z.string().min(1, "Фамилия обязательна"),
+  firstName: z.string().min(1, "Имя обязательно"),
+  middleName: z.string().optional(),
+  phone: z.string().optional(),
+});
+
+export type NewDriverForm = z.infer<typeof newDriverSchema>;
