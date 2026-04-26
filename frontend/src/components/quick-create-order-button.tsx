@@ -17,9 +17,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { api } from "@/lib/api";
 import type { Client } from "@/lib/types";
 import { useNavigate } from "@tanstack/react-router";
+import { clientsApi, ordersApi } from "@/lib/api";
 
 export function QuickCreateOrderButton() {
   const navigate = useNavigate();
@@ -33,7 +33,7 @@ export function QuickCreateOrderButton() {
 
   const loadClients = async () => {
     try {
-      const data = await api.clients.list();
+      const data = await clientsApi.list();
       setClients(data);
     } catch (error) {
       console.error("Ошибка загрузки клиентов:", error);
@@ -51,7 +51,7 @@ export function QuickCreateOrderButton() {
     setIsLoading(true);
 
     try {
-      const newOrder = await api.orders.quickCreate({
+      const newOrder = await ordersApi.quickCreate({
         clientId: Number(formData.clientId),
         cost: Number(formData.cost),
       });
@@ -87,9 +87,7 @@ export function QuickCreateOrderButton() {
             <Label htmlFor="client">Клиент</Label>
             <Select
               value={formData.clientId}
-              onValueChange={(value) =>
-                setFormData({ ...formData, clientId: value })
-              }
+              onValueChange={(value) => setFormData({ ...formData, clientId: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Выберите клиента" />
@@ -112,25 +110,16 @@ export function QuickCreateOrderButton() {
               type="number"
               placeholder="0"
               value={formData.cost}
-              onChange={(e) =>
-                setFormData({ ...formData, cost: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
               required
               min="0"
             />
           </div>
           <div className="flex justify-end gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setOpen(false)}
-            >
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Отмена
             </Button>
-            <Button
-              type="submit"
-              disabled={isLoading || !formData.clientId || !formData.cost}
-            >
+            <Button type="submit" disabled={isLoading || !formData.clientId || !formData.cost}>
               {isLoading ? "Создание..." : "Создать"}
             </Button>
           </div>

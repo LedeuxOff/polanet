@@ -1,3 +1,4 @@
+import z from "zod";
 import { Driver } from "./driver-types";
 
 export interface TransportCardHistory {
@@ -44,3 +45,17 @@ export interface CreateTransportCardExpenseInput {
   amount: number;
   paymentDate: string;
 }
+
+export const transportCardSchema = z.object({
+  cardNumber: z.string().min(1, "Номер карты обязателен").optional(),
+  driverId: z.coerce.number().optional().nullable(),
+});
+
+export type TransportCardForm = z.infer<typeof transportCardSchema>;
+
+export const newTransportCardSchema = z.object({
+  cardNumber: z.string().min(1, "Номер карты обязателен"),
+  driverId: z.coerce.number().optional().nullable(),
+});
+
+export type NewTransportCardForm = z.infer<typeof newTransportCardSchema>;
