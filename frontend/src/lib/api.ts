@@ -1,14 +1,38 @@
-import type { LoginInput, RegisterInput, User, Role, AuthTokens, CreateCarInput, Car, CreateDriverInput, Driver, CreateClientInput, Client, CreateOrderInput, Order, CreatePaymentInput, Payment, OrderHistory, CreateTransportCardInput, TransportCard, CreateTransportCardExpenseInput, TransportCardExpense, TransportCardHistory } from './types'
+import type {
+  LoginInput,
+  RegisterInput,
+  User,
+  Role,
+  AuthTokens,
+  CreateCarInput,
+  Car,
+  CreateDriverInput,
+  Driver,
+  CreateClientInput,
+  Client,
+  CreateOrderInput,
+  Order,
+  CreatePaymentInput,
+  Payment,
+  OrderHistory,
+  CreateTransportCardInput,
+  TransportCard,
+  CreateTransportCardExpenseInput,
+  TransportCardExpense,
+  TransportCardHistory,
+  CreateDeliveryInput,
+  Delivery,
+} from "./types";
 
-const API_BASE = '/api'
+const API_BASE = "/api";
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const token = localStorage.getItem('token')
-  
+  const token = localStorage.getItem("token");
+
   const headers: HeadersInit = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
     ...(token && { Authorization: `Bearer ${token}` }),
-  }
+  };
 
   const response = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
@@ -16,151 +40,240 @@ async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
       ...headers,
       ...options?.headers,
     },
-  })
+  });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Ошибка запроса' }))
-    throw new Error(error.error || 'Произошла ошибка')
+    const error = await response
+      .json()
+      .catch(() => ({ error: "Ошибка запроса" }));
+    throw new Error(error.error || "Произошла ошибка");
   }
 
   if (response.status === 204) {
-    return undefined as T
+    return undefined as T;
   }
 
-  return response.json()
+  return response.json();
 }
 
 export const api = {
   // Аутентификация
   auth: {
-    login: (data: LoginInput) => request<AuthTokens>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-    register: (data: RegisterInput) => request<AuthTokens>('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-    me: () => request<User>('/auth/me'),
-    logout: () => request('/auth/logout', { method: 'POST' }),
+    login: (data: LoginInput) =>
+      request<AuthTokens>("/auth/login", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    register: (data: RegisterInput) =>
+      request<AuthTokens>("/auth/register", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    me: () => request<User>("/auth/me"),
+    logout: () => request("/auth/logout", { method: "POST" }),
   },
 
   // Пользователи
   users: {
-    list: () => request<User[]>('/users'),
+    list: () => request<User[]>("/users"),
     get: (id: number) => request<User>(`/users/${id}`),
-    create: (data: RegisterInput) => request<User>('/users', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-    update: (id: number, data: Partial<RegisterInput>) => request<User>(`/users/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
-    delete: (id: number) => request(`/users/${id}`, { method: 'DELETE' }),
+    create: (data: RegisterInput) =>
+      request<User>("/users", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    update: (id: number, data: Partial<RegisterInput>) =>
+      request<User>(`/users/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    delete: (id: number) => request(`/users/${id}`, { method: "DELETE" }),
   },
 
   // Роли
   roles: {
-    list: () => request<Role[]>('/roles'),
+    list: () => request<Role[]>("/roles"),
     get: (id: number) => request<Role>(`/roles/${id}`),
-    create: (data: { code: string; name: string }) => request<Role>('/roles', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-    update: (id: number, data: { code?: string; name?: string }) => request<Role>(`/roles/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
-    delete: (id: number) => request(`/roles/${id}`, { method: 'DELETE' }),
+    create: (data: { code: string; name: string }) =>
+      request<Role>("/roles", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    update: (id: number, data: { code?: string; name?: string }) =>
+      request<Role>(`/roles/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    delete: (id: number) => request(`/roles/${id}`, { method: "DELETE" }),
   },
 
   // Автомобили
   cars: {
-    list: () => request<Car[]>('/cars'),
+    list: () => request<Car[]>("/cars"),
     get: (id: number) => request<Car>(`/cars/${id}`),
-    create: (data: CreateCarInput) => request<Car>('/cars', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-    update: (id: number, data: Partial<CreateCarInput>) => request<Car>(`/cars/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
-    delete: (id: number) => request(`/cars/${id}`, { method: 'DELETE' }),
+    create: (data: CreateCarInput) =>
+      request<Car>("/cars", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    update: (id: number, data: Partial<CreateCarInput>) =>
+      request<Car>(`/cars/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    delete: (id: number) => request(`/cars/${id}`, { method: "DELETE" }),
   },
 
   // Водители
   drivers: {
-    list: () => request<Driver[]>('/drivers'),
+    list: () => request<Driver[]>("/drivers"),
     get: (id: number) => request<Driver>(`/drivers/${id}`),
-    create: (data: CreateDriverInput) => request<Driver>('/drivers', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-    update: (id: number, data: Partial<CreateDriverInput>) => request<Driver>(`/drivers/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
-    delete: (id: number) => request(`/drivers/${id}`, { method: 'DELETE' }),
+    create: (data: CreateDriverInput) =>
+      request<Driver>("/drivers", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    update: (id: number, data: Partial<CreateDriverInput>) =>
+      request<Driver>(`/drivers/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    delete: (id: number) => request(`/drivers/${id}`, { method: "DELETE" }),
   },
 
   // Клиенты
   clients: {
-    list: () => request<Client[]>('/clients'),
+    list: () => request<Client[]>("/clients"),
     get: (id: number) => request<Client>(`/clients/${id}`),
-    create: (data: CreateClientInput) => request<Client>('/clients', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-    update: (id: number, data: Partial<CreateClientInput>) => request<Client>(`/clients/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
-    delete: (id: number) => request(`/clients/${id}`, { method: 'DELETE' }),
+    create: (data: CreateClientInput) =>
+      request<Client>("/clients", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    update: (id: number, data: Partial<CreateClientInput>) =>
+      request<Client>(`/clients/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    delete: (id: number) => request(`/clients/${id}`, { method: "DELETE" }),
   },
 
   // Заявки
   orders: {
-    list: () => request<(Order & { payments: Payment[]; totalPaid: number; debt: number; isPaid: boolean; paymentStatus: 'unpaid' | 'paid' | 'partial' })[]>('/orders'),
-    get: (id: number) => request<Order & { payments: Payment[]; totalPaid: number; debt: number; isPaid: boolean; paymentStatus: 'unpaid' | 'paid' | 'partial'; history: OrderHistory[] }>(`/orders/${id}`),
-    create: (data: CreateOrderInput) => request<Order>('/orders', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-    update: (id: number, data: Partial<CreateOrderInput>) => request<Order>(`/orders/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
-    delete: (id: number) => request(`/orders/${id}`, { method: 'DELETE' }),
+    list: () =>
+      request<
+        (Order & {
+          payments: Payment[];
+          received: number;
+          completed: number;
+          customerDebt: number;
+          companyDebt: number;
+          isPaid: boolean;
+          paymentStatus: "unpaid" | "paid" | "partial";
+        })[]
+      >("/orders"),
+    get: (id: number) =>
+      request<
+        Order & {
+          payments: Payment[];
+          received: number;
+          completed: number;
+          customerDebt: number;
+          companyDebt: number;
+          isPaid: boolean;
+          paymentStatus: "unpaid" | "paid" | "partial";
+          history: OrderHistory[];
+        }
+      >(`/orders/${id}`),
+    create: (data: CreateOrderInput) =>
+      request<Order>("/orders", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    quickCreate: (data: { clientId: number; cost: number }) =>
+      request<Order>("/orders/quick", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    update: (id: number, data: Partial<CreateOrderInput>) =>
+      request<Order>(`/orders/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    delete: (id: number) => request(`/orders/${id}`, { method: "DELETE" }),
     // Выплаты
-    addPayment: (orderId: number, data: CreatePaymentInput) => request<Payment>(`/orders/${orderId}/payments`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-    removePayment: (orderId: number, paymentId: number) => request(`/orders/${orderId}/payments/${paymentId}`, { method: 'DELETE' }),
+    addPayment: (orderId: number, data: CreatePaymentInput) =>
+      request<Payment>(`/orders/${orderId}/payments`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    removePayment: (orderId: number, paymentId: number) =>
+      request(`/orders/${orderId}/payments/${paymentId}`, { method: "DELETE" }),
     // История
-    getHistory: (orderId: number) => request<OrderHistory[]>(`/orders/${orderId}/history`),
+    getHistory: (orderId: number) =>
+      request<OrderHistory[]>(`/orders/${orderId}/history`),
   },
 
   // Транспортные карты
   transportCards: {
-    list: () => request<(TransportCard & { expenses: TransportCardExpense[]; totalExpenses: number })[]>('/transport-cards'),
-    get: (id: number) => request<TransportCard & { expenses: TransportCardExpense[]; totalExpenses: number; history: TransportCardHistory[] }>(`/transport-cards/${id}`),
-    create: (data: CreateTransportCardInput) => request<TransportCard>('/transport-cards', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-    update: (id: number, data: Partial<CreateTransportCardInput>) => request<TransportCard>(`/transport-cards/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    }),
-    delete: (id: number) => request(`/transport-cards/${id}`, { method: 'DELETE' }),
+    list: () =>
+      request<
+        (TransportCard & {
+          expenses: TransportCardExpense[];
+          totalExpenses: number;
+        })[]
+      >("/transport-cards"),
+    get: (id: number) =>
+      request<
+        TransportCard & {
+          expenses: TransportCardExpense[];
+          totalExpenses: number;
+          history: TransportCardHistory[];
+        }
+      >(`/transport-cards/${id}`),
+    create: (data: CreateTransportCardInput) =>
+      request<TransportCard>("/transport-cards", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    update: (id: number, data: Partial<CreateTransportCardInput>) =>
+      request<TransportCard>(`/transport-cards/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    delete: (id: number) =>
+      request(`/transport-cards/${id}`, { method: "DELETE" }),
     // Расходы
-    addExpense: (cardId: number, data: CreateTransportCardExpenseInput) => request<TransportCardExpense>(`/transport-cards/${cardId}/expenses`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    }),
-    removeExpense: (cardId: number, expenseId: number) => request(`/transport-cards/${cardId}/expenses/${expenseId}`, { method: 'DELETE' }),
+    addExpense: (cardId: number, data: CreateTransportCardExpenseInput) =>
+      request<TransportCardExpense>(`/transport-cards/${cardId}/expenses`, {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    removeExpense: (cardId: number, expenseId: number) =>
+      request(`/transport-cards/${cardId}/expenses/${expenseId}`, {
+        method: "DELETE",
+      }),
   },
-}
+
+  // Доставки
+  deliveries: {
+    list: (orderId: number) =>
+      request<Delivery[]>(`/deliveries/order/${orderId}`),
+    get: (id: number) => request<Delivery>(`/deliveries/${id}`),
+    create: (data: CreateDeliveryInput) =>
+      request<Delivery>("/deliveries", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    update: (id: number, data: Partial<CreateDeliveryInput>) =>
+      request<Delivery>(`/deliveries/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }),
+    delete: (id: number) => request(`/deliveries/${id}`, { method: "DELETE" }),
+    pay: (id: number) =>
+      request<Delivery>(`/deliveries/${id}/pay`, {
+        method: "POST",
+      }),
+  },
+};

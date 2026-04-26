@@ -94,10 +94,32 @@ export const orders = sqliteTable('orders', {
   paymentType: text('payment_type', { enum: ['cash', 'bank_transfer'] }).notNull(),
   // Связи
   clientId: integer('client_id').references(() => clients.id),
-  driverId: integer('driver_id').references(() => drivers.id),
-  carId: integer('car_id').references(() => cars.id),
   // Аудит
   createdById: integer('created_by_id').references(() => users.id),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+})
+
+export const deliveries = sqliteTable('deliveries', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  orderId: integer('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
+  paymentId: integer('payment_id').references(() => payments.id, { onDelete: 'set null' }),
+  // Водитель и автомобиль
+  driverId: integer('driver_id').notNull().references(() => drivers.id),
+  carId: integer('car_id').notNull().references(() => cars.id),
+  // Дата и время доставки
+  dateTime: text('date_time').notNull(),
+  // Стоимость доставки
+  cost: integer('cost').notNull(),
+  // Объем груза (м³)
+  volume: integer('volume'),
+  // Комментарий
+  comment: text('comment'),
+  // Оплата
+  isPaid: integer('is_paid', { mode: 'boolean' }).notNull().default(false),
+  isCashPayment: integer('is_cash_payment', { mode: 'boolean' }).notNull().default(false),
+  isUnloadingBeforeUnloading: integer('is_unloading_before_unloading', { mode: 'boolean' }).notNull().default(false),
+  // Аудит
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 })
@@ -105,8 +127,10 @@ export const orders = sqliteTable('orders', {
 export const payments = sqliteTable('payments', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   orderId: integer('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
+  deliveryId: integer('delivery_id').references(() => deliveries.id, { onDelete: 'set null' }),
   amount: integer('amount').notNull(),
   paymentDate: text('payment_date').notNull(),
+  type: text('type', { enum: ['prepayment', 'transfer', 'delivery'] }).notNull().default('transfer'),
   createdAt: text('created_at').notNull(),
 })
 
@@ -148,20 +172,28 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
     fields: [orders.clientId],
     references: [clients.id],
   }),
-  driver: one(drivers, {
-    fields: [orders.driverId],
-    references: [drivers.id],
-  }),
-  car: one(cars, {
-    fields: [orders.carId],
-    references: [cars.id],
-  }),
   createdBy: one(users, {
     fields: [orders.createdById],
     references: [users.id],
   }),
   payments: many(payments),
   history: many(orderHistory),
+  deliveries: many(deliveries),
+}))
+
+export const deliveriesRelations = relations(deliveries, ({ one }) => ({
+  order: one(orders, {
+    fields: [deliveries.orderId],
+    references: [orders.id],
+  }),
+  driver: one(drivers, {
+    fields: [deliveries.driverId],
+    references: [drivers.id],
+  }),
+  car: one(cars, {
+    fields: [deliveries.carId],
+    references: [cars.id],
+  }),
 }))
 
 export const paymentsRelations = relations(payments, ({ one }) => ({
@@ -267,3 +299,5 @@ export type TransportCardExpense = typeof transportCardExpenses.$inferSelect
 export type NewTransportCardExpense = typeof transportCardExpenses.$inferInsert
 export type TransportCardHistory = typeof transportCardHistory.$inferSelect
 export type NewTransportCardHistory = typeof transportCardHistory.$inferInsert
+export type Delivery = typeof deliveries.$inferSelect
+export type NewDelivery = typeof deliveries.$inferInsert

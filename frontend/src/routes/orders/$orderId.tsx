@@ -21,14 +21,24 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { api } from "@/lib/api";
 import type {
   Order,
   Client,
-  Driver,
-  Car,
   Payment,
   OrderHistory,
+  Delivery,
+  CreateDeliveryInput,
+  CreatePaymentInput,
 } from "@/lib/types";
 
 const orderSchema = z.object({
@@ -54,11 +64,32 @@ const orderSchema = z.object({
   ]),
   paymentType: z.enum(["cash", "bank_transfer"]),
   clientId: z.coerce.number().optional().nullable(),
-  driverId: z.coerce.number().optional().nullable(),
-  carId: z.coerce.number().optional().nullable(),
 });
 
 type OrderForm = z.infer<typeof orderSchema>;
+
+const deliverySchema = z.object({
+  driverId: z.coerce.number().positive("Водитель обязателен"),
+  carId: z.coerce.number().positive("Автомобиль обязателен"),
+  dateTime: z.string().min(1, "Дата и время обязательны"),
+  cost: z.coerce.number().int().positive("Стоимость должна быть положительной"),
+  volume: z.coerce.number().optional().nullable(),
+  comment: z.string().optional(),
+  isPaid: z.boolean().default(false),
+  isCashPayment: z.boolean().default(false),
+  isUnloadingBeforeUnloading: z.boolean().default(false),
+});
+
+type DeliveryForm = z.infer<typeof deliverySchema>;
+
+const paymentSchema = z.object({
+  amount: z.coerce.number().int().positive("Сумма должна быть положительной"),
+  paymentDate: z.string().min(1, "Дата обязательна"),
+  type: z.enum(["prepayment", "transfer", "delivery"]),
+  deliveryId: z.coerce.number().optional().nullable(),
+});
+
+type PaymentForm = z.infer<typeof paymentSchema>;
 
 export const Route = createFileRoute("/orders/$orderId")({
   component: OrderDetailPage,
@@ -84,25 +115,45 @@ const typeLabels: Record<string, string> = {
   pickup: "Вывоз",
 };
 
+const paymentTypeLabels: Record<string, string> = {
+  prepayment: "Предоплата",
+  transfer: "Перевод средств",
+  delivery: "Доставка",
+};
+
 function OrderDetailPage() {
   const { orderId } = useParams({ from: "/orders/$orderId" });
   const navigate = useNavigate();
+  const isNewOrder = orderId === "new";
 
   const [order, setOrder] = React.useState<Order | null>(null);
   const [clients, setClients] = React.useState<Client[]>([]);
   const [drivers, setDrivers] = React.useState<Driver[]>([]);
   const [cars, setCars] = React.useState<Car[]>([]);
+  const [deliveries, setDeliveries] = React.useState<Delivery[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
 
   // Выплаты
+  const [showPaymentDialog, setShowPaymentDialog] = React.useState(false);
   const [paymentAmount, setPaymentAmount] = React.useState("");
   const [paymentDate, setPaymentDate] = React.useState(
     new Date().toISOString().split("T")[0],
   );
+  const [paymentType, setPaymentType] = React.useState<
+    "prepayment" | "transfer" | "delivery"
+  >("transfer");
+  const [selectedDeliveryId, setSelectedDeliveryId] =
+    React.useState<string>("");
   const [isAddingPayment, setIsAddingPayment] = React.useState(false);
+
+  // Доставка
+  const [showDeliveryDialog, setShowDeliveryDialog] = React.useState(false);
+  const [editingDelivery, setEditingDelivery] = React.useState<Delivery | null>(
+    null,
+  );
 
   const {
     register,
@@ -114,6 +165,31 @@ function OrderDetailPage() {
     resolver: zodResolver(orderSchema),
   });
 
+  const {
+    register: registerDelivery,
+    handleSubmit: handleDeliverySubmit,
+    formState: { errors: deliveryErrors },
+    reset: resetDelivery,
+    watch: watchDelivery,
+    setValue: setDeliveryValue,
+  } = useForm<DeliveryForm>({
+    resolver: zodResolver(deliverySchema),
+  });
+
+  const {
+    register: registerPayment,
+    handleSubmit: handlePaymentSubmit,
+    formState: { errors: paymentErrors },
+    reset: resetPayment,
+    watch: watchPayment,
+    setValue: setPaymentValue,
+  } = useForm<PaymentForm>({
+    resolver: zodResolver(paymentSchema),
+    defaultValues: {
+      type: "transfer",
+    },
+  });
+
   React.useEffect(() => {
     Promise.all([
       api.clients.list().then(setClients).catch(console.error),
@@ -121,37 +197,51 @@ function OrderDetailPage() {
       api.cars.list().then(setCars).catch(console.error),
     ]).catch(console.error);
 
-    api.orders
-      .get(Number(orderId))
-      .then((data) => {
-        setOrder(data);
-        setValue("type", data.type);
-        setValue("address", data.address);
-        setValue("cost", data.cost);
-        setValue("payerLastName", data.payerLastName);
-        setValue("payerFirstName", data.payerFirstName);
-        setValue("payerMiddleName", data.payerMiddleName || "");
-        setValue("receiverLastName", data.receiverLastName);
-        setValue("receiverFirstName", data.receiverFirstName);
-        setValue("receiverMiddleName", data.receiverMiddleName || "");
-        setValue("dateTime", data.dateTime);
-        setValue("hasPass", data.hasPass);
-        setValue("addressComment", data.addressComment || "");
-        setValue("status", data.status);
-        setValue("paymentType", data.paymentType);
-        setValue("clientId", data.clientId);
-        setValue("driverId", data.driverId);
-        setValue("carId", data.carId);
-      })
-      .catch(console.error)
-      .finally(() => setIsLoading(false));
-  }, [orderId, setValue]);
+    if (!isNewOrder) {
+      api.orders
+        .get(Number(orderId))
+        .then((data) => {
+          setOrder(data);
+          setValue("type", data.type);
+          setValue("address", data.address);
+          setValue("cost", data.cost);
+          setValue("payerLastName", data.payerLastName);
+          setValue("payerFirstName", data.payerFirstName);
+          setValue("payerMiddleName", data.payerMiddleName || "");
+          setValue("receiverLastName", data.receiverLastName);
+          setValue("receiverFirstName", data.receiverFirstName);
+          setValue("receiverMiddleName", data.receiverMiddleName || "");
+          setValue("dateTime", data.dateTime);
+          setValue("hasPass", data.hasPass);
+          setValue("addressComment", data.addressComment || "");
+          setValue("status", data.status);
+          setValue("paymentType", data.paymentType);
+          setValue("clientId", data.clientId);
+        })
+        .catch(console.error)
+        .finally(() => setIsLoading(false));
+
+      // Загружаем доставки
+      api.deliveries
+        .list(Number(orderId))
+        .then(setDeliveries)
+        .catch(console.error);
+    } else {
+      setIsLoading(false);
+      setValue("status", "draft");
+      setValue("hasPass", false);
+    }
+  }, [orderId, isNewOrder, setValue]);
 
   const onSubmit = async (data: OrderForm) => {
     setError(null);
     setIsSubmitting(true);
     try {
-      await api.orders.update(Number(orderId), data);
+      if (isNewOrder) {
+        await api.orders.create(data);
+      } else {
+        await api.orders.update(Number(orderId), data);
+      }
       navigate({ to: "/orders" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка при сохранении");
@@ -176,20 +266,24 @@ function OrderDetailPage() {
     }
   };
 
-  const handleAddPayment = async () => {
-    if (!paymentAmount || !paymentDate) {
-      setError("Укажите сумму и дату выплаты");
-      return;
-    }
-
+  const handleAddPayment = async (data: PaymentForm) => {
+    setError(null);
     setIsAddingPayment(true);
     try {
-      await api.orders.addPayment(Number(orderId), {
+      const paymentData: CreatePaymentInput = {
         orderId: Number(orderId),
-        amount: Number(paymentAmount),
-        paymentDate,
-      });
+        amount: data.amount,
+        paymentDate: data.paymentDate,
+        type: data.type,
+        deliveryId: data.type === "delivery" ? data.deliveryId : null,
+      };
+      await api.orders.addPayment(Number(orderId), paymentData);
+      setShowPaymentDialog(false);
+      resetPayment();
       setPaymentAmount("");
+      setPaymentDate(new Date().toISOString().split("T")[0]);
+      setPaymentType("transfer");
+      setSelectedDeliveryId("");
       // Обновляем данные заявки
       const updated = await api.orders.get(Number(orderId));
       setOrder(updated);
@@ -209,7 +303,6 @@ function OrderDetailPage() {
 
     try {
       await api.orders.removePayment(Number(orderId), paymentId);
-      // Обновляем данные заявки
       const updated = await api.orders.get(Number(orderId));
       setOrder(updated);
     } catch (err) {
@@ -217,6 +310,97 @@ function OrderDetailPage() {
         err instanceof Error ? err.message : "Ошибка при удалении выплаты",
       );
     }
+  };
+
+  const openPaymentDialog = () => {
+    setShowPaymentDialog(true);
+    resetPayment();
+  };
+
+  // Доставки
+  const handleSaveDelivery = async (data: DeliveryForm) => {
+    setError(null);
+    try {
+      if (editingDelivery) {
+        await api.deliveries.update(editingDelivery.id, data);
+      } else {
+        await api.deliveries.create({ ...data, orderId: Number(orderId) });
+      }
+      setShowDeliveryDialog(false);
+      setEditingDelivery(null);
+      resetDelivery();
+      // Обновляем список доставок
+      const updatedDeliveries = await api.deliveries.list(Number(orderId));
+      setDeliveries(updatedDeliveries);
+      // Обновляем заявку для пересчета долгов
+      const updated = await api.orders.get(Number(orderId));
+      setOrder(updated);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Ошибка при сохранении доставки",
+      );
+    }
+  };
+
+  const handleEditDelivery = (delivery: Delivery) => {
+    setEditingDelivery(delivery);
+    setShowDeliveryDialog(true);
+    resetDelivery({
+      driverId: delivery.driverId,
+      carId: delivery.carId,
+      dateTime: delivery.dateTime,
+      cost: delivery.cost,
+      volume: delivery.volume || undefined,
+      comment: delivery.comment || undefined,
+      isPaid: delivery.isPaid,
+      isCashPayment: delivery.isCashPayment,
+      isUnloadingBeforeUnloading: delivery.isUnloadingBeforeUnloading,
+    });
+  };
+
+  const handleDeleteDelivery = async (deliveryId: number) => {
+    if (!confirm("Удалить эту доставку?")) {
+      return;
+    }
+
+    try {
+      await api.deliveries.delete(deliveryId);
+      const updatedDeliveries = await api.deliveries.list(Number(orderId));
+      setDeliveries(updatedDeliveries);
+      // Обновляем заявку для пересчета долгов
+      const updated = await api.orders.get(Number(orderId));
+      setOrder(updated);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Ошибка при удалении доставки",
+      );
+    }
+  };
+
+  const handleMarkAsPaid = async (deliveryId: number) => {
+    try {
+      await api.deliveries.pay(deliveryId);
+      const updatedDeliveries = await api.deliveries.list(Number(orderId));
+      setDeliveries(updatedDeliveries);
+      // Обновляем заявку
+      const updated = await api.orders.get(Number(orderId));
+      setOrder(updated);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Ошибка при отметке оплаты",
+      );
+    }
+  };
+
+  const handleCancelDelivery = () => {
+    setShowDeliveryDialog(false);
+    setEditingDelivery(null);
+    resetDelivery();
+  };
+
+  const handleCancelPayment = () => {
+    setShowPaymentDialog(false);
+    resetPayment();
   };
 
   if (isLoading) {
@@ -229,30 +413,36 @@ function OrderDetailPage() {
     );
   }
 
-  const totalPaid = order?.totalPaid || 0;
-  const debt = order?.debt || (order?.cost || 0) - totalPaid;
+  const received = order?.received || 0;
+  const completed = order?.completed || 0;
+  const customerDebt = order?.customerDebt || 0;
+  const companyDebt = order?.companyDebt || 0;
 
   return (
     <div className="space-y-6">
-      {/* Основная форма */}
+      {/* Основная форма заявки */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Заявка #{orderId}</CardTitle>
-              {order && (
+              <CardTitle>
+                {isNewOrder ? "Новая заявка" : `Заявка #${orderId}`}
+              </CardTitle>
+              {order && !isNewOrder && (
                 <p className="text-sm text-muted-foreground mt-1">
                   {typeLabels[order.type]} • {order.address}
                 </p>
               )}
             </div>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? "Удаление..." : "Удалить"}
-            </Button>
+            {!isNewOrder && (
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? "Удаление..." : "Удалить"}
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent>
@@ -269,7 +459,9 @@ function OrderDetailPage() {
                 <Label htmlFor="type">Тип заявки *</Label>
                 <Select
                   value={watch("type")}
-                  onValueChange={(value: 'delivery' | 'pickup') => setValue("type", value)}
+                  onValueChange={(value: "delivery" | "pickup") =>
+                    setValue("type", value)
+                  }
                 >
                   <SelectTrigger disabled={isSubmitting}>
                     <SelectValue placeholder="Выберите тип" />
@@ -290,7 +482,15 @@ function OrderDetailPage() {
                 <Label htmlFor="status">Статус *</Label>
                 <Select
                   value={watch("status")}
-                  onValueChange={(value: 'new' | 'in_progress' | 'completed' | 'cancelled' | 'archived' | 'draft') => setValue("status", value)}
+                  onValueChange={(
+                    value:
+                      | "new"
+                      | "in_progress"
+                      | "completed"
+                      | "cancelled"
+                      | "archived"
+                      | "draft",
+                  ) => setValue("status", value)}
                 >
                   <SelectTrigger disabled={isSubmitting}>
                     <SelectValue placeholder="Выберите статус" />
@@ -452,7 +652,9 @@ function OrderDetailPage() {
                 <Label htmlFor="paymentType">Тип оплаты *</Label>
                 <Select
                   value={watch("paymentType")}
-                  onValueChange={(value: 'cash' | 'bank_transfer') => setValue("paymentType", value)}
+                  onValueChange={(value: "cash" | "bank_transfer") =>
+                    setValue("paymentType", value)
+                  }
                 >
                   <SelectTrigger disabled={isSubmitting}>
                     <SelectValue placeholder="Выберите тип оплаты" />
@@ -497,75 +699,28 @@ function OrderDetailPage() {
               </div>
             </div>
 
-            {/* Связи */}
-            <div>
-              <h3 className="text-lg font-semibold mb-3">Исполнители</h3>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="clientId">Клиент</Label>
-                  <Select
-                    value={String(watch("clientId") || "")}
-                    onValueChange={(value) =>
-                      setValue("clientId", value ? Number(value) : null)
-                    }
-                  >
-                    <SelectTrigger disabled={isSubmitting}>
-                      <SelectValue placeholder="Не выбран" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {clients.map((client) => (
-                        <SelectItem key={client.id} value={String(client.id)}>
-                          {client.type === "individual"
-                            ? `${client.lastName} ${client.firstName}`
-                            : client.organizationName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="driverId">Водитель</Label>
-                  <Select
-                    value={String(watch("driverId") || "")}
-                    onValueChange={(value) =>
-                      setValue("driverId", value ? Number(value) : null)
-                    }
-                  >
-                    <SelectTrigger disabled={isSubmitting}>
-                      <SelectValue placeholder="Не выбран" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {drivers.map((driver) => (
-                        <SelectItem key={driver.id} value={String(driver.id)}>
-                          {driver.lastName} {driver.firstName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="carId">Автомобиль</Label>
-                  <Select
-                    value={String(watch("carId") || "")}
-                    onValueChange={(value) =>
-                      setValue("carId", value ? Number(value) : null)
-                    }
-                  >
-                    <SelectTrigger disabled={isSubmitting}>
-                      <SelectValue placeholder="Не выбран" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {cars.map((car) => (
-                        <SelectItem key={car.id} value={String(car.id)}>
-                          {car.brand} ({car.licensePlate})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+            {/* Клиент */}
+            <div className="space-y-2">
+              <Label htmlFor="clientId">Клиент</Label>
+              <Select
+                value={String(watch("clientId") || "")}
+                onValueChange={(value) =>
+                  setValue("clientId", value ? Number(value) : null)
+                }
+              >
+                <SelectTrigger disabled={isSubmitting}>
+                  <SelectValue placeholder="Не выбран" />
+                </SelectTrigger>
+                <SelectContent>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={String(client.id)}>
+                      {client.type === "individual"
+                        ? `${client.lastName} ${client.firstName}`
+                        : client.organizationName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="flex gap-2">
@@ -584,66 +739,87 @@ function OrderDetailPage() {
         </CardContent>
       </Card>
 
-      {/* Блок выплат и истории */}
-      {order && (
+      {/* Блок выплат и истории (только для существующих заявок) */}
+      {!isNewOrder && order && (
         <>
           {/* Финансы */}
           <Card>
             <CardHeader>
-              <CardTitle>Финансы</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle>Финансы</CardTitle>
+                <Button onClick={openPaymentDialog}>Добавить выплату</Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Стоимость</p>
+                  <p className="text-sm text-muted-foreground">
+                    Стоимость заявки
+                  </p>
                   <p className="text-2xl font-bold">{order.cost} ₽</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Выплачено</p>
+                  <p className="text-sm text-muted-foreground">Получено</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {totalPaid} ₽
+                    {received} ₽
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Сумма выплат от клиента
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Долг</p>
-                  <p
-                    className={`text-2xl font-bold ${debt > 0 ? "text-destructive" : "text-green-600"}`}
-                  >
-                    {debt > 0 ? `${debt} ₽` : "Нет"}
+                  <p className="text-sm text-muted-foreground">Реализовано</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    {completed} ₽
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Сумма выполненных доставок
                   </p>
                 </div>
               </div>
 
               <Separator />
 
-              {/* Добавление выплаты */}
-              <div className="flex gap-4 items-end">
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor="paymentAmount">Сумма выплаты</Label>
-                  <Input
-                    id="paymentAmount"
-                    type="number"
-                    value={paymentAmount}
-                    onChange={(e) => setPaymentAmount(e.target.value)}
-                    placeholder="1000"
-                  />
-                </div>
-                <div className="flex-1 space-y-2">
-                  <Label htmlFor="paymentDate">Дата выплаты</Label>
-                  <Input
-                    id="paymentDate"
-                    type="date"
-                    value={paymentDate}
-                    onChange={(e) => setPaymentDate(e.target.value)}
-                  />
-                </div>
-                <Button
-                  onClick={handleAddPayment}
-                  disabled={isAddingPayment || !paymentAmount}
-                >
-                  {isAddingPayment ? "Добавление..." : "Добавить выплату"}
-                </Button>
+              <div className="grid grid-cols-2 gap-4">
+                {customerDebt > 0 && (
+                  <div className="p-4 border rounded-md bg-destructive/10">
+                    <p className="text-sm text-muted-foreground">
+                      Долг клиента
+                    </p>
+                    <p className="text-2xl font-bold text-destructive">
+                      {customerDebt} ₽
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Реализовано больше получено
+                    </p>
+                  </div>
+                )}
+                {companyDebt > 0 && (
+                  <div className="p-4 border rounded-md bg-green-50">
+                    <p className="text-sm text-muted-foreground">
+                      Долг компании
+                    </p>
+                    <p className="text-2xl font-bold text-green-600">
+                      {companyDebt} ₽
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Получено больше реализовано
+                    </p>
+                  </div>
+                )}
+                {customerDebt === 0 && companyDebt === 0 && (
+                  <div className="p-4 border rounded-md bg-green-50 col-span-2">
+                    <p className="text-sm text-muted-foreground">
+                      Статус расчетов
+                    </p>
+                    <p className="text-2xl font-bold text-green-600">
+                      Все расчеты завершены
+                    </p>
+                  </div>
+                )}
               </div>
+
+              <Separator />
 
               {/* История выплат */}
               {order.payments && order.payments.length > 0 && (
@@ -656,7 +832,12 @@ function OrderDetailPage() {
                         className="flex items-center justify-between p-3 border rounded-md"
                       >
                         <div>
-                          <p className="font-medium">{payment.amount} ₽</p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">{payment.amount} ₽</p>
+                            <Badge variant="outline">
+                              {paymentTypeLabels[payment.type]}
+                            </Badge>
+                          </div>
                           <p className="text-sm text-muted-foreground">
                             {new Date(payment.paymentDate).toLocaleDateString(
                               "ru-RU",
@@ -677,6 +858,403 @@ function OrderDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Модальное окно добавления выплаты */}
+          <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Добавить выплату</DialogTitle>
+                <DialogDescription>
+                  Заполните данные о выплате
+                </DialogDescription>
+              </DialogHeader>
+              <form
+                onSubmit={handlePaymentSubmit(handleAddPayment)}
+                className="space-y-4"
+              >
+                {error && (
+                  <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
+                    {error}
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                  <Label htmlFor="paymentAmount">Сумма выплаты *</Label>
+                  <Input
+                    id="paymentAmount"
+                    type="number"
+                    {...registerPayment("amount")}
+                  />
+                  {paymentErrors.amount && (
+                    <p className="text-sm text-destructive">
+                      {paymentErrors.amount.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="paymentDate">Дата выплаты *</Label>
+                  <Input
+                    id="paymentDate"
+                    type="date"
+                    {...registerPayment("paymentDate")}
+                  />
+                  {paymentErrors.paymentDate && (
+                    <p className="text-sm text-destructive">
+                      {paymentErrors.paymentDate.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="paymentType">Тип выплаты *</Label>
+                  <Select
+                    value={watchPayment("type")}
+                    onValueChange={(
+                      value: "prepayment" | "transfer" | "delivery",
+                    ) => {
+                      setPaymentValue("type", value);
+                      if (value !== "delivery") {
+                        setPaymentValue("deliveryId", null);
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите тип" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="prepayment">Предоплата</SelectItem>
+                      <SelectItem value="transfer">Перевод средств</SelectItem>
+                      {deliveries.filter((d) => !d.isPaid).length > 0 && (
+                        <SelectItem value="delivery">Доставка</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {paymentErrors.type && (
+                    <p className="text-sm text-destructive">
+                      {paymentErrors.type.message}
+                    </p>
+                  )}
+                </div>
+
+                {watchPayment("type") === "delivery" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="deliveryId">Доставка *</Label>
+                    <Select
+                      value={String(watchPayment("deliveryId") || "")}
+                      onValueChange={(value) =>
+                        setPaymentValue("deliveryId", Number(value))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите доставку" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {deliveries
+                          .filter((d) => !d.isPaid)
+                          .map((delivery) => (
+                            <SelectItem
+                              key={delivery.id}
+                              value={String(delivery.id)}
+                            >
+                              {new Date(delivery.dateTime).toLocaleDateString(
+                                "ru-RU",
+                              )}{" "}
+                              - {delivery.cost} ₽
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    {paymentErrors.deliveryId && (
+                      <p className="text-sm text-destructive">
+                        {paymentErrors.deliveryId.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancelPayment}
+                  >
+                    Отмена
+                  </Button>
+                  <Button type="submit" disabled={isAddingPayment}>
+                    {isAddingPayment ? "Добавление..." : "Добавить"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+
+          {/* Доставки */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Доставки</CardTitle>
+                <Button
+                  onClick={() => {
+                    setShowDeliveryDialog(true);
+                    setEditingDelivery(null);
+                    resetDelivery();
+                  }}
+                >
+                  Добавить доставку
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {deliveries.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  Нет доставок. Нажмите "Добавить доставку" чтобы создать.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {deliveries.map((delivery) => (
+                    <div
+                      key={delivery.id}
+                      className="border rounded-md p-4 space-y-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <Badge
+                            variant={delivery.isPaid ? "default" : "outline"}
+                          >
+                            {delivery.isPaid ? "Оплачено" : "Не оплачено"}
+                          </Badge>
+                          <span className="font-medium">
+                            {new Date(delivery.dateTime).toLocaleString(
+                              "ru-RU",
+                            )}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {!delivery.isPaid && (
+                            <Button
+                              variant="default"
+                              size="sm"
+                              onClick={() => handleMarkAsPaid(delivery.id)}
+                            >
+                              Оплатить
+                            </Button>
+                          )}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditDelivery(delivery)}
+                          >
+                            Редактировать
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDeleteDelivery(delivery.id)}
+                          >
+                            Удалить
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">
+                            Стоимость:{" "}
+                          </span>
+                          {delivery.cost} ₽
+                        </div>
+                        {delivery.volume && (
+                          <div>
+                            <span className="text-muted-foreground">
+                              Объем:{" "}
+                            </span>
+                            {delivery.volume} м³
+                          </div>
+                        )}
+                        {delivery.comment && (
+                          <div className="col-span-2">
+                            <span className="text-muted-foreground">
+                              Комментарий:{" "}
+                            </span>
+                            {delivery.comment}
+                          </div>
+                        )}
+                      </div>
+
+                      {(delivery.isCashPayment ||
+                        delivery.isUnloadingBeforeUnloading) && (
+                        <div className="flex gap-4 text-sm">
+                          {delivery.isCashPayment && (
+                            <Badge variant="secondary">Оплата наличными</Badge>
+                          )}
+                          {delivery.isUnloadingBeforeUnloading && (
+                            <Badge variant="secondary">
+                              Выгрузка до выгрузки
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Модальное окно добавления/редактирования доставки */}
+          <Dialog
+            open={showDeliveryDialog}
+            onOpenChange={setShowDeliveryDialog}
+          >
+            <DialogContent className="max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>
+                  {editingDelivery
+                    ? "Редактирование доставки"
+                    : "Добавление доставки"}
+                </DialogTitle>
+                <DialogDescription>
+                  Заполните данные о доставке
+                </DialogDescription>
+              </DialogHeader>
+              <form
+                onSubmit={handleDeliverySubmit(handleSaveDelivery)}
+                className="space-y-4"
+              >
+                {error && (
+                  <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
+                    {error}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Водитель *</Label>
+                    <Select
+                      value={String(watchDelivery("driverId") || "")}
+                      onValueChange={(value) =>
+                        setDeliveryValue("driverId", Number(value))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите водителя" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {drivers.map((driver) => (
+                          <SelectItem key={driver.id} value={String(driver.id)}>
+                            {driver.lastName} {driver.firstName}{" "}
+                            {driver.middleName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Автомобиль *</Label>
+                    <Select
+                      value={String(watchDelivery("carId") || "")}
+                      onValueChange={(value) =>
+                        setDeliveryValue("carId", Number(value))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите автомобиль" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {cars.map((car) => (
+                          <SelectItem key={car.id} value={String(car.id)}>
+                            {car.brand} ({car.licensePlate})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Дата и время *</Label>
+                    <Input
+                      type="datetime-local"
+                      {...registerDelivery("dateTime")}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Стоимость (₽) *</Label>
+                    <Input type="number" {...registerDelivery("cost")} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Объем груза (м³)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      {...registerDelivery("volume")}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Комментарий</Label>
+                    <Textarea {...registerDelivery("comment")} rows={2} />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Checkbox
+                      checked={watchDelivery("isPaid")}
+                      onCheckedChange={(checked: boolean) =>
+                        setDeliveryValue("isPaid", checked)
+                      }
+                    />
+                    Оплата произведена
+                  </Label>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Checkbox
+                      checked={watchDelivery("isCashPayment")}
+                      onCheckedChange={(checked: boolean) =>
+                        setDeliveryValue("isCashPayment", checked)
+                      }
+                    />
+                    Оплата наличными
+                  </Label>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Checkbox
+                      checked={watchDelivery("isUnloadingBeforeUnloading")}
+                      onCheckedChange={(checked: boolean) =>
+                        setDeliveryValue("isUnloadingBeforeUnloading", checked)
+                      }
+                    />
+                    Выгрузка до выгрузки
+                  </Label>
+                </div>
+
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancelDelivery}
+                  >
+                    Отмена
+                  </Button>
+                  <Button type="submit">
+                    {editingDelivery ? "Сохранить" : "Добавить"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
 
           {/* История изменений */}
           {order.history && order.history.length > 0 && (
@@ -765,3 +1343,5 @@ function OrderDetailPage() {
     </div>
   );
 }
+
+export default OrderDetailPage;
