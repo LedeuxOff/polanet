@@ -2,6 +2,8 @@ import { API_BASE } from "./api-config";
 
 export { driversApi } from "./drivers";
 export { transportCardsApi } from "./transport-cards";
+export { authApi } from "./auth-api";
+export { usersApi } from "./users-api";
 
 export async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem("token");
