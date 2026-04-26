@@ -29,17 +29,6 @@ export interface Car {
   updatedAt: string;
 }
 
-export interface Driver {
-  id: number;
-  lastName: string;
-  firstName: string;
-  middleName: string | null;
-  phone: string | null;
-  createdAt: string;
-  updatedAt: string;
-  transportCard?: TransportCard | null;
-}
-
 export interface AuthTokens {
   token: string;
   user: {
@@ -71,13 +60,6 @@ export interface RegisterInput {
 export interface CreateCarInput {
   brand: string;
   licensePlate: string;
-}
-
-export interface CreateDriverInput {
-  lastName: string;
-  firstName: string;
-  middleName?: string;
-  phone?: string;
 }
 
 export interface Client {
@@ -117,13 +99,7 @@ export interface Order {
   dateTime: string;
   hasPass: boolean;
   addressComment: string | null;
-  status:
-    | "new"
-    | "in_progress"
-    | "completed"
-    | "cancelled"
-    | "archived"
-    | "draft";
+  status: "new" | "in_progress" | "completed" | "cancelled" | "archived" | "draft";
   paymentType: "cash" | "bank_transfer";
   clientId: number | null;
   createdById: number | null;
@@ -177,13 +153,7 @@ export interface CreateOrderInput {
   dateTime: string;
   hasPass?: boolean;
   addressComment?: string;
-  status?:
-    | "new"
-    | "in_progress"
-    | "completed"
-    | "cancelled"
-    | "archived"
-    | "draft";
+  status?: "new" | "in_progress" | "completed" | "cancelled" | "archived" | "draft";
   paymentType: "cash" | "bank_transfer";
   clientId?: number | null;
 }
@@ -194,51 +164,6 @@ export interface CreatePaymentInput {
   amount: number;
   paymentDate: string;
   type: "prepayment" | "transfer" | "delivery";
-}
-
-export interface TransportCard {
-  id: number;
-  cardNumber: string;
-  driverId: number | null;
-  driver?: Driver | null;
-  createdAt: string;
-  updatedAt: string;
-  expenses?: TransportCardExpense[];
-  totalExpenses?: number;
-  history?: TransportCardHistory[];
-}
-
-export interface TransportCardExpense {
-  id: number;
-  cardId: number;
-  amount: number;
-  paymentDate: string;
-  createdAt: string;
-}
-
-export interface TransportCardHistory {
-  id: number;
-  cardId: number;
-  userId: number;
-  action: string;
-  fieldName: string | null;
-  oldValue: string | null;
-  newValue: string | null;
-  createdAt: string;
-  userLastName?: string;
-  userFirstName?: string;
-  userMiddleName?: string;
-}
-
-export interface CreateTransportCardInput {
-  cardNumber: string;
-  driverId?: number | null;
-}
-
-export interface CreateTransportCardExpenseInput {
-  cardId: number;
-  amount: number;
-  paymentDate: string;
 }
 
 export interface Delivery {
