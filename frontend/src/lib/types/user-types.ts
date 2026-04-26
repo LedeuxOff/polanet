@@ -1,3 +1,5 @@
+import z from "zod";
+
 export interface User {
   id: number;
   lastName: string;
@@ -40,3 +42,16 @@ export interface RegisterInput {
   password: string;
   roleId: number;
 }
+
+export const userSchema = z.object({
+  lastName: z.string().min(1, "Фамилия обязательна").optional(),
+  firstName: z.string().min(1, "Имя обязательно").optional(),
+  middleName: z.string().optional(),
+  birthDate: z.string().optional(),
+  email: z.string().email("Неверный формат email").optional(),
+  phone: z.string().optional(),
+  password: z.string().min(6, "Пароль должен быть не менее 6 символов").optional(),
+  roleId: z.coerce.number().int().positive("Роль обязательна").optional(),
+});
+
+export type UserForm = z.infer<typeof userSchema>;
