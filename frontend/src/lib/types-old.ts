@@ -1,39 +1,3 @@
-export interface Car {
-  id: number;
-  brand: string;
-  licensePlate: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateCarInput {
-  brand: string;
-  licensePlate: string;
-}
-
-export interface Client {
-  id: number;
-  type: "individual" | "legal";
-  lastName: string | null;
-  firstName: string | null;
-  middleName: string | null;
-  organizationName: string | null;
-  phone: string | null;
-  email: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateClientInput {
-  type: "individual" | "legal";
-  lastName?: string;
-  firstName?: string;
-  middleName?: string;
-  organizationName?: string;
-  phone?: string;
-  email?: string;
-}
-
 export interface Order {
   id: number;
   type: "delivery" | "pickup";
