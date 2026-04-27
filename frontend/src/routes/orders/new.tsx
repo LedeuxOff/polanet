@@ -21,7 +21,6 @@ import { carsApi, clientsApi, driversApi, ordersApi } from "@/lib/api";
 const orderSchema = z.object({
   type: z.enum(["delivery", "pickup"]),
   address: z.string().min(1, "Адрес обязателен"),
-  cost: z.coerce.number().int().positive("Стоимость должна быть положительной"),
   payerLastName: z.string().min(1, "Фамилия плательщика обязательна"),
   payerFirstName: z.string().min(1, "Имя плательщика обязательно"),
   payerMiddleName: z.string().optional(),
@@ -32,7 +31,6 @@ const orderSchema = z.object({
   hasPass: z.boolean().default(false),
   addressComment: z.string().optional(),
   status: z.enum(["new", "in_progress", "completed", "cancelled", "archived", "draft"]),
-  paymentType: z.enum(["cash", "bank_transfer"]),
   clientId: z.coerce.number().optional().nullable(),
   driverId: z.coerce.number().optional().nullable(),
   carId: z.coerce.number().optional().nullable(),
@@ -141,21 +139,11 @@ function NewOrderPage() {
             </div>
           </div>
 
-          {/* Адрес и стоимость */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="address">Адрес *</Label>
-              <Textarea id="address" disabled={isSubmitting} {...register("address")} rows={2} />
-              {errors.address && (
-                <p className="text-sm text-destructive">{errors.address.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="cost">Стоимость (₽) *</Label>
-              <Input id="cost" type="number" disabled={isSubmitting} {...register("cost")} />
-              {errors.cost && <p className="text-sm text-destructive">{errors.cost.message}</p>}
-            </div>
+          {/* Адрес */}
+          <div className="space-y-2">
+            <Label htmlFor="address">Адрес *</Label>
+            <Textarea id="address" disabled={isSubmitting} {...register("address")} rows={2} />
+            {errors.address && <p className="text-sm text-destructive">{errors.address.message}</p>}
           </div>
 
           {/* Плательщик */}
@@ -233,38 +221,17 @@ function NewOrderPage() {
           </div>
 
           {/* Дата и время */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="dateTime">Дата и время *</Label>
-              <Input
-                id="dateTime"
-                type="datetime-local"
-                disabled={isSubmitting}
-                {...register("dateTime")}
-              />
-              {errors.dateTime && (
-                <p className="text-sm text-destructive">{errors.dateTime.message}</p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="paymentType">Тип оплаты *</Label>
-              <Select
-                value={watch("paymentType")}
-                onValueChange={(value: "cash" | "bank_transfer") => setValue("paymentType", value)}
-              >
-                <SelectTrigger disabled={isSubmitting}>
-                  <SelectValue placeholder="Выберите тип оплаты" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cash">Наличные</SelectItem>
-                  <SelectItem value="bank_transfer">Безналичный расчет</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.paymentType && (
-                <p className="text-sm text-destructive">{errors.paymentType.message}</p>
-              )}
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="dateTime">Дата и время *</Label>
+            <Input
+              id="dateTime"
+              type="datetime-local"
+              disabled={isSubmitting}
+              {...register("dateTime")}
+            />
+            {errors.dateTime && (
+              <p className="text-sm text-destructive">{errors.dateTime.message}</p>
+            )}
           </div>
 
           {/* Пропуск и комментарий */}

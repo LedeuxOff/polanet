@@ -1,3 +1,5 @@
+import z from "zod";
+
 export type DeliveryStatus = "in_progress" | "completed";
 
 export interface Delivery {
@@ -14,6 +16,7 @@ export interface Delivery {
   incomeId: number | null;
   createdAt: string;
   updatedAt: string;
+  amount: number;
 }
 
 export interface DeliveryWithIncome extends Delivery {
@@ -77,3 +80,17 @@ export interface UpdateDeliveryInput {
   isPaid?: boolean;
   isPaymentBeforeUnloading?: boolean;
 }
+
+export const deliverySchema = z.object({
+  driverId: z.coerce.number().positive("Водитель обязателен"),
+  carId: z.coerce.number().positive("Автомобиль обязателен"),
+  dateTime: z.string().min(1, "Дата и время обязательны"),
+  amount: z.coerce.number().int().positive("Стоимость должна быть положительной"),
+  volume: z.coerce.number().optional().nullable(),
+  comment: z.string().optional(),
+  paymentMethod: z.enum(["cash", "bank_transfer"]).default("cash"),
+  isPaid: z.boolean().default(false),
+  isPaymentBeforeUnloading: z.boolean().default(false),
+});
+
+export type DeliveryForm = z.infer<typeof deliverySchema>;

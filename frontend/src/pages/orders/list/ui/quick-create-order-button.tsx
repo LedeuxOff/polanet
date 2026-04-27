@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,7 +8,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -20,15 +18,15 @@ import {
 import type { Client } from "@/lib/types";
 import { useNavigate } from "@tanstack/react-router";
 import { clientsApi, ordersApi } from "@/lib/api";
+import { useState } from "react";
 
 export function QuickCreateOrderButton() {
   const navigate = useNavigate();
-  const [open, setOpen] = React.useState(false);
-  const [clients, setClients] = React.useState<Client[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [formData, setFormData] = React.useState({
+  const [open, setOpen] = useState(false);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
     clientId: "",
-    cost: "",
   });
 
   const loadClients = async () => {
@@ -53,10 +51,9 @@ export function QuickCreateOrderButton() {
     try {
       const newOrder = await ordersApi.quickCreate({
         clientId: Number(formData.clientId),
-        cost: Number(formData.cost),
       });
       setOpen(false);
-      setFormData({ clientId: "", cost: "" });
+      setFormData({ clientId: "" });
       navigate({
         to: "/orders/$orderId",
         params: { orderId: String(newOrder.id) },
@@ -71,16 +68,13 @@ export function QuickCreateOrderButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          size="icon"
-          className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg hover:shadow-xl transition-shadow z-50"
-        >
-          <Plus className="w-6 h-6" />
+        <Button type="button" className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700">
+          Создать заявку
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Быстрое создание заявки</DialogTitle>
+          <DialogTitle>Создать черновик заявки</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -103,23 +97,11 @@ export function QuickCreateOrderButton() {
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="cost">Стоимость</Label>
-            <Input
-              id="cost"
-              type="number"
-              placeholder="0"
-              value={formData.cost}
-              onChange={(e) => setFormData({ ...formData, cost: e.target.value })}
-              required
-              min="0"
-            />
-          </div>
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Отмена
             </Button>
-            <Button type="submit" disabled={isLoading || !formData.clientId || !formData.cost}>
+            <Button type="submit" disabled={isLoading || !formData.clientId}>
               {isLoading ? "Создание..." : "Создать"}
             </Button>
           </div>
