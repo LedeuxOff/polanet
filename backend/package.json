@@ -11,17 +11,25 @@
     "db:generate": "drizzle-kit generate:sqlite",
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/seed.ts",
-    "db:push": "drizzle-kit push:sqlite"
+    "db:push": "drizzle-kit push:sqlite",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix",
+    "prepare": "cd .. && husky install"
+  },
+  "lint-staged": {
+    "**/*.ts": [
+      "eslint --fix"
+    ]
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "better-sqlite3": "^11.8.1",
     "cors": "^2.8.5",
     "drizzle-orm": "^0.38.3",
     "express": "^4.18.2",
-    "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
     "zod": "^3.22.4"
   },
@@ -32,7 +40,12 @@
     "@types/express": "^4.17.21",
     "@types/jsonwebtoken": "^9.0.5",
     "@types/node": "^20.10.6",
+    "@typescript-eslint/eslint-plugin": "^8.59.1",
+    "@typescript-eslint/parser": "^8.59.1",
     "drizzle-kit": "^0.30.1",
+    "eslint": "^10.2.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
   }
