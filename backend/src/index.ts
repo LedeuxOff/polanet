@@ -3,6 +3,9 @@ import cors from "cors";
 
 // Импорт роутов
 import authRoutes from "./routes/auth.js";
+
+// Импорт авто-бэкапа
+import { startAutoBackup } from "./db/auto-backup.js";
 import userRoutes from "./routes/users.js";
 import roleRoutes from "./routes/roles.js";
 import carRoutes from "./routes/cars.js";
@@ -37,6 +40,9 @@ app.use("/api/transport-cards", transportCardRoutes);
 app.use("/api/deliveries", deliveryRoutes);
 app.use("/api/incomes", incomeRoutes);
 app.use("/api/expenses", expenseRoutes);
+
+// Запуск автоматического резервного копирования
+startAutoBackup();
 
 app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);

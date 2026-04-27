@@ -12,6 +12,10 @@
     "db:migrate": "tsx src/db/migrate.ts",
     "db:seed": "tsx src/db/seed.ts",
     "db:push": "drizzle-kit push:sqlite",
+    "db:backup": "tsx src/db/backup.ts create",
+    "db:backup:list": "tsx src/db/backup.ts list",
+    "db:restore": "tsx src/db/backup.ts restore",
+    "db:backup:delete": "tsx src/db/backup.ts delete",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "prepare": "cd .. && husky install"
