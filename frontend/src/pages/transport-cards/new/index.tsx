@@ -41,6 +41,22 @@ export const NewTransportCardPage = () => {
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="status">Статус</Label>
+            <Select
+              value={form.watch("status") || "active"}
+              onValueChange={(value: "active" | "inactive") => form.setValue("status", value)}
+            >
+              <SelectTrigger disabled={isSubmitting}>
+                <SelectValue placeholder="Активна" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Активна</SelectItem>
+                <SelectItem value="inactive">Неактивна</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="driverId">Водитель</Label>
             <Select
               value={String(form.watch("driverId") || "")}

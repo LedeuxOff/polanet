@@ -305,6 +305,9 @@ export const incomesRelations = relations(incomes, ({ one }) => ({
 export const transportCards = sqliteTable("transport_cards", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   cardNumber: text("card_number").notNull().unique(),
+  status: text("status", { enum: ["active", "inactive"] })
+    .notNull()
+    .default("active"),
   driverId: integer("driver_id").references(() => drivers.id, {
     onDelete: "set null",
   }),
@@ -370,6 +373,36 @@ export const transportCardHistoryRelations = relations(transportCardHistory, ({ 
   }),
 }));
 
+// Expenses table
+export const expenses = sqliteTable("expenses", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  expenseType: text("expense_type", { enum: ["salary", "fuel"] }).notNull(),
+  paymentType: text("payment_type", { enum: ["cash", "bank_transfer"] }).notNull(),
+  transportCardId: integer("transport_card_id").references(() => transportCards.id, {
+    onDelete: "set null",
+  }),
+  driverId: integer("driver_id").references(() => drivers.id, {
+    onDelete: "set null",
+  }),
+  dateTime: text("date_time").notNull(),
+  amount: integer("amount").notNull(),
+  comment: text("comment"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+// Relations for expenses
+export const expensesRelations = relations(expenses, ({ one }) => ({
+  transportCard: one(transportCards, {
+    fields: [expenses.transportCardId],
+    references: [transportCards.id],
+  }),
+  driver: one(drivers, {
+    fields: [expenses.driverId],
+    references: [drivers.id],
+  }),
+}));
+
 // Types
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -399,3 +432,5 @@ export type Delivery = typeof deliveries.$inferSelect;
 export type NewDelivery = typeof deliveries.$inferInsert;
 export type Income = typeof incomes.$inferSelect;
 export type NewIncome = typeof incomes.$inferInsert;
+export type Expense = typeof expenses.$inferSelect;
+export type NewExpense = typeof expenses.$inferInsert;

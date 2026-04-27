@@ -1,8 +1,14 @@
-import { driversApi, transportCardsApi } from "@/lib/api";
-import { Driver, TransportCard, TransportCardForm, transportCardSchema } from "@/lib/types";
+import { driversApi, transportCardsApi, expensesApi } from "@/lib/api";
+import {
+  Driver,
+  TransportCard,
+  TransportCardForm,
+  transportCardSchema,
+  ExpensePaymentType,
+} from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 
 export const useTransportCardDetailPage = () => {
@@ -16,16 +22,20 @@ export const useTransportCardDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Расходы
+  // Расходы - новая сущность Expense
+  // Для транспортных карт тип расхода всегда "fuel" (топливо)
+  const EXPENSE_TYPE = "fuel" as const;
   const [expenseAmount, setExpenseAmount] = useState("");
-  const [expenseDate, setExpenseDate] = useState(new Date().toISOString().split("T")[0]);
+  const [expenseDateTime, setExpenseDateTime] = useState(new Date().toISOString().slice(0, 16));
+  const [expensePaymentType, setExpensePaymentType] = useState<ExpensePaymentType>("cash");
   const [isAddingExpense, setIsAddingExpense] = useState(false);
+  const [showExpenseDialog, setShowExpenseDialog] = useState(false);
 
   const form = useForm<TransportCardForm>({
     resolver: zodResolver(transportCardSchema),
   });
 
-  useEffect(() => {
+  const loadCard = useCallback(() => {
     driversApi.list().then(setDrivers).catch(console.error);
 
     transportCardsApi
@@ -33,18 +43,25 @@ export const useTransportCardDetailPage = () => {
       .then((data) => {
         setCard(data);
         form.setValue("cardNumber", data.cardNumber);
+        form.setValue("status", data.status);
         form.setValue("driverId", data.driverId);
       })
       .catch(console.error)
       .finally(() => setIsLoading(false));
-  }, [cardId, form.setValue]);
+  }, [cardId, form]);
+
+  useEffect(() => {
+    loadCard();
+  }, [loadCard]);
 
   const onSubmit = async (data: TransportCardForm) => {
     setError(null);
     setIsSubmitting(true);
     try {
       await transportCardsApi.update(Number(cardId), data);
-      navigate({ to: "/transport-cards" });
+      if (cardId === "new") {
+        navigate({ to: "/transport-cards" });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка при сохранении");
     } finally {
@@ -69,21 +86,36 @@ export const useTransportCardDetailPage = () => {
   };
 
   const handleAddExpense = async () => {
-    if (!expenseAmount || !expenseDate) {
-      setError("Укажите сумму и дату расхода");
+    if (!expenseAmount || !expenseDateTime) {
+      setError("Укажите сумму и дату/время расхода");
       return;
     }
 
     setIsAddingExpense(true);
+    setError(null);
     try {
-      await transportCardsApi.addExpense(Number(cardId), {
-        cardId: Number(cardId),
+      // Создаем расход через новую сущность Expense
+      // Для транспортных карт тип расхода всегда "fuel" (топливо)
+      await expensesApi.create({
+        expenseType: EXPENSE_TYPE,
+        paymentType: expensePaymentType,
+        transportCardId: Number(cardId),
+        dateTime: expenseDateTime,
         amount: Number(expenseAmount),
-        paymentDate: expenseDate,
+        comment: null,
       });
-      setExpenseAmount("");
+
+      // Обновляем данные карты
       const updated = await transportCardsApi.get(Number(cardId));
       setCard(updated);
+
+      // Сбрасываем форму и закрываем диалог
+      setExpenseAmount("");
+      setExpenseDateTime(new Date().toISOString().slice(0, 16));
+      setShowExpenseDialog(false);
+
+      // Перезагружаем данные
+      setCard(await transportCardsApi.get(Number(cardId)));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка при добавлении расхода");
     } finally {
@@ -97,12 +129,17 @@ export const useTransportCardDetailPage = () => {
     }
 
     try {
-      await transportCardsApi.removeExpense(Number(cardId), expenseId);
+      await expensesApi.delete(expenseId);
       const updated = await transportCardsApi.get(Number(cardId));
       setCard(updated);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка при удалении расхода");
     }
+  };
+
+  const openExpenseDialog = () => {
+    setShowExpenseDialog(true);
+    setError(null);
   };
 
   return {
@@ -118,10 +155,15 @@ export const useTransportCardDetailPage = () => {
     drivers,
     expenseAmount,
     setExpenseAmount,
-    expenseDate,
-    setExpenseDate,
+    expenseDateTime,
+    setExpenseDateTime,
+    expensePaymentType,
+    setExpensePaymentType,
     handleAddExpense,
     isAddingExpense,
     handleRemoveExpense,
+    showExpenseDialog,
+    setShowExpenseDialog,
+    openExpenseDialog,
   };
 };

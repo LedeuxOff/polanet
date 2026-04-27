@@ -13,6 +13,9 @@ export const useNewTransportCardPage = () => {
 
   const form = useForm<NewTransportCardForm>({
     resolver: zodResolver(newTransportCardSchema),
+    defaultValues: {
+      status: "active",
+    },
   });
 
   useEffect(() => {

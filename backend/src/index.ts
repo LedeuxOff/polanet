@@ -12,6 +12,7 @@ import orderRoutes from "./routes/orders.js";
 import transportCardRoutes from "./routes/transportCards.js";
 import deliveryRoutes from "./routes/deliveries.js";
 import incomeRoutes from "./routes/incomes.js";
+import expenseRoutes from "./routes/expenses.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -35,6 +36,7 @@ app.use("/api/orders", orderRoutes);
 app.use("/api/transport-cards", transportCardRoutes);
 app.use("/api/deliveries", deliveryRoutes);
 app.use("/api/incomes", incomeRoutes);
+app.use("/api/expenses", expenseRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);

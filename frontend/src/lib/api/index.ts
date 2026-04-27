@@ -9,6 +9,7 @@ export { clientsApi } from "./clients-api";
 export { deliveriesApi } from "./deliveries-api";
 export { ordersApi, type OrdersListQuery } from "./orders-api";
 export { incomesApi } from "./incomes-api";
+export { expensesApi } from "./expenses-api";
 
 export async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem("token");

@@ -227,13 +227,17 @@ export const updatePaymentSchema = z.object({
   type: z.enum(["prepayment", "transfer", "delivery"]).optional(),
 });
 
+export const transportCardStatusEnum = z.enum(["active", "inactive"]);
+
 export const createTransportCardSchema = z.object({
   cardNumber: z.string().min(1, "Номер карты обязателен").max(50),
+  status: transportCardStatusEnum.default("active"),
   driverId: z.number().int().positive().optional().nullable(),
 });
 
 export const updateTransportCardSchema = z.object({
   cardNumber: z.string().min(1, "Номер карты обязателен").max(50).optional(),
+  status: transportCardStatusEnum.optional(),
   driverId: z.number().int().positive().optional().nullable(),
 });
 
