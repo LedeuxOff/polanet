@@ -73,6 +73,11 @@
   dependencies:
     "@types/json-schema" "^7.0.15"
 
+"@eslint/js@^10.0.1":
+  version "10.0.1"
+  resolved "https://registry.npmjs.org/@eslint/js/-/js-10.0.1.tgz"
+  integrity sha512-zeR9k5pd4gxjZ0abRoIaxdc7I3nDktoXZk2qOv9gCNWx3mVwEn32VRhyLaRsDiJjTs0xq/T8mfPtyuXu7GWBcA==
+
 "@eslint/object-schema@^3.0.5":
   version "3.0.5"
   resolved "https://registry.npmjs.org/@eslint/object-schema/-/object-schema-3.0.5.tgz"
@@ -262,7 +267,7 @@
     "@types/node" "*"
     "@types/send" "<1"
 
-"@typescript-eslint/eslint-plugin@^8.59.1":
+"@typescript-eslint/eslint-plugin@^8.59.1", "@typescript-eslint/eslint-plugin@8.59.1":
   version "8.59.1"
   resolved "https://registry.npmjs.org/@typescript-eslint/eslint-plugin/-/eslint-plugin-8.59.1.tgz"
   integrity sha512-BOziFIfE+6osHO9FoJG4zjoHUcvI7fTNBSpdAwrNH0/TLvzjsk2oo8XSSOT2HhqUyhZPfHv4UOffoJ9oEEQ7Ag==
@@ -276,7 +281,7 @@
     natural-compare "^1.4.0"
     ts-api-utils "^2.5.0"
 
-"@typescript-eslint/parser@^8.59.1":
+"@typescript-eslint/parser@^8.59.1", "@typescript-eslint/parser@8.59.1":
   version "8.59.1"
   resolved "https://registry.npmjs.org/@typescript-eslint/parser/-/parser-8.59.1.tgz"
   integrity sha512-HDQH9O/47Dxi1ceDhBXdaldtf/WV9yRYMjbjCuNk3qnaTD564qwv61Y7+gTxwxRKzSrgO5uhtw584igXVuuZkA==
@@ -859,7 +864,7 @@ eslint-visitor-keys@^5.0.1:
   resolved "https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-5.0.1.tgz"
   integrity sha512-tD40eHxA35h0PEIZNeIjkHoDR4YjjJp34biM0mDvplBe//mB+IHCqHDGV7pxF+7MklTvighcCPPZC7ynWyjdTA==
 
-eslint@^10.2.1, "eslint@^6.0.0 || ^7.0.0 || >=8.0.0", "eslint@^8.57.0 || ^9.0.0 || ^10.0.0":
+eslint@^10.0.0, eslint@^10.2.1, "eslint@^6.0.0 || ^7.0.0 || >=8.0.0", "eslint@^8.57.0 || ^9.0.0 || ^10.0.0":
   version "10.2.1"
   resolved "https://registry.npmjs.org/eslint/-/eslint-10.2.1.tgz"
   integrity sha512-wiyGaKsDgqXvF40P8mDwiUp/KQjE1FdrIEJsM8PZ3XCiniTMXS3OHWWUe5FI5agoCnr8x4xPrTDZuxsBlNHl+Q==
@@ -1926,6 +1931,16 @@ type-is@~1.6.18:
   dependencies:
     media-typer "0.3.0"
     mime-types "~2.1.24"
+
+typescript-eslint@^8.59.1:
+  version "8.59.1"
+  resolved "https://registry.npmjs.org/typescript-eslint/-/typescript-eslint-8.59.1.tgz"
+  integrity sha512-xqDcFVBmlrltH64lklOVp1wYxgJr6LVdg3NamBgH2OOQDLFdTKfIZXF5PfghrnXQKXZGTQs8tr1vL7fJvq8CTQ==
+  dependencies:
+    "@typescript-eslint/eslint-plugin" "8.59.1"
+    "@typescript-eslint/parser" "8.59.1"
+    "@typescript-eslint/typescript-estree" "8.59.1"
+    "@typescript-eslint/utils" "8.59.1"
 
 typescript@^5.3.3, typescript@>=4.8.4, "typescript@>=4.8.4 <6.1.0":
   version "5.9.3"

@@ -1,14 +1,4 @@
-import {
-  Building,
-  Car,
-  ClipboardList,
-  CreditCard,
-  Home,
-  SettingsIcon,
-  Shield,
-  User,
-  Users,
-} from "lucide-react";
+import { Home, SettingsIcon } from "lucide-react";
 
 export const menuItems = [
   {
