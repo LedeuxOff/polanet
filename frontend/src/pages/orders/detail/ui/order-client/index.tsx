@@ -15,9 +15,10 @@ import { UseFormReturn } from "react-hook-form";
 interface Props {
   form: UseFormReturn<OrderForm>;
   isSubmitting: boolean;
+  disabledByStatus: boolean;
 }
 
-export const OrderClient = ({ form, isSubmitting }: Props) => {
+export const OrderClient = ({ form, isSubmitting, disabledByStatus }: Props) => {
   const [clients, setClients] = useState<Client[]>([]);
 
   useEffect(() => {
@@ -61,7 +62,7 @@ export const OrderClient = ({ form, isSubmitting }: Props) => {
           value={String(form.watch("clientId") || "")}
           onValueChange={(value) => form.setValue("clientId", value ? Number(value) : null)}
         >
-          <SelectTrigger disabled={isSubmitting}>
+          <SelectTrigger disabled={isSubmitting || disabledByStatus}>
             <SelectValue placeholder="Не выбран" />
           </SelectTrigger>
           <SelectContent>
@@ -82,7 +83,11 @@ export const OrderClient = ({ form, isSubmitting }: Props) => {
         <div className="grid grid-cols-4 gap-4">
           <div className="space-y-2">
             <Label htmlFor="payerLastName">Фамилия *</Label>
-            <Input id="payerLastName" disabled={isSubmitting} {...form.register("payerLastName")} />
+            <Input
+              id="payerLastName"
+              disabled={isSubmitting || disabledByStatus}
+              {...form.register("payerLastName")}
+            />
             {form.formState.errors.payerLastName && (
               <p className="text-sm text-destructive">
                 {form.formState.errors.payerLastName.message}
@@ -94,7 +99,7 @@ export const OrderClient = ({ form, isSubmitting }: Props) => {
             <Label htmlFor="payerFirstName">Имя *</Label>
             <Input
               id="payerFirstName"
-              disabled={isSubmitting}
+              disabled={isSubmitting || disabledByStatus}
               {...form.register("payerFirstName")}
             />
             {form.formState.errors.payerFirstName && (
@@ -108,7 +113,7 @@ export const OrderClient = ({ form, isSubmitting }: Props) => {
             <Label htmlFor="payerMiddleName">Отчество</Label>
             <Input
               id="payerMiddleName"
-              disabled={isSubmitting}
+              disabled={isSubmitting || disabledByStatus}
               {...form.register("payerMiddleName")}
             />
           </div>
@@ -117,7 +122,7 @@ export const OrderClient = ({ form, isSubmitting }: Props) => {
             <Label htmlFor="payerPhone">Телефон</Label>
             <Input
               id="payerPhone"
-              disabled={isSubmitting}
+              disabled={isSubmitting || disabledByStatus}
               placeholder="+7 (999) 000-00-00"
               {...form.register("payerPhone")}
             />
@@ -133,7 +138,7 @@ export const OrderClient = ({ form, isSubmitting }: Props) => {
             <Label htmlFor="receiverLastName">Фамилия *</Label>
             <Input
               id="receiverLastName"
-              disabled={isSubmitting}
+              disabled={isSubmitting || disabledByStatus}
               {...form.register("receiverLastName")}
             />
             {form.formState.errors.receiverLastName && (
@@ -147,7 +152,7 @@ export const OrderClient = ({ form, isSubmitting }: Props) => {
             <Label htmlFor="receiverFirstName">Имя *</Label>
             <Input
               id="receiverFirstName"
-              disabled={isSubmitting}
+              disabled={isSubmitting || disabledByStatus}
               {...form.register("receiverFirstName")}
             />
             {form.formState.errors.receiverFirstName && (
@@ -161,7 +166,7 @@ export const OrderClient = ({ form, isSubmitting }: Props) => {
             <Label htmlFor="receiverMiddleName">Отчество</Label>
             <Input
               id="receiverMiddleName"
-              disabled={isSubmitting}
+              disabled={isSubmitting || disabledByStatus}
               {...form.register("receiverMiddleName")}
             />
           </div>
@@ -170,7 +175,7 @@ export const OrderClient = ({ form, isSubmitting }: Props) => {
             <Label htmlFor="receiverPhone">Телефон</Label>
             <Input
               id="receiverPhone"
-              disabled={isSubmitting}
+              disabled={isSubmitting || disabledByStatus}
               placeholder="+7 (999) 000-00-00"
               {...form.register("receiverPhone")}
             />

@@ -1,4 +1,4 @@
-import { Order, OrderForm, orderSchema } from "@/lib/types";
+import { Order, OrderForm, orderSchema, getAvailableStatusTransitions } from "@/lib/types";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -11,6 +11,7 @@ export const useOrderDetailPage = () => {
   const isNewOrder = orderId === "new";
 
   const [order, setOrder] = useState<Order | null>(null);
+  const [originalStatus, setOriginalStatus] = useState<string | null>(null);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,6 +28,7 @@ export const useOrderDetailPage = () => {
         .get(Number(orderId))
         .then((data) => {
           setOrder(data);
+          setOriginalStatus(data.status);
           form.setValue("type", data.type);
           form.setValue("address", data.address);
           form.setValue("payerLastName", data.payerLastName);
@@ -49,6 +51,7 @@ export const useOrderDetailPage = () => {
       setIsLoading(false);
       form.setValue("status", "draft");
       form.setValue("hasPass", false);
+      setOriginalStatus("draft");
     }
   }, [orderId, isNewOrder, form.setValue]);
 
@@ -91,6 +94,7 @@ export const useOrderDetailPage = () => {
     onSubmit,
     isNewOrder,
     order,
+    originalStatus,
     isSubmitting,
     isLoading,
     error,

@@ -7,6 +7,8 @@ import {
   updateOrderSchema,
   createPaymentSchema,
   quickCreateOrderSchema,
+  validateOrderStatusTransition,
+  orderStatusTransitions,
 } from "../middleware/validators.js";
 import { eq, and, desc, sql } from "drizzle-orm";
 
@@ -330,6 +332,18 @@ router.put("/:id", authenticate, async (req: AuthRequest, res) => {
 
     if (!currentOrder) {
       return res.status(404).json({ error: "Заявка не найдена" });
+    }
+
+    // Валидация перехода статуса
+    if (data.status && data.status !== currentOrder.status) {
+      const isValid = validateOrderStatusTransition(currentOrder.status, data.status);
+      if (!isValid) {
+        const allowedTransitions = orderStatusTransitions[currentOrder.status] || [];
+        return res.status(400).json({
+          error: "Недопустимый переход статуса",
+          details: `Из статуса "${currentOrder.status}" можно перейти в: ${allowedTransitions.join(", ") || "никакой (конечный статус)"}`,
+        });
+      }
     }
 
     const updateData: Record<string, unknown> = {

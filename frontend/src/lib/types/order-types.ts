@@ -80,3 +80,28 @@ export const orderSchema = z.object({
 });
 
 export type OrderForm = z.infer<typeof orderSchema>;
+
+// Допустимые переходы между статусами заявок
+export const orderStatusTransitions: Record<string, string[]> = {
+  draft: ["new", "in_progress", "cancelled"],
+  new: ["in_progress", "cancelled"],
+  in_progress: ["completed"],
+  completed: ["archived"],
+  cancelled: ["archived"],
+  archived: [],
+};
+
+// Все статусы с метками
+export const statusLabels: Record<string, string> = {
+  draft: "Черновик",
+  new: "Новая",
+  in_progress: "Выполняется",
+  completed: "Завершено",
+  cancelled: "Отменено",
+  archived: "Архив",
+};
+
+// Получить доступные следующие статусы для данного статуса
+export function getAvailableStatusTransitions(currentStatus: string): string[] {
+  return orderStatusTransitions[currentStatus] || [];
+}

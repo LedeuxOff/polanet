@@ -86,6 +86,11 @@ export const OrderPayments = ({ orderId, order, setOrder }: Props) => {
             type="button"
             onClick={openIncomeDialog}
             className="bg-blue-600 hover:bg-blue-700"
+            disabled={
+              order?.status === "completed" ||
+              order?.status === "cancelled" ||
+              order?.status === "archived"
+            }
           >
             Добавить доход
           </Button>

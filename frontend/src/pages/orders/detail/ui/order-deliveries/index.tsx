@@ -9,9 +9,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
-import { Delivery, DeliveryWithIncome, Order } from "@/lib/types";
-import { deliveryStatusLabels, incomeTypeLabels, paymentMethodLabels } from "../../consts";
+import { DeliveryWithIncome, Order } from "@/lib/types";
+import { deliveryStatusLabels, paymentMethodLabels } from "../../consts";
 import { Dispatch, SetStateAction } from "react";
 import {
   Dialog,
@@ -32,7 +31,6 @@ import {
 } from "@/components/ui/accordion";
 import { useState, useMemo } from "react";
 import {
-  BadgeRussianRuble,
   BadgeRussianRubleIcon,
   BanknoteIcon,
   CalendarIcon,
@@ -40,7 +38,6 @@ import {
   ChevronLeft,
   ChevronRight,
   PencilIcon,
-  RussianRubleIcon,
   TrashIcon,
   WeightIcon,
 } from "lucide-react";
@@ -48,6 +45,8 @@ import {
 interface Props {
   orderId: string;
   setOrder: Dispatch<SetStateAction<Order | null>>;
+  order: Order;
+  disabledByStatus: boolean;
 }
 
 const ITEMS_PER_PAGE = 3;
@@ -55,7 +54,7 @@ const ITEMS_PER_PAGE = 3;
 const getFormattedAmount = (amount: number | undefined) =>
   new Intl.NumberFormat("ru-RU").format(amount || 0);
 
-export const OrderDeliveries = ({ orderId, setOrder }: Props) => {
+export const OrderDeliveries = ({ orderId, setOrder, order, disabledByStatus }: Props) => {
   const {
     deliveries,
     error,
@@ -129,7 +128,7 @@ export const OrderDeliveries = ({ orderId, setOrder }: Props) => {
             variant="outline"
             size="sm"
             onClick={() => handleEditDelivery(delivery)}
-            disabled={delivery.status === "completed"}
+            disabled={delivery.status === "completed" || disabledByStatus}
             className="bg-blue-100 text-blue-700 hover:bg-blue-200 hover:text-blue-800"
           >
             <PencilIcon className="w-4 h-4" />
@@ -139,7 +138,7 @@ export const OrderDeliveries = ({ orderId, setOrder }: Props) => {
             type="button"
             size="sm"
             onClick={() => handleDeleteDelivery(delivery.id)}
-            disabled={delivery.status === "completed"}
+            disabled={delivery.status === "completed" || disabledByStatus}
             className="bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-800"
           >
             <TrashIcon className="w-4 h-4" />
@@ -199,6 +198,7 @@ export const OrderDeliveries = ({ orderId, setOrder }: Props) => {
               form.reset();
             }}
             className="bg-blue-600 hover:bg-blue-700"
+            disabled={disabledByStatus}
           >
             Добавить доставку
           </Button>
@@ -255,6 +255,11 @@ export const OrderDeliveries = ({ orderId, setOrder }: Props) => {
                 form.reset();
               }}
               className="bg-blue-600 hover:bg-blue-700"
+              disabled={
+                order?.status === "completed" ||
+                order?.status === "cancelled" ||
+                order?.status === "archived"
+              }
             >
               Добавить доставку
             </Button>

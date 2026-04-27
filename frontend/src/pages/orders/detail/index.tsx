@@ -18,6 +18,7 @@ export const OrderDetailPage = () => {
     onSubmit,
     isNewOrder,
     order,
+    originalStatus,
     isSubmitting,
     isLoading,
     error,
@@ -25,6 +26,9 @@ export const OrderDetailPage = () => {
     orderId,
     setOrder,
   } = useOrderDetailPage();
+
+  const disabledByStatus =
+    order?.status === "completed" || order?.status === "cancelled" || order?.status === "archived";
 
   if (isLoading) {
     return (
@@ -52,7 +56,12 @@ export const OrderDetailPage = () => {
                 <CardTitle>Основная информация</CardTitle>
               </CardHeader>
               <CardContent>
-                <OrderDetails form={form} isSubmitting={isSubmitting} />
+                <OrderDetails
+                  form={form}
+                  isSubmitting={isSubmitting}
+                  originalStatus={originalStatus}
+                  disabledByStatus={disabledByStatus}
+                />
               </CardContent>
             </Card>
 
@@ -62,7 +71,11 @@ export const OrderDetailPage = () => {
                 <CardTitle>Информация о клиенте</CardTitle>
               </CardHeader>
               <CardContent>
-                <OrderClient form={form} isSubmitting={isSubmitting} />
+                <OrderClient
+                  form={form}
+                  isSubmitting={isSubmitting}
+                  disabledByStatus={disabledByStatus}
+                />
               </CardContent>
             </Card>
           </div>
@@ -86,7 +99,12 @@ export const OrderDetailPage = () => {
                     <CardTitle>Информация о доставках</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <OrderDeliveries orderId={orderId} setOrder={setOrder} />
+                    <OrderDeliveries
+                      orderId={orderId}
+                      setOrder={setOrder}
+                      order={order}
+                      disabledByStatus={disabledByStatus}
+                    />
                   </CardContent>
                 </Card>
 

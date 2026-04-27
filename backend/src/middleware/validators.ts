@@ -175,6 +175,24 @@ export const createOrderSchema = z.object({
   clientId: z.number().int().positive().optional().nullable(),
 });
 
+// Допустимые переходы между статусами заявок
+export const orderStatusTransitions: Record<string, string[]> = {
+  draft: ["new", "in_progress", "cancelled"], // Из Черновика можно в Новую, Выполняется, Отменено
+  new: ["in_progress", "cancelled"], // Из Новой можно в Выполняется, Отменено
+  in_progress: ["completed"], // Из Выполняется можно в Завершено
+  completed: ["archived"], // Из Завершено можно в Архив
+  cancelled: ["archived"], // Из Отменено можно в Архив
+  archived: [], // Архив - конечный статус
+};
+
+export function validateOrderStatusTransition(currentStatus: string, newStatus: string): boolean {
+  const allowedTransitions = orderStatusTransitions[currentStatus];
+  if (!allowedTransitions) {
+    return false;
+  }
+  return allowedTransitions.includes(newStatus);
+}
+
 export const updateOrderSchema = z.object({
   type: z.enum(["delivery", "pickup"]).optional(),
   address: z.string().min(1, "Адрес обязателен").max(500).optional(),

@@ -1,17 +1,12 @@
 import { Router } from "express";
 import { db } from "../db/index.js";
-import {
-  deliveries,
-  drivers,
-  cars,
-  orders,
-  orderHistory,
-  incomes,
-} from "../db/schema.js";
+import { deliveries, drivers, cars, orders, orderHistory, incomes } from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import {
   createDeliverySchema,
   updateDeliverySchema,
+  validateOrderStatusTransition,
+  orderStatusTransitions,
 } from "../middleware/validators.js";
 import { eq, desc, and } from "drizzle-orm";
 
@@ -66,23 +61,11 @@ router.get("/order/:orderId", authenticate, (req: AuthRequest, res) => {
 
     // Для каждой доставки получаем водителя, автомобиль и доход
     const deliveriesWithDetails = allDeliveries.map((delivery: any) => {
-      const driver = db
-        .select()
-        .from(drivers)
-        .where(eq(drivers.id, delivery.driverId))
-        .get();
-      const car = db
-        .select()
-        .from(cars)
-        .where(eq(cars.id, delivery.carId))
-        .get();
+      const driver = db.select().from(drivers).where(eq(drivers.id, delivery.driverId)).get();
+      const car = db.select().from(cars).where(eq(cars.id, delivery.carId)).get();
       let income = null;
       if (delivery.incomeId) {
-        income = db
-          .select()
-          .from(incomes)
-          .where(eq(incomes.id, delivery.incomeId))
-          .get();
+        income = db.select().from(incomes).where(eq(incomes.id, delivery.incomeId)).get();
       }
 
       return {
@@ -131,19 +114,11 @@ router.get("/:id", authenticate, (req: AuthRequest, res) => {
     }
 
     // Получаем водителя, автомобиль и доход
-    const driver = db
-      .select()
-      .from(drivers)
-      .where(eq(drivers.id, delivery.driverId))
-      .get();
+    const driver = db.select().from(drivers).where(eq(drivers.id, delivery.driverId)).get();
     const car = db.select().from(cars).where(eq(cars.id, delivery.carId)).get();
     let income = null;
     if (delivery.incomeId) {
-      income = db
-        .select()
-        .from(incomes)
-        .where(eq(incomes.id, delivery.incomeId))
-        .get();
+      income = db.select().from(incomes).where(eq(incomes.id, delivery.incomeId)).get();
     }
 
     res.json({
@@ -169,12 +144,7 @@ router.post("/", authenticate, async (req: AuthRequest, res) => {
     const now = new Date().toISOString();
 
     // Проверяем существование заявки
-    const order = db
-      .select()
-      .from(orders)
-      .where(eq(orders.id, data.orderId))
-      .limit(1)
-      .get();
+    const order = db.select().from(orders).where(eq(orders.id, data.orderId)).limit(1).get();
 
     if (!order) {
       return res.status(404).json({ error: "Заявка не найдена" });
@@ -220,6 +190,36 @@ router.post("/", authenticate, async (req: AuthRequest, res) => {
       .where(eq(deliveries.id, Number(result.lastInsertRowid)))
       .run();
 
+    // Обновляем статус заявки на "in_progress"
+    const currentOrder = db.select().from(orders).where(eq(orders.id, data.orderId)).get();
+
+    if (currentOrder && currentOrder.status !== "in_progress") {
+      // Проверяем, допустим ли переход в статус "in_progress"
+      const isValid = validateOrderStatusTransition(currentOrder.status, "in_progress");
+      if (!isValid) {
+        const allowedTransitions = orderStatusTransitions[currentOrder.status] || [];
+        return res.status(400).json({
+          error: "Недопустимый переход статуса",
+          details: `Из статуса "${currentOrder.status}" нельзя перейти в "in_progress". Допустимые переходы: ${allowedTransitions.join(", ") || "никакой (конечный статус)"}`,
+        });
+      }
+
+      db.update(orders)
+        .set({ status: "in_progress", updatedAt: now })
+        .where(eq(orders.id, data.orderId))
+        .run();
+
+      // Запись в историю изменения статуса
+      await logOrderHistory(
+        data.orderId,
+        userId,
+        "status_changed",
+        "status",
+        currentOrder.status,
+        "in_progress",
+      );
+    }
+
     // Запись в историю заявки
     await logOrderHistory(
       data.orderId,
@@ -249,11 +249,7 @@ router.post("/", authenticate, async (req: AuthRequest, res) => {
       .from(drivers)
       .where(eq(drivers.id, createdDelivery!.driverId))
       .get();
-    const carData = db
-      .select()
-      .from(cars)
-      .where(eq(cars.id, createdDelivery!.carId))
-      .get();
+    const carData = db.select().from(cars).where(eq(cars.id, createdDelivery!.carId)).get();
     const incomeData = db
       .select()
       .from(incomes)
@@ -269,9 +265,7 @@ router.post("/", authenticate, async (req: AuthRequest, res) => {
   } catch (error) {
     console.error("Error creating delivery:", error);
     if (error instanceof Error && error.name === "ZodError") {
-      return res
-        .status(400)
-        .json({ error: "Ошибка валидации", details: error });
+      return res.status(400).json({ error: "Ошибка валидации", details: error });
     }
     res.status(500).json({
       error: "Ошибка сервера",
@@ -289,11 +283,7 @@ router.put("/:id", authenticate, async (req: AuthRequest, res) => {
     const now = new Date().toISOString();
 
     // Получаем текущую доставку
-    const currentDelivery = db
-      .select()
-      .from(deliveries)
-      .where(eq(deliveries.id, deliveryId))
-      .get();
+    const currentDelivery = db.select().from(deliveries).where(eq(deliveries.id, deliveryId)).get();
 
     if (!currentDelivery) {
       return res.status(404).json({ error: "Доставка не найдена" });
@@ -314,10 +304,7 @@ router.put("/:id", authenticate, async (req: AuthRequest, res) => {
     // Удаляем amount и isPaid из updateData - они обновляются в income
     const { amount, isPaid, ...deliveryUpdateData } = updateData as any;
 
-    db.update(deliveries)
-      .set(deliveryUpdateData)
-      .where(eq(deliveries.id, deliveryId))
-      .run();
+    db.update(deliveries).set(deliveryUpdateData).where(eq(deliveries.id, deliveryId)).run();
 
     // Если изменены amount или isPaid, обновляем связанный доход
     if (amount !== undefined && currentDelivery.incomeId) {
@@ -334,19 +321,13 @@ router.put("/:id", authenticate, async (req: AuthRequest, res) => {
         .run();
     }
 
-    const updatedDelivery = db
-      .select()
-      .from(deliveries)
-      .where(eq(deliveries.id, deliveryId))
-      .get();
+    const updatedDelivery = db.select().from(deliveries).where(eq(deliveries.id, deliveryId)).get();
 
     res.json(updatedDelivery);
   } catch (error) {
     console.error("Error updating delivery:", error);
     if (error instanceof Error && error.name === "ZodError") {
-      return res
-        .status(400)
-        .json({ error: "Ошибка валидации", details: error });
+      return res.status(400).json({ error: "Ошибка валидации", details: error });
     }
     res.status(500).json({
       error: "Ошибка сервера",
@@ -362,11 +343,7 @@ router.delete("/:id", authenticate, async (req: AuthRequest, res) => {
     const userId = req.userId!;
     const now = new Date().toISOString();
 
-    const delivery = db
-      .select()
-      .from(deliveries)
-      .where(eq(deliveries.id, deliveryId))
-      .get();
+    const delivery = db.select().from(deliveries).where(eq(deliveries.id, deliveryId)).get();
 
     if (!delivery) {
       return res.status(404).json({ error: "Доставка не найдена" });
@@ -406,11 +383,7 @@ router.post("/:id/complete", authenticate, async (req: AuthRequest, res) => {
     const userId = req.userId!;
     const now = new Date().toISOString();
 
-    const delivery = db
-      .select()
-      .from(deliveries)
-      .where(eq(deliveries.id, deliveryId))
-      .get();
+    const delivery = db.select().from(deliveries).where(eq(deliveries.id, deliveryId)).get();
 
     if (!delivery) {
       return res.status(404).json({ error: "Доставка не найдена" });
@@ -444,11 +417,7 @@ router.post("/:id/complete", authenticate, async (req: AuthRequest, res) => {
       "Завершена",
     );
 
-    const updatedDelivery = db
-      .select()
-      .from(deliveries)
-      .where(eq(deliveries.id, deliveryId))
-      .get();
+    const updatedDelivery = db.select().from(deliveries).where(eq(deliveries.id, deliveryId)).get();
 
     res.json(updatedDelivery);
   } catch (error) {

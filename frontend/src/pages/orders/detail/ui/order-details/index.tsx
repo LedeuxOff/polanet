@@ -8,15 +8,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { OrderForm } from "@/lib/types";
+import { OrderForm, getAvailableStatusTransitions, statusLabels } from "@/lib/types";
 import { UseFormReturn } from "react-hook-form";
 
 interface Props {
   form: UseFormReturn<OrderForm>;
   isSubmitting: boolean;
+  originalStatus: string | null;
+  disabledByStatus: boolean;
 }
 
-export const OrderDetails = ({ form, isSubmitting }: Props) => {
+export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledByStatus }: Props) => {
+  const currentStatus = form.watch("status");
+  const statusToUse = originalStatus || currentStatus;
+  const availableTransitions = getAvailableStatusTransitions(statusToUse);
+
+  // Combine current status with available transitions to ensure current status is always shown
+  const allStatusOptions = Array.from(new Set([currentStatus, ...availableTransitions]));
+
   return (
     <div className="flex flex-col gap-4">
       {/* Тип, статус и дата и время */}
@@ -26,6 +35,7 @@ export const OrderDetails = ({ form, isSubmitting }: Props) => {
           <Select
             value={form.watch("type")}
             onValueChange={(value: "delivery" | "pickup") => form.setValue("type", value)}
+            disabled={disabledByStatus}
           >
             <SelectTrigger disabled={isSubmitting}>
               <SelectValue placeholder="Выберите тип" />
@@ -45,7 +55,7 @@ export const OrderDetails = ({ form, isSubmitting }: Props) => {
           <Input
             id="dateTime"
             type="datetime-local"
-            disabled={isSubmitting}
+            disabled={isSubmitting || disabledByStatus}
             {...form.register("dateTime")}
           />
           {form.formState.errors.dateTime && (
@@ -60,17 +70,17 @@ export const OrderDetails = ({ form, isSubmitting }: Props) => {
             onValueChange={(
               value: "new" | "in_progress" | "completed" | "cancelled" | "archived" | "draft",
             ) => form.setValue("status", value)}
+            disabled={isSubmitting}
           >
-            <SelectTrigger disabled={isSubmitting}>
+            <SelectTrigger>
               <SelectValue placeholder="Выберите статус" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="draft">Черновик</SelectItem>
-              <SelectItem value="new">Новая</SelectItem>
-              <SelectItem value="in_progress">Выполняется</SelectItem>
-              <SelectItem value="completed">Завершено</SelectItem>
-              <SelectItem value="cancelled">Отменено</SelectItem>
-              <SelectItem value="archived">Архив</SelectItem>
+              {allStatusOptions.map((status) => (
+                <SelectItem key={status} value={status}>
+                  {statusLabels[status] || status}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           {form.formState.errors.status && (
@@ -83,7 +93,12 @@ export const OrderDetails = ({ form, isSubmitting }: Props) => {
       <div className="grid grid-cols-1 gap-4">
         <div className="space-y-2">
           <Label htmlFor="address">Адрес *</Label>
-          <Textarea id="address" disabled={isSubmitting} {...form.register("address")} rows={2} />
+          <Textarea
+            id="address"
+            disabled={isSubmitting || disabledByStatus}
+            {...form.register("address")}
+            rows={2}
+          />
           {form.formState.errors.address && (
             <p className="text-sm text-destructive">{form.formState.errors.address.message}</p>
           )}
@@ -93,7 +108,7 @@ export const OrderDetails = ({ form, isSubmitting }: Props) => {
           <Label htmlFor="addressComment">Комментарий к адресу</Label>
           <Textarea
             id="addressComment"
-            disabled={isSubmitting}
+            disabled={isSubmitting || disabledByStatus}
             {...form.register("addressComment")}
             rows={2}
           />
@@ -106,7 +121,7 @@ export const OrderDetails = ({ form, isSubmitting }: Props) => {
           <Label className="flex items-center gap-2">
             <input
               type="checkbox"
-              disabled={isSubmitting}
+              disabled={isSubmitting || disabledByStatus}
               {...form.register("hasPass")}
               className="h-4 w-4"
             />
