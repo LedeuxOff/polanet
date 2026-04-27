@@ -24,9 +24,11 @@ const orderSchema = z.object({
   payerLastName: z.string().min(1, "Фамилия плательщика обязательна"),
   payerFirstName: z.string().min(1, "Имя плательщика обязательно"),
   payerMiddleName: z.string().optional(),
+  payerPhone: z.string().optional(),
   receiverLastName: z.string().min(1, "Фамилия приемщика обязательна"),
   receiverFirstName: z.string().min(1, "Имя приемщика обязательно"),
   receiverMiddleName: z.string().optional(),
+  receiverPhone: z.string().optional(),
   dateTime: z.string().min(1, "Дата и время обязательны"),
   hasPass: z.boolean().default(false),
   addressComment: z.string().optional(),
@@ -71,6 +73,32 @@ function NewOrderPage() {
       carsApi.list().then(setCars).catch(console.error),
     ]).catch(console.error);
   }, []);
+
+  // Автозаполнение при выборе клиента
+  const selectedClientId = watch("clientId");
+  React.useEffect(() => {
+    if (selectedClientId) {
+      const selectedClient = clients.find((c) => c.id === selectedClientId);
+      if (selectedClient) {
+        // Заполняем плательщика
+        if (selectedClient.payerLastName) setValue("payerLastName", selectedClient.payerLastName);
+        if (selectedClient.payerFirstName)
+          setValue("payerFirstName", selectedClient.payerFirstName);
+        if (selectedClient.payerMiddleName)
+          setValue("payerMiddleName", selectedClient.payerMiddleName || "");
+        if (selectedClient.payerPhone) setValue("payerPhone", selectedClient.payerPhone);
+
+        // Заполняем приемщика
+        if (selectedClient.receiverLastName)
+          setValue("receiverLastName", selectedClient.receiverLastName);
+        if (selectedClient.receiverFirstName)
+          setValue("receiverFirstName", selectedClient.receiverFirstName);
+        if (selectedClient.receiverMiddleName)
+          setValue("receiverMiddleName", selectedClient.receiverMiddleName || "");
+        if (selectedClient.receiverPhone) setValue("receiverPhone", selectedClient.receiverPhone);
+      }
+    }
+  }, [selectedClientId, clients, setValue]);
 
   const onSubmit = async (data: OrderForm) => {
     setError(null);
@@ -149,7 +177,7 @@ function NewOrderPage() {
           {/* Плательщик */}
           <div>
             <h3 className="text-lg font-semibold mb-3">Плательщик</h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="payerLastName">Фамилия *</Label>
                 <Input id="payerLastName" disabled={isSubmitting} {...register("payerLastName")} />
@@ -178,13 +206,23 @@ function NewOrderPage() {
                   {...register("payerMiddleName")}
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="payerPhone">Телефон</Label>
+                <Input
+                  id="payerPhone"
+                  disabled={isSubmitting}
+                  placeholder="+7 (999) 000-00-00"
+                  {...register("payerPhone")}
+                />
+              </div>
             </div>
           </div>
 
           {/* Приемщик */}
           <div>
             <h3 className="text-lg font-semibold mb-3">Приемщик</h3>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="receiverLastName">Фамилия *</Label>
                 <Input
@@ -215,6 +253,16 @@ function NewOrderPage() {
                   id="receiverMiddleName"
                   disabled={isSubmitting}
                   {...register("receiverMiddleName")}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="receiverPhone">Телефон</Label>
+                <Input
+                  id="receiverPhone"
+                  disabled={isSubmitting}
+                  placeholder="+7 (999) 000-00-00"
+                  {...register("receiverPhone")}
                 />
               </div>
             </div>

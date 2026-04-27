@@ -32,9 +32,11 @@ export const useOrderDetailPage = () => {
           form.setValue("payerLastName", data.payerLastName);
           form.setValue("payerFirstName", data.payerFirstName);
           form.setValue("payerMiddleName", data.payerMiddleName || "");
+          form.setValue("payerPhone", data.payerPhone || "");
           form.setValue("receiverLastName", data.receiverLastName);
           form.setValue("receiverFirstName", data.receiverFirstName);
           form.setValue("receiverMiddleName", data.receiverMiddleName || "");
+          form.setValue("receiverPhone", data.receiverPhone || "");
           form.setValue("dateTime", data.dateTime);
           form.setValue("hasPass", data.hasPass);
           form.setValue("addressComment", data.addressComment || "");

@@ -35,7 +35,7 @@ export const OrderDetailPage = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="flex flex-col gap-4">
       {/* Шапка заявки */}
       <Card>
         <CardHeader>
@@ -136,24 +136,6 @@ export const OrderDetailPage = () => {
           </Button>
         </div>
       </form>
-      {/* <Card>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {error && (
-              <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
-                {error}
-              </div>
-            )}
-
-            <div className="flex gap-2">
-              
-              <Button type="button" variant="outline" onClick={() => navigate({ to: "/orders" })}>
-                Отмена
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card> */}
     </div>
   );
 };

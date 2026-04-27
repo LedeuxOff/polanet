@@ -113,12 +113,21 @@ export const OrdersPage = () => {
   ];
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col gap-2">
             <CardTitle>Заявки</CardTitle>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-black">Список заявок</span>
+            </div>
           </div>
+        </CardHeader>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <div className="flex gap-2 items-end">
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 flex-1">
               {/* Поиск по номеру */}
@@ -226,6 +235,10 @@ export const OrdersPage = () => {
             )}
           </div>
         </CardHeader>
+      </Card>
+
+      <Card>
+        <CardHeader></CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
@@ -251,8 +264,14 @@ export const OrdersPage = () => {
           </Button>
         </Link>
 
+        <Link to="/orders/new">
+          <Button type="button" className="px-8 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
+            Создать заявку
+          </Button>
+        </Link>
+
         <QuickCreateOrderButton />
       </div>
-    </>
+    </div>
   );
 };

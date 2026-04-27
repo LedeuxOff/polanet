@@ -24,6 +24,34 @@ export const OrderClient = ({ form, isSubmitting }: Props) => {
     Promise.all([clientsApi.list().then(setClients).catch(console.error)]).catch(console.error);
   }, []);
 
+  // Автозаполнение при выборе клиента
+  const selectedClientId = form.watch("clientId");
+  useEffect(() => {
+    if (selectedClientId) {
+      const selectedClient = clients.find((c) => c.id === selectedClientId);
+      if (selectedClient) {
+        // Заполняем плательщика
+        if (selectedClient.payerLastName)
+          form.setValue("payerLastName", selectedClient.payerLastName);
+        if (selectedClient.payerFirstName)
+          form.setValue("payerFirstName", selectedClient.payerFirstName);
+        if (selectedClient.payerMiddleName)
+          form.setValue("payerMiddleName", selectedClient.payerMiddleName);
+        if (selectedClient.payerPhone) form.setValue("payerPhone", selectedClient.payerPhone);
+
+        // Заполняем приемщика
+        if (selectedClient.receiverLastName)
+          form.setValue("receiverLastName", selectedClient.receiverLastName);
+        if (selectedClient.receiverFirstName)
+          form.setValue("receiverFirstName", selectedClient.receiverFirstName);
+        if (selectedClient.receiverMiddleName)
+          form.setValue("receiverMiddleName", selectedClient.receiverMiddleName);
+        if (selectedClient.receiverPhone)
+          form.setValue("receiverPhone", selectedClient.receiverPhone);
+      }
+    }
+  }, [selectedClientId, clients, form.setValue]);
+
   return (
     <div className="flex flex-col gap-4">
       {/* Клиент */}
@@ -51,7 +79,7 @@ export const OrderClient = ({ form, isSubmitting }: Props) => {
       {/* Плательщик */}
       <div>
         <h3 className="text-lg font-semibold mb-3">Плательщик</h3>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div className="space-y-2">
             <Label htmlFor="payerLastName">Фамилия *</Label>
             <Input id="payerLastName" disabled={isSubmitting} {...form.register("payerLastName")} />
@@ -84,13 +112,23 @@ export const OrderClient = ({ form, isSubmitting }: Props) => {
               {...form.register("payerMiddleName")}
             />
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="payerPhone">Телефон</Label>
+            <Input
+              id="payerPhone"
+              disabled={isSubmitting}
+              placeholder="+7 (999) 000-00-00"
+              {...form.register("payerPhone")}
+            />
+          </div>
         </div>
       </div>
 
       {/* Приемщик */}
       <div>
         <h3 className="text-lg font-semibold mb-3">Приемщик</h3>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div className="space-y-2">
             <Label htmlFor="receiverLastName">Фамилия *</Label>
             <Input
@@ -125,6 +163,16 @@ export const OrderClient = ({ form, isSubmitting }: Props) => {
               id="receiverMiddleName"
               disabled={isSubmitting}
               {...form.register("receiverMiddleName")}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="receiverPhone">Телефон</Label>
+            <Input
+              id="receiverPhone"
+              disabled={isSubmitting}
+              placeholder="+7 (999) 000-00-00"
+              {...form.register("receiverPhone")}
             />
           </div>
         </div>

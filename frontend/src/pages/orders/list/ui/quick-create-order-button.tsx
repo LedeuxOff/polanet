@@ -69,7 +69,7 @@ export function QuickCreateOrderButton() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button type="button" className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700">
-          Создать заявку
+          Создать черновик
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">

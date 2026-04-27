@@ -88,10 +88,12 @@ export const orders = sqliteTable("orders", {
   payerLastName: text("payer_last_name").notNull(),
   payerFirstName: text("payer_first_name").notNull(),
   payerMiddleName: text("payer_middle_name"),
+  payerPhone: text("payer_phone"),
   // Приемщик
   receiverLastName: text("receiver_last_name").notNull(),
   receiverFirstName: text("receiver_first_name").notNull(),
   receiverMiddleName: text("receiver_middle_name"),
+  receiverPhone: text("receiver_phone"),
   // Дата и время
   dateTime: text("date_time").notNull(),
   // Пропуск
