@@ -10,16 +10,20 @@ RESTful API-сервер для системы управления логист
 - [Запуск проекта](#запуск-проекта)
 - [База данных](#база-данных)
 - [API Endpoints](#api-endpoints)
-- [Аутентификация](#аутентификация)
-- [Типы ролей](#типы-ролей)
+- [Аутентификация и авторизация](#аутентификация-и-авторизация)
+- [Типы ролей и права доступа](#типы-ролей-и-права-доступа)
 - [Статусы заявок и цепочки переходов](#статусы-заявок-и-цепочки-переходов)
 - [Схема базы данных](#схема-базы-данных)
+- [Валидация данных](#валидация-данных)
+- [Pre-commit хук](#pre-commit-хук)
+- [Конфигурация](#конфигурация)
+- [Скрипты](#скрипты)
 
 ## 🛠 Стек технологий
 
 | Компонент      | Технология                    |
 | -------------- | ----------------------------- |
-| Runtime        | Node.js                       |
+| Runtime        | Node.js (ESM)                 |
 | Framework      | Express.js                    |
 | ORM            | Drizzle ORM                   |
 | Database       | SQLite (better-sqlite3)       |
@@ -37,24 +41,25 @@ backend/
 │   ├── index.ts                    # Точка входа, настройка Express
 │   ├── db/
 │   │   ├── index.ts                # Подключение к БД (drizzle + better-sqlite3)
-│   │   ├── schema.ts               # Определение таблиц и отношений (Drizzle schema)
-│   │   ├── init.ts                 # Инициализация таблиц (SQL)
+│   │   ├── schema.ts               # Определение таблиц, отношений и типов
+│   │   ├── init.ts                 # Инициализация таблиц (SQL DDL)
 │   │   ├── migrate.ts              # Применение миграций Drizzle
 │   │   └── seed.ts                 # Начальные данные (роли, админ)
 │   ├── middleware/
-│   │   ├── auth.ts                 # JWT аутентификация
+│   │   ├── auth.ts                 # JWT аутентификация (authenticate, generateToken)
 │   │   └── validators.ts           # Zod схемы для валидации входных данных
 │   └── routes/
-│       ├── auth.ts                 # Аутентификация (login, register, me)
+│       ├── auth.ts                 # Аутентификация (login, register, me, logout)
 │       ├── users.ts                # CRUD пользователей
 │       ├── roles.ts                # CRUD ролей
 │       ├── cars.ts                 # CRUD автомобилей
 │       ├── drivers.ts              # CRUD водителей (+ транспортные карты)
 │       ├── clients.ts              # CRUD клиентов (физ/юр лица)
 │       ├── orders.ts               # CRUD заявок + выплаты + история
-│       ├── transportCards.ts       # Транспортные карты + расходы
+│       ├── transportCards.ts       # Транспортные карты + расходы + история
 │       ├── deliveries.ts           # Доставки по заявкам
-│       └── incomes.ts              # Доходы (предоплата, оплата доставки)
+│       ├── incomes.ts              # Доходы (предоплата, оплата доставки)
+│       └── expenses.ts             # Расходы (зарплата, топливо)
 ├── data/
 │   └── polanet.db                  # База данных SQLite
 ├── drizzle/                        # Миграции Drizzle (генерируются автоматически)
@@ -92,6 +97,8 @@ npm start        # Запуск скомпилированного кода
 ### Инициализация
 
 Таблицы создаются автоматически при первом запуске через [`src/db/init.ts`](src/db/init.ts).
+
+Используется режим WAL (`PRAGMA journal_mode = WAL`) для лучшей производительности при конкурентном доступе.
 
 ### Миграции
 
@@ -182,6 +189,16 @@ npm run db:seed
 | PUT    | `/api/clients/:id` | Обновить клиента |
 | DELETE | `/api/clients/:id` | Удалить клиента  |
 
+**Типы клиентов**:
+
+- `individual` — физическое лицо (фамилия, имя, отчество)
+- `legal` — юридическое лицо (название организации)
+
+Каждый клиент имеет информацию о:
+
+- **Плательщике** (payer): ФИО, телефон
+- **Приёмщике** (receiver): ФИО, телефон
+
 ### Заявки
 
 | Метод  | Endpoint                              | Описание                                    |
@@ -196,6 +213,13 @@ npm run db:seed
 | DELETE | `/api/orders/:id/payments/:paymentId` | Удалить выплату                             |
 | GET    | `/api/orders/:id/history`             | История изменений заявки                    |
 
+**Типы заявок**:
+
+- `delivery` — доставка
+- `pickup` — самовывоз
+
+**Статусы заявок**: `draft`, `new`, `in_progress`, `completed`, `cancelled`, `archived`
+
 ### Транспортные карты
 
 | Метод  | Endpoint                                           | Описание                         |
@@ -208,6 +232,8 @@ npm run db:seed
 | POST   | `/api/transport-cards/:id/expenses`                | Добавить расход                  |
 | DELETE | `/api/transport-cards/:cardId/expenses/:expenseId` | Удалить расход                   |
 
+**Статусы карт**: `active`, `inactive`
+
 ### Доставки
 
 | Метод  | Endpoint                         | Описание           |
@@ -218,6 +244,10 @@ npm run db:seed
 | PUT    | `/api/deliveries/:id`            | Обновить доставку  |
 | DELETE | `/api/deliveries/:id`            | Удалить доставку   |
 | POST   | `/api/deliveries/:id/complete`   | Завершить доставку |
+
+**Статусы доставок**: `in_progress`, `completed`
+
+**Типы оплаты**: `cash` (наличный), `bank_transfer` (безналичный)
 
 ### Доходы
 
@@ -248,13 +278,33 @@ npm run db:seed
 - `cash` — наличный расчёт
 - `bank_transfer` — безналичный расчёт
 
+### Расходы
+
+| Метод  | Endpoint            | Описание        |
+| ------ | ------------------- | --------------- |
+| GET    | `/api/expenses`     | Список расходов |
+| GET    | `/api/expenses/:id` | Расход по ID    |
+| POST   | `/api/expenses`     | Создать расход  |
+| PUT    | `/api/expenses/:id` | Обновить расход |
+| DELETE | `/api/expenses/:id` | Удалить расход  |
+
+**Типы расходов (`expenseType`)**:
+
+- `salary` — зарплата
+- `fuel` — топливо
+
+**Типы оплаты (`paymentType`)**:
+
+- `cash` — наличный расчёт
+- `bank_transfer` — безналичный расчёт
+
 ### Здоровье
 
 | Метод | Endpoint      | Описание                   |
 | ----- | ------------- | -------------------------- |
 | GET   | `/api/health` | Проверка работоспособности |
 
-## 🔐 Аутентификация
+## 🔐 Аутентификация и авторизация
 
 Все endpoints, кроме `/api/auth/login` и `/api/auth/register`, требуют JWT токен.
 
@@ -278,8 +328,9 @@ curl http://localhost:3000/api/users \
 - [`authenticate()`](src/middleware/auth.ts) — проверяет JWT токен из заголовка `Authorization`
 - Токен хранится 24 часа
 - В `AuthRequest` добавляются `userId` и `user` (id, email, roleId)
+- [`generateToken()`](src/middleware/auth.ts:38) — создаёт JWT с payload: `{ id, userId, email, roleId }`
 
-## 👥 Типы ролей
+## 👥 Типы ролей и права доступа
 
 | Код    | Название      | Описание                                |
 | ------ | ------------- | --------------------------------------- |
@@ -341,10 +392,33 @@ curl http://localhost:3000/api/users \
 | `deliveries`              | Доставки (привязка к заявке, водителю, автомобилю) |
 | `payments`                | Выплаты по заявкам                                 |
 | `incomes`                 | Доходы (предоплата, оплата доставки)               |
+| `expenses`                | Расходы (зарплата, топливо)                        |
 | `order_history`           | История изменений заявок                           |
 | `transport_cards`         | Транспортные карты (номер, привязка к водителю)    |
 | `transport_card_expenses` | Расходы по транспортным картам                     |
 | `transport_card_history`  | История изменений транспортных карт                |
+
+### Отношения (Relations)
+
+```
+roles 1───< users N
+users 1───< orders N
+users 1───< order_history N
+clients 1───< orders N
+cars 1───< deliveries N
+drivers 1───< deliveries N
+drivers 1───< transport_cards 0..1
+orders 1───< payments N
+orders 1───< deliveries N
+orders 1───< incomes N
+orders 1───< order_history N
+deliveries 1───< incomes N
+deliveries N───< payments 0..1
+transport_cards 1───< transport_card_expenses N
+transport_cards 1───< transport_card_history N
+expenses N───< transport_cards 0..1
+expenses N───< drivers 0..1
+```
 
 ### Типы данных
 
@@ -374,17 +448,79 @@ curl http://localhost:3000/api/users \
 - `cash` — наличный расчёт
 - `bank_transfer` — безналичный расчёт
 
-#### Типы оплаты доставок (`paymentMethod`)
+#### Типы расходов (`expenseType`)
 
-- `cash` — наличный расчёт
-- `bank_transfer` — безналичный расчёт
+- `salary` — зарплата
+- `fuel` — топливо
 
-#### Статусы доставок
+## ✅ Валидация данных
 
-- `in_progress` — в процессе
-- `completed` — завершена
+Все входные данные валидируются с помощью **Zod схем** в [`src/middleware/validators.ts`](src/middleware/validators.ts):
 
-## 🔧 Конфигурация
+| Схема                                         | Описание                    |
+| --------------------------------------------- | --------------------------- |
+| `loginSchema`                                 | Вход (email + пароль)       |
+| `registerSchema`                              | Регистрация пользователя    |
+| `updateUserSchema`                            | Обновление пользователя     |
+| `createRoleSchema`                            | Создание роли               |
+| `createCarSchema` / `updateCarSchema`         | CRUD автомобилей            |
+| `createDriverSchema` / `updateDriverSchema`   | CRUD водителей              |
+| `createClientSchema` / `updateClientSchema`   | CRUD клиентов               |
+| `createOrderSchema` / `updateOrderSchema`     | CRUD заявок                 |
+| `quickCreateOrderSchema`                      | Быстрое создание заявки     |
+| `createPaymentSchema` / `updatePaymentSchema` | CRUD выплат                 |
+| `createTransportCardSchema`                   | Создание транспортной карты |
+| `createDeliverySchema`                        | Создание доставки           |
+| `createIncomeSchema` / `updateIncomeSchema`   | CRUD доходов                |
+
+### Валидация статусов заявок
+
+Функция [`validateOrderStatusTransition()`](src/middleware/validators.ts:188) проверяет допустимость перехода между статусами согласно определённой цепочке.
+
+## 🔄 Pre-commit хук
+
+Проект использует Husky для git хуков. Перед каждым коммитом автоматически выполняются:
+
+1. **Линтинг фронтенда** — проверка кода через ESLint
+2. **Тесты** — запуск тестового набора (Vitest)
+
+Если хотя бы один из шагов падает, коммит не создаётся.
+
+### Настройка
+
+```bash
+# Установка хуков (выполняется автоматически при npm install)
+npm run prepare
+
+# Ручной запуск проверок
+npm run lint:frontend   # Линтинг фронтенда
+npm run test:run        # Тесты фронтенда
+```
+
+### Фронтенд тесты
+
+Фронтенд использует **Vitest** с **React Testing Library**:
+
+```bash
+# Запустить все тесты в watch режиме
+npm run test
+
+# Запустить тесты один раз (для CI/CD)
+npm run test:run
+
+# Запустить тесты с UI
+npm run test:ui
+```
+
+**Расположение тестов**:
+
+- [`frontend/src/lib/utils.test.ts`](src/lib/utils.test.ts) — тесты утилит (9 тестов)
+- [`frontend/src/lib/types/transport-card-types.test.ts`](src/lib/types/transport-card-types.test.ts) — тесты Zod схем (12 тестов)
+- [`frontend/src/components/ui/button.test.tsx`](src/components/ui/button.test.tsx) — тесты React компонентов (14 тестов)
+
+**Итого**: 35 тестов в 3 тестовых файлах.
+
+## ⚙️ Конфигурация
 
 ### Переменные окружения
 
@@ -419,3 +555,5 @@ curl http://localhost:3000/api/users \
 | `npm run db:migrate`  | Применение миграций                    |
 | `npm run db:push`     | Push схемы в БД                        |
 | `npm run db:seed`     | Загрузка начальных данных              |
+| `npm run lint`        | Линтинг TypeScript кода                |
+| `npm run lint:fix`    | Автоисправление линтинга               |
