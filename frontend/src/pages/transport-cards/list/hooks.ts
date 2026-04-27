@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 export const useTransportCardsListPage = () => {
   const [cards, setCards] = useState<
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (TransportCard & { expenses: any[]; totalExpenses: number })[]
   >([]);
   const [isLoading, setIsLoading] = useState(true);

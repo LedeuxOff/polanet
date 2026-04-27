@@ -1,381 +1,254 @@
-# Polanet Frontend
+# TODO LIST
 
-Клиентское SPA-приложение для системы управления логистикой Polanet, построенное на React с использованием TanStack Router и TanStack Table.
+Быстрое создание заявок только с выбором клиента
 
-## 📋 Содержание
+Водителей и автомобилей может быть несколько
 
-- [Стек технологий](#стек-технологий)
-- [Структура проекта](#структура-проекта)
-- [Установка](#установка)
-- [Запуск проекта](#запуск-проекта)
-- [Маршрутизация](#маршрутизация)
-- [Архитектура](#архитектура)
-- [Типы данных](#типы-данных)
-- [API клиент](#api-клиент)
-- [Аутентификация](#аутентификация)
-- [Страницы приложения](#страницы-приложения)
+Оплату указывать для каждого водителя
 
-## 🛠 Стек технологий
+Выбор оплаты наличные или перевод
 
-| Компонент     | Технология      |
-| ------------- | --------------- |
-| Runtime       | Node.js         |
-| Framework     | React 18        |
-| Bundler       | Vite            |
-| Язык          | TypeScript      |
-| Роутинг       | TanStack Router |
-| Таблицы       | TanStack Table  |
-| Формы         | React Hook Form |
-| Валидация     | Zod             |
-| UI компоненты | Radix UI        |
-| Стили         | Tailwind CSS    |
-| Иконки        | Lucide React    |
+Водители могут приезжать по одной заявке в разные дни
 
-## 📁 Структура проекта
+Аналог доставки
 
-```
-frontend/
-├── src/
-│   ├── main.tsx                    # Точка входа приложения
-│   ├── routeTree.gen.ts            # Автоматически сгенерированный роутер
-│   ├── vite-env.d.ts               # Типы для Vite
-│   ├── components/
-│   │   └── ui/                     # Переиспользуемые UI компоненты (Radix UI)
-│   │       ├── accordion.tsx
-│   │       ├── badge.tsx
-│   │       ├── button.tsx
-│   │       ├── card.tsx
-│   │       ├── checkbox.tsx
-│   │       ├── dialog.tsx
-│   │       ├── input.tsx
-│   │       ├── label.tsx
-│   │       ├── select.tsx
-│   │       ├── separator.tsx
-│   │       ├── skeleton.tsx
-│   │       ├── table.tsx
-│   │       ├── textarea.tsx
-│   │       └── tooltip.tsx
-│   ├── lib/
-│   │   ├── api/                    # API клиенты для бэкенд эндпоинтов
-│   │   │   ├── index.ts            # Базовый request клиент
-│   │   │   ├── api-config.ts       # Конфигурация API
-│   │   │   ├── auth-api.ts         # Аутентификация
-│   │   │   ├── users-api.ts        # Пользователи
-│   │   │   ├── roles-api.ts        # Роли
-│   │   │   ├── cars-api.ts         # Автомобили
-│   │   │   ├── clients-api.ts      # Клиенты
-│   │   │   ├── drivers-api.ts      # Водители
-│   │   │   ├── orders-api.ts       # Заявки
-│   │   │   ├── deliveries-api.ts   # Доставки
-│   │   │   ├── incomes-api.ts      # Доходы
-│   │   │   └── transport-cards.ts  # Транспортные карты
-│   │   ├── contexts/
-│   │   │   └── auth-context.tsx    # Контекст аутентификации
-│   │   ├── types/                  # TypeScript типы
-│   │   │   ├── index.ts            # Экспорт всех типов
-│   │   │   ├── user-types.ts
-│   │   │   ├── role-types.ts
-│   │   │   ├── car-types.ts
-│   │   │   ├── client-types.ts
-│   │   │   ├── driver-types.ts
-│   │   │   ├── order-types.ts
-│   │   │   ├── delivery-types.ts
-│   │   │   ├── income-types.ts
-│   │   │   ├── payment-types.ts
-│   │   │   └── transport-card-types.ts
-│   │   └── utils.ts                # Утилиты
-│   ├── pages/                      # Страницы приложения
-│   │   ├── root/                   # Главная страница с навигацией
-│   │   │   └── index.tsx
-│   │   ├── orders/                 # Управление заявками
-│   │   │   ├── list/               # Список заявок
-│   │   │   │   ├── index.tsx
-│   │   │   │   ├── hooks.ts
-│   │   │   │   └── consts.ts
-│   │   │   └── detail/             # Детали заявки
-│   │   │       ├── index.tsx
-│   │   │       ├── hooks.ts
-│   │   │       ├── consts.ts
-│   │   │       └── ui/
-│   │   │           ├── order-header/
-│   │   │           ├── order-details/
-│   │   │           ├── order-client/
-│   │   │           ├── order-payments/
-│   │   │           ├── order-deliveries/
-│   │   │           └── order-history/
-│   │   ├── clients/                # Управление клиентами
-│   │   │   ├── list/
-│   │   │   ├── detail/
-│   │   │   └── new/
-│   │   ├── users/                  # Управление пользователями
-│   │   │   ├── list/
-│   │   │   ├── detail/
-│   │   │   └── new/
-│   │   ├── roles/                  # Управление ролями
-│   │   │   ├── list/
-│   │   │   ├── detail/
-│   │   │   └── new/
-│   │   ├── cars/                   # Управление автомобилями
-│   │   │   ├── list/
-│   │   │   ├── detail/
-│   │   │   └── new/
-│   │   ├── drivers/                # Управление водителями
-│   │   │   ├── list/
-│   │   │   ├── detail/
-│   │   │   └── new/
-│   │   ├── transport-cards/        # Управление транспортными картами
-│   │   │   ├── list/
-│   │   │   ├── detail/
-│   │   │   └── new/
-│   │   └── orders/                 # Управление заявками
-│   │       ├── list/
-│   │       └── detail/
-│   ├── routes/                     # Маршруты TanStack Router
-│   │   ├── __root.tsx              # Корневой маршрут (layout)
-│   │   ├── index.tsx               # Главная страница
-│   │   ├── login.tsx               # Страница входа
-│   │   ├── users.tsx               # Layout для пользователей
-│   │   ├── cars/                   # Маршруты автомобилей
-│   │   ├── clients/                # Маршруты клиентов
-│   │   ├── drivers/                # Маршруты водителей
-│   │   ├── orders/                 # Маршруты заявок
-│   │   ├── roles/                  # Маршруты ролей
-│   │   └── transport-cards/        # Маршруты транспортных карт
-│   └── styles/
-│       └── globals.css             # Глобальные стили (Tailwind)
-├── package.json
-├── vite.config.ts
-├── tailwind.config.js
-├── postcss.config.js
-├── tsconfig.json
-└── index.html
-```
+# Polanet Admin Panel
 
-## 📦 Установка
+Fullstack приложение - административная панель для управления данными.
+
+## Стек технологий
+
+### Фронтенд
+
+- React 18 + TypeScript
+- TanStack Router (роутинг)
+- TanStack Table (таблицы)
+- shadcn/ui + Tailwind CSS (UI компоненты)
+- React Hook Form + Zod (формы и валидация)
+
+### Бэкенд
+
+- Node.js + Express
+- SQLite (база данных)
+- Drizzle ORM (работа с БД)
+- JWT (аутентификация)
+- bcryptjs (хеширование паролей)
+
+## Быстрый старт
+
+### Установка зависимостей
 
 ```bash
+# Исправить права npm (если нужно)
+sudo chown -R 501:20 "/Users/nikitavodenikov/.npm"
+
+# Установить зависимости корневого проекта
+npm install
+
+# Фронтенд
 cd frontend
+npm install
+
+# Бэкенд
+cd ../backend
 npm install
 ```
 
-## 🚀 Запуск проекта
-
-### Разработка (с hot-reload)
+### Запуск в режиме разработки
 
 ```bash
+# Из корня проекта - запуск фронтенда и бэкенда одновременно
+npm run dev
+
+# Или по отдельности:
+# Терминал 1 - Бэкенд
+cd backend
+npm run dev
+
+# Терминал 2 - Фронтенд
+cd frontend
 npm run dev
 ```
 
-Приложение запустится на `http://localhost:5173`
-
-### Сборка
+### Инициализация базы данных
 
 ```bash
-npm run build    # Сборка для продакшн
-npm run preview  # Предпросмотр сборки
+cd backend
+
+# Генерация миграций
+npm run db:generate
+
+# Применение миграций
+npm run db:migrate
+
+# Заполнение тестовыми данными (создаёт администратора)
+npm run db:seed
 ```
 
-## 🗺 Маршрутизация
+**Данные для входа по умолчанию:**
 
-Приложение использует TanStack Router с file-based routing. Основные маршруты:
+- Email: `admin@polanet.local`
+- Пароль: `admin123`
 
-| Путь                       | Описание                   |
-| -------------------------- | -------------------------- |
-| `/login`                   | Страница входа             |
-| `/`                        | Главная страница (дашборд) |
-| `/users`                   | Список пользователей       |
-| `/users/new`               | Создание пользователя      |
-| `/users/$userId`           | Детали пользователя        |
-| `/roles`                   | Список ролей               |
-| `/roles/new`               | Создание роли              |
-| `/roles/$roleId`           | Детали роли                |
-| `/cars`                    | Список автомобилей         |
-| `/cars/new`                | Создание автомобиля        |
-| `/cars/$carId`             | Детали автомобиля          |
-| `/clients`                 | Список клиентов            |
-| `/clients/new`             | Создание клиента           |
-| `/clients/$clientId`       | Детали клиента             |
-| `/drivers`                 | Список водителей           |
-| `/drivers/new`             | Создание водителя          |
-| `/drivers/$driverId`       | Детали водителя            |
-| `/orders`                  | Список заявок              |
-| `/orders/new`              | Создание заявки            |
-| `/orders/$orderId`         | Детали заявки              |
-| `/transport-cards`         | Список транспортных карт   |
-| `/transport-cards/new`     | Создание карты             |
-| `/transport-cards/$cardId` | Детали карты               |
-
-## 🏗 Архитектура
-
-### Page Components
-
-Каждая страница организована по паттерну:
+## Структура проекта
 
 ```
-pages/<entity>/
-├── list/           # Список с фильтрами и таблицей
-├── detail/         # Детали с возможностью редактирования
-└── new/            # Форма создания
+polanet/
+├── frontend/          # React приложение
+│   ├── src/
+│   │   ├── components/
+│   │   │   └── ui/    # shadcn/ui компоненты
+│   │   ├── routes/    # TanStack Router роуты
+│   │   ├── lib/       # Утилиты, API, контексты
+│   │   └── styles/    # Глобальные стили
+│   └── package.json
+├── backend/           # Express API
+│   ├── src/
+│   │   ├── db/        # База данных и схемы
+│   │   ├── routes/    # API endpoints
+│   │   └── middleware/# Auth, валидаторы
+│   ├── data/          # SQLite файл
+│   └── package.json
+└── package.json
 ```
 
-### Hooks Pattern
+## API Endpoints
 
-Логика страниц вынесена в хуки (`hooks.ts`), которые управляют:
+### Аутентификация
 
-- Загрузкой данных
-- Обработкой форм
-- Действиями (создание, обновление, удаление)
+| Метод | Endpoint           | Описание             |
+| ----- | ------------------ | -------------------- |
+| POST  | /api/auth/login    | Вход                 |
+| POST  | /api/auth/register | Регистрация          |
+| GET   | /api/auth/me       | Текущий пользователь |
+| POST  | /api/auth/logout   | Выход                |
 
-### UI Components
+### Пользователи
 
-Компоненты UI расположены в `ui/` поддиректориях и являются переиспользуемыми:
+| Метод  | Endpoint       | Описание              |
+| ------ | -------------- | --------------------- |
+| GET    | /api/users     | Список пользователей  |
+| GET    | /api/users/:id | Пользователь по ID    |
+| POST   | /api/users     | Создать пользователя  |
+| PUT    | /api/users/:id | Обновить пользователя |
+| DELETE | /api/users/:id | Удалить пользователя  |
 
-- `order-header` — шапка заявки с номером и кнопками действий
-- `order-details` — основная информация (тип, статус, адрес)
-- `order-client` — данные клиента, плательщика, приемщика
-- `order-payments` — выплаты и финансы
-- `order-deliveries` — доставки по заявке
-- `order-history` — история изменений
+### Роли
 
-### API Client
+| Метод | Endpoint   | Описание     |
+| ----- | ---------- | ------------ |
+| GET   | /api/roles | Список ролей |
+| POST  | /api/roles | Создать роль |
 
-Все API вызовы инкапсулированы в [`lib/api/`](src/lib/api/index.ts):
+## Тестирование
+
+Для модульного тестирования фронтенда используется **Vitest** + **React Testing Library**.
+
+### Запуск тестов
+
+```bash
+cd frontend
+
+# Запуск в watch режиме (для разработки)
+npm run test
+
+# Запуск один раз
+npm run test:run
+
+# Запуск с UI (опционально, требует @vitest/ui)
+npm run test:ui
+```
+
+### Структура тестов
+
+```
+frontend/
+├── vitest.config.ts       # Конфигурация Vitest
+├── src/
+│   ├── test/
+│   │   └── setup.ts       # Глобальная настройка (моки)
+│   └── ...
+│   ├── lib/
+│   │   └── utils.test.ts  # Тесты утилит
+│   └── components/
+│       └── ui/
+│           └── button.test.tsx  # Тесты компонентов
+```
+
+### Написание тестов
+
+**Важно:** Vitest globals (`describe`, `it`, `expect`, `vi`) доступны глобально. НЕ импортируйте их напрямую из `vitest`:
 
 ```typescript
-import { ordersApi, clientsApi, deliveriesApi } from "@/lib/api";
-
-// Пример использования
-const orders = await ordersApi.list();
-const order = await ordersApi.get(123);
-await ordersApi.update(123, { status: "in_progress" });
-```
-
-### Типизация
-
-Все типы определены в [`lib/types/`](src/lib/types/index.ts) и экспортируются через единый индекс:
-
-```typescript
-import { Order, OrderForm, CreateOrderInput, orderSchema } from "@/lib/types";
-```
-
-## 📊 Типы данных
-
-### Заявки (Orders)
-
-Заявка содержит:
-
-- **Основная информация**: тип (доставка/вывоз), адрес, дата/время
-- **Плательщик**: ФИО, телефон
-- **Приемщик**: ФИО, телефон
-- **Статус**: черновик → новая → выполняется → завершено → архив
-- **Финансы**: выплаты, доходы
-- **Доставки**: связанные доставки
-- **История**: лог изменений
-
-### Статусы заявок
-
-| Код           | Название    | Описание        |
-| ------------- | ----------- | --------------- |
-| `draft`       | Черновик    | Черновик заявки |
-| `new`         | Новая       | Новая заявка    |
-| `in_progress` | Выполняется | В работе        |
-| `completed`   | Завершено   | Завершённая     |
-| `cancelled`   | Отменено    | Отменённая      |
-| `archived`    | Архив       | Архивная        |
-
-### Клиенты (Clients)
-
-Клиент может быть:
-
-- **Физическое лицо** (`individual`) — с ФИО
-- **Юридическое лицо** (`legal`) — с названием организации
-
-Для каждого клиента хранятся:
-
-- Контактные данные (телефон, email)
-- Данные плательщика (ФИО, телефон)
-- Данные приемщика (ФИО, телефон)
-
-## 🔌 API клиент
-
-Базовый клиент для HTTP запросов:
-
-```typescript
-import { request } from "@/lib/api";
-
-// GET запрос
-const data = await request<Order>("/api/orders/123");
-
-// POST запрос
-const created = await request<Order>("/api/orders", {
-  method: "POST",
-  body: JSON.stringify(data),
+// ✅ Правильно - используем globals
+describe("My feature", () => {
+  it("should work", () => {
+    expect(1 + 1).toBe(2);
+  });
 });
+
+// ❌ Неправильно
+import { describe, it, expect } from "vitest";
 ```
 
-Все запросы автоматически включают JWT токен из `localStorage`.
+### Примеры тестов
 
-## 🔐 Аутентификация
+- [`src/lib/utils.test.ts`](src/lib/utils.test.ts) - тесты утилиты `cn` (9 тестов)
+- [`src/lib/types/transport-card-types.test.ts`](src/lib/types/transport-card-types.test.ts) - тесты Zod схем (12 тестов)
+- [`src/components/ui/button.test.tsx`](src/components/ui/button.test.tsx) - тесты Button компонента (14 тестов)
 
-Аутентификация управляется через React Context:
+## Сущности базы данных
 
-```typescript
-import { useAuth } from "@/lib/contexts/auth-context";
+### User (Пользователь)
 
-const { user, login, logout, isAuthenticated } = useAuth();
+- `id` - идентификатор
+- `lastName` - фамилия
+- `firstName` - имя
+- `middleName` - отчество
+- `birthDate` - дата рождения
+- `email` - почта (уникальный)
+- `phone` - телефон
+- `passwordHash` - хеш пароля
+- `roleId` - ссылка на роль
+- `createdAt`, `updatedAt` - даты
+
+### Role (Роль)
+
+- `id` - идентификатор
+- `code` - код роли (уникальный)
+- `name` - название роли
+- `createdAt`, `updatedAt` - даты
+
+### Session (Сессия)
+
+- `id` - идентификатор сессии
+- `userId` - ссылка на пользователя
+- `expiresAt` - дата истечения
+- `createdAt` - дата создания
+
+## Развертывание на Selectel
+
+1. Создайте VM на Selectel (Ubuntu 22.04)
+2. Установите Node.js 20+
+3. Склонируйте репозиторий
+4. Установите зависимости
+5. Инициализируйте БД
+6. Настройте PM2 для управления процессами
+
+```bash
+# Установка PM2
+npm install -g pm2
+
+# Запуск бэкенда
+cd backend
+pm2 start npm --name "polanet-api" -- start
+
+# Сборка фронтенда
+cd frontend
+npm run build
+pm2 serve dist/ 80 --name "polanet-frontend"
 ```
 
-Токен хранится в `localStorage` и автоматически добавляется ко всем API запросам.
+## Лицензия
 
-## 📄 Страницы приложения
-
-### Главная страница (`/`)
-
-Дашборд с навигацией по основным разделам системы:
-
-- Заявки
-- Клиенты
-- Водители
-- Автомобили
-- Транспортные карты
-
-### Управление заявками
-
-**Список заявок** — таблица с фильтрами по статусу, клиенту, дате. Отображает сумму выплат, доходов и баланс.
-
-**Детали заявки** — полная информация о заявке с возможностью:
-
-- Редактирования основных данных
-- Управления платежами
-- Создания и управления доставками
-- Просмотра истории изменений
-
-### Управление клиентами
-
-**Список клиентов** — таблица с поиском и фильтрами.
-
-**Детали клиента** — информация о клиенте, плательщике и приемщике с возможностью редактирования.
-
-### Управление водителями
-
-**Список водителей** — таблица с информацией о водителях и их транспортных картах.
-
-**Детали водителя** — информация о водителе и привязанных транспортных картах.
-
-### Управление транспортными картами
-
-**Список карт** — таблица с балансом и статусом карт.
-
-**Детали карты** — история операций и расходов по карте.
-
-## 🎨 Стили
-
-Проект использует Tailwind CSS с кастомной конфигурацией. Глобальные стили находятся в [`styles/globals.css`](src/styles/globals.css).
-
-## 📝 Скрипты
-
-| Команда           | Описание            |
-| ----------------- | ------------------- |
-| `npm run dev`     | Запуск dev-сервера  |
-| `npm run build`   | Сборка для продакшн |
-| `npm run preview` | Предпросмотр сборки |
+ISC

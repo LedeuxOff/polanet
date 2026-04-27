@@ -48,6 +48,7 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
     setEditingDelivery(delivery);
     setShowDeliveryDialog(true);
     // Получаем связанный доход для извлечения суммы и статуса оплаты
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const income = (delivery as any).income;
     form.reset({
       driverId: delivery.driverId,
