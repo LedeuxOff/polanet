@@ -8,9 +8,11 @@ export interface Order {
   payerLastName: string;
   payerFirstName: string;
   payerMiddleName: string | null;
+  payerPhone: string | null;
   receiverLastName: string;
   receiverFirstName: string;
   receiverMiddleName: string | null;
+  receiverPhone: string | null;
   dateTime: string;
   hasPass: boolean;
   addressComment: string | null;
@@ -47,9 +49,11 @@ export interface CreateOrderInput {
   payerLastName: string;
   payerFirstName: string;
   payerMiddleName?: string;
+  payerPhone?: string;
   receiverLastName: string;
   receiverFirstName: string;
   receiverMiddleName?: string;
+  receiverPhone?: string;
   dateTime: string;
   hasPass?: boolean;
   addressComment?: string;
@@ -63,9 +67,11 @@ export const orderSchema = z.object({
   payerLastName: z.string().min(1, "Фамилия плательщика обязательна"),
   payerFirstName: z.string().min(1, "Имя плательщика обязательно"),
   payerMiddleName: z.string().optional(),
+  payerPhone: z.string().optional(),
   receiverLastName: z.string().min(1, "Фамилия приемщика обязательна"),
   receiverFirstName: z.string().min(1, "Имя приемщика обязательно"),
   receiverMiddleName: z.string().optional(),
+  receiverPhone: z.string().optional(),
   dateTime: z.string().min(1, "Дата и время обязательны"),
   hasPass: z.boolean().default(false),
   addressComment: z.string().optional(),

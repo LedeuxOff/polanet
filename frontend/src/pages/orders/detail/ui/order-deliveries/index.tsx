@@ -198,6 +198,7 @@ export const OrderDeliveries = ({ orderId, setOrder }: Props) => {
               setEditingDelivery(null);
               form.reset();
             }}
+            className="bg-blue-600 hover:bg-blue-700"
           >
             Добавить доставку
           </Button>

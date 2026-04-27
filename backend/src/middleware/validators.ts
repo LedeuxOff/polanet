@@ -155,10 +155,12 @@ export const createOrderSchema = z.object({
   payerLastName: z.string().min(1, "Фамилия плательщика обязательна").max(100),
   payerFirstName: z.string().min(1, "Имя плательщика обязательно").max(100),
   payerMiddleName: z.string().max(100).optional(),
+  payerPhone: z.string().max(20).optional(),
   // Приемщик
   receiverLastName: z.string().min(1, "Фамилия приемщика обязательна").max(100),
   receiverFirstName: z.string().min(1, "Имя приемщика обязательно").max(100),
   receiverMiddleName: z.string().max(100).optional(),
+  receiverPhone: z.string().max(20).optional(),
   // Дата и время
   dateTime: z.string().min(1, "Дата и время обязательны"),
   // Пропуск
@@ -179,9 +181,11 @@ export const updateOrderSchema = z.object({
   payerLastName: z.string().min(1, "Фамилия плательщика обязательна").max(100).optional(),
   payerFirstName: z.string().min(1, "Имя плательщика обязательно").max(100).optional(),
   payerMiddleName: z.string().max(100).optional(),
+  payerPhone: z.string().max(20).optional(),
   receiverLastName: z.string().min(1, "Фамилия приемщика обязательна").max(100).optional(),
   receiverFirstName: z.string().min(1, "Имя приемщика обязательно").max(100).optional(),
   receiverMiddleName: z.string().max(100).optional(),
+  receiverPhone: z.string().max(20).optional(),
   dateTime: z.string().min(1, "Дата и время обязательны").optional(),
   hasPass: z.boolean().optional(),
   addressComment: z.string().max(1000).optional(),
