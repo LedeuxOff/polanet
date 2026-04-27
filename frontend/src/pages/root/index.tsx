@@ -3,7 +3,6 @@ import { useRootLayout } from "./hooks";
 import { menuItems } from "./consts";
 import { LogOut, UserIcon } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { Input } from "@/components/ui/input";
 import {
   Accordion,
   AccordionContent,

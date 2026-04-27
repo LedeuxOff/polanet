@@ -32,6 +32,14 @@ export const useClientDetailPage = () => {
         form.setValue("organizationName", data.organizationName || "");
         form.setValue("phone", data.phone || "");
         form.setValue("email", data.email || "");
+        form.setValue("payerLastName", data.payerLastName || "");
+        form.setValue("payerFirstName", data.payerFirstName || "");
+        form.setValue("payerMiddleName", data.payerMiddleName || "");
+        form.setValue("payerPhone", data.payerPhone || "");
+        form.setValue("receiverLastName", data.receiverLastName || "");
+        form.setValue("receiverFirstName", data.receiverFirstName || "");
+        form.setValue("receiverMiddleName", data.receiverMiddleName || "");
+        form.setValue("receiverPhone", data.receiverPhone || "");
       })
       .catch(console.error)
       .finally(() => setIsLoading(false));
@@ -49,6 +57,16 @@ export const useClientDetailPage = () => {
       if (data.organizationName !== undefined) updateData.organizationName = data.organizationName;
       if (data.phone !== undefined) updateData.phone = data.phone;
       if (data.email !== undefined) updateData.email = data.email;
+      if (data.payerLastName !== undefined) updateData.payerLastName = data.payerLastName;
+      if (data.payerFirstName !== undefined) updateData.payerFirstName = data.payerFirstName;
+      if (data.payerMiddleName !== undefined) updateData.payerMiddleName = data.payerMiddleName;
+      if (data.payerPhone !== undefined) updateData.payerPhone = data.payerPhone;
+      if (data.receiverLastName !== undefined) updateData.receiverLastName = data.receiverLastName;
+      if (data.receiverFirstName !== undefined)
+        updateData.receiverFirstName = data.receiverFirstName;
+      if (data.receiverMiddleName !== undefined)
+        updateData.receiverMiddleName = data.receiverMiddleName;
+      if (data.receiverPhone !== undefined) updateData.receiverPhone = data.receiverPhone;
 
       await clientsApi.update(Number(clientId), updateData);
       navigate({ to: "/clients" });

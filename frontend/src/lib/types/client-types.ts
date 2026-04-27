@@ -9,8 +9,23 @@ export interface Client {
   organizationName: string | null;
   phone: string | null;
   email: string | null;
+  payerLastName: string | null;
+  payerFirstName: string | null;
+  payerMiddleName: string | null;
+  payerPhone: string | null;
+  receiverLastName: string | null;
+  receiverFirstName: string | null;
+  receiverMiddleName: string | null;
+  receiverPhone: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ContactInfo {
+  lastName?: string;
+  firstName?: string;
+  middleName?: string;
+  phone?: string;
 }
 
 export interface CreateClientInput {
@@ -21,6 +36,8 @@ export interface CreateClientInput {
   organizationName?: string;
   phone?: string;
   email?: string;
+  payer?: ContactInfo;
+  receiver?: ContactInfo;
 }
 
 export const clientSchema = z
@@ -35,6 +52,16 @@ export const clientSchema = z
     // Общие поля
     phone: z.string().optional(),
     email: z.string().email("Неверный формат email").optional(),
+    // Плательщик
+    payerLastName: z.string().optional(),
+    payerFirstName: z.string().optional(),
+    payerMiddleName: z.string().optional(),
+    payerPhone: z.string().optional(),
+    // Приемщик
+    receiverLastName: z.string().optional(),
+    receiverFirstName: z.string().optional(),
+    receiverMiddleName: z.string().optional(),
+    receiverPhone: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     // На странице редактирования проверяем только если тип individual и поля пустые
@@ -78,6 +105,24 @@ export const newClientSchema = z
     // Общие поля
     phone: z.string().optional(),
     email: z.string().email("Неверный формат email").optional(),
+    // Плательщик
+    payer: z
+      .object({
+        lastName: z.string().optional(),
+        firstName: z.string().optional(),
+        middleName: z.string().optional(),
+        phone: z.string().optional(),
+      })
+      .optional(),
+    // Приемщик
+    receiver: z
+      .object({
+        lastName: z.string().optional(),
+        firstName: z.string().optional(),
+        middleName: z.string().optional(),
+        phone: z.string().optional(),
+      })
+      .optional(),
   })
   .superRefine((data, ctx) => {
     if (data.type === "individual") {
