@@ -1,113 +1,161 @@
-import { Router } from 'express'
-import { db } from '../db/index.js'
-import { clients } from '../db/schema.js'
-import { authenticate, type AuthRequest } from '../middleware/auth.js'
-import { createClientSchema, updateClientSchema } from '../middleware/validators.js'
-import { eq } from 'drizzle-orm'
+import { Router } from "express";
+import { db } from "../db/index.js";
+import { clients } from "../db/schema.js";
+import { authenticate, type AuthRequest } from "../middleware/auth.js";
+import { createClientSchema, updateClientSchema } from "../middleware/validators.js";
+import { eq } from "drizzle-orm";
 
-const router = Router()
+const router = Router();
 
 // Получить всех клиентов
-router.get('/', authenticate, (req: AuthRequest, res) => {
+router.get("/", authenticate, (req: AuthRequest, res) => {
   try {
-    const allClients = db.select().from(clients).all()
-    res.json(allClients)
+    const allClients = db.select().from(clients).all();
+    res.json(allClients);
   } catch (error) {
-    console.error('Error getting clients:', error)
-    res.status(500).json({ error: 'Ошибка сервера', details: error instanceof Error ? error.message : error })
+    console.error("Error getting clients:", error);
+    res
+      .status(500)
+      .json({ error: "Ошибка сервера", details: error instanceof Error ? error.message : error });
   }
-})
+});
 
 // Получить клиента по ID
-router.get('/:id', authenticate, (req: AuthRequest, res) => {
+router.get("/:id", authenticate, (req: AuthRequest, res) => {
   try {
     const client = db
       .select()
       .from(clients)
       .where(eq(clients.id, Number(req.params.id)))
-      .get()
+      .get();
 
     if (!client) {
-      return res.status(404).json({ error: 'Клиент не найден' })
+      return res.status(404).json({ error: "Клиент не найден" });
     }
 
-    res.json(client)
+    res.json(client);
   } catch (error) {
-    console.error('Error getting client:', error)
-    res.status(500).json({ error: 'Ошибка сервера', details: error instanceof Error ? error.message : error })
+    console.error("Error getting client:", error);
+    res
+      .status(500)
+      .json({ error: "Ошибка сервера", details: error instanceof Error ? error.message : error });
   }
-})
+});
 
 // Создать клиента
-router.post('/', authenticate, (req: AuthRequest, res) => {
+router.post("/", authenticate, (req: AuthRequest, res) => {
   try {
-    const data = createClientSchema.parse(req.body)
+    const data = createClientSchema.parse(req.body);
+
+    // Извлекаем payer и receiver, так как они не соответствуют схеме БД
+    const { payer, receiver, ...clientData } = data;
+
+    // Формируем объект для вставки
+    const insertData: {
+      type: "individual" | "legal";
+      lastName?: string | null;
+      firstName?: string | null;
+      middleName?: string | null;
+      organizationName?: string | null;
+      phone?: string | null;
+      email?: string | null;
+      payerLastName?: string | null;
+      payerFirstName?: string | null;
+      payerMiddleName?: string | null;
+      payerPhone?: string | null;
+      receiverLastName?: string | null;
+      receiverFirstName?: string | null;
+      receiverMiddleName?: string | null;
+      receiverPhone?: string | null;
+    } = {
+      type: clientData.type,
+      lastName: clientData.lastName || null,
+      firstName: clientData.firstName || null,
+      middleName: clientData.middleName || null,
+      organizationName: clientData.organizationName || null,
+      phone: clientData.phone || null,
+      email: clientData.email || null,
+    };
+
+    // Сохраняем payer и receiver в отдельные колонки (если есть)
+    if (payer) {
+      insertData.payerLastName = payer.lastName || null;
+      insertData.payerFirstName = payer.firstName || null;
+      insertData.payerMiddleName = payer.middleName || null;
+      insertData.payerPhone = payer.phone || null;
+    }
+
+    if (receiver) {
+      insertData.receiverLastName = receiver.lastName || null;
+      insertData.receiverFirstName = receiver.firstName || null;
+      insertData.receiverMiddleName = receiver.middleName || null;
+      insertData.receiverPhone = receiver.phone || null;
+    }
 
     const result = db
       .insert(clients)
-      .values(data)
-      .run()
+      .values(insertData as any)
+      .run();
 
     const newClient = db
       .select()
       .from(clients)
       .where(eq(clients.id, Number(result.lastInsertRowid)))
-      .get()
+      .get();
 
-    res.status(201).json(newClient)
+    res.status(201).json(newClient);
   } catch (error) {
-    console.error('Error creating client:', error)
-    if (error instanceof Error && error.name === 'ZodError') {
-      return res.status(400).json({ error: 'Ошибка валидации', details: error })
+    console.error("Error creating client:", error);
+    if (error instanceof Error && error.name === "ZodError") {
+      return res.status(400).json({ error: "Ошибка валидации", details: error });
     }
-    res.status(500).json({ error: 'Ошибка сервера', details: error instanceof Error ? error.message : error })
+    res
+      .status(500)
+      .json({ error: "Ошибка сервера", details: error instanceof Error ? error.message : error });
   }
-})
+});
 
 // Обновить клиента
-router.put('/:id', authenticate, (req: AuthRequest, res) => {
+router.put("/:id", authenticate, (req: AuthRequest, res) => {
   try {
-    const data = updateClientSchema.parse(req.body)
-    const clientId = Number(req.params.id)
+    const data = updateClientSchema.parse(req.body);
+    const clientId = Number(req.params.id);
 
     const updateData: Record<string, unknown> = {
       ...data,
       updatedAt: new Date().toISOString(),
-    }
+    };
 
-    db.update(clients)
-      .set(updateData)
-      .where(eq(clients.id, clientId))
-      .run()
+    db.update(clients).set(updateData).where(eq(clients.id, clientId)).run();
 
-    const updatedClient = db
-      .select()
-      .from(clients)
-      .where(eq(clients.id, clientId))
-      .get()
+    const updatedClient = db.select().from(clients).where(eq(clients.id, clientId)).get();
 
-    res.json(updatedClient)
+    res.json(updatedClient);
   } catch (error) {
-    console.error('Error updating client:', error)
-    if (error instanceof Error && error.name === 'ZodError') {
-      return res.status(400).json({ error: 'Ошибка валидации', details: error })
+    console.error("Error updating client:", error);
+    if (error instanceof Error && error.name === "ZodError") {
+      return res.status(400).json({ error: "Ошибка валидации", details: error });
     }
-    res.status(500).json({ error: 'Ошибка сервера', details: error instanceof Error ? error.message : error })
+    res
+      .status(500)
+      .json({ error: "Ошибка сервера", details: error instanceof Error ? error.message : error });
   }
-})
+});
 
 // Удалить клиента
-router.delete('/:id', authenticate, (req: AuthRequest, res) => {
+router.delete("/:id", authenticate, (req: AuthRequest, res) => {
   try {
-    const clientId = Number(req.params.id)
+    const clientId = Number(req.params.id);
 
-    db.delete(clients).where(eq(clients.id, clientId)).run()
+    db.delete(clients).where(eq(clients.id, clientId)).run();
 
-    res.status(204).send()
+    res.status(204).send();
   } catch (error) {
-    console.error('Error deleting client:', error)
-    res.status(500).json({ error: 'Ошибка сервера', details: error instanceof Error ? error.message : error })
+    console.error("Error deleting client:", error);
+    res
+      .status(500)
+      .json({ error: "Ошибка сервера", details: error instanceof Error ? error.message : error });
   }
-})
+});
 
-export default router
+export default router;

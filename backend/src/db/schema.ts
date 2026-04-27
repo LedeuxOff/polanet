@@ -64,6 +64,16 @@ export const clients = sqliteTable("clients", {
   // Общие поля
   phone: text("phone"),
   email: text("email"),
+  // Плательщик
+  payerLastName: text("payer_last_name"),
+  payerFirstName: text("payer_first_name"),
+  payerMiddleName: text("payer_middle_name"),
+  payerPhone: text("payer_phone"),
+  // Приемщик
+  receiverLastName: text("receiver_last_name"),
+  receiverFirstName: text("receiver_first_name"),
+  receiverMiddleName: text("receiver_middle_name"),
+  receiverPhone: text("receiver_phone"),
   createdAt: text("created_at").default("CURRENT_TIMESTAMP").notNull(),
   updatedAt: text("updated_at").default("CURRENT_TIMESTAMP").notNull(),
 });

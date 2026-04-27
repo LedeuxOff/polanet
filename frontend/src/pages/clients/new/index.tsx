@@ -144,6 +144,96 @@ export const NewClientPage = () => {
             </div>
           </div>
 
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="text-lg font-medium">Плательщик</h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="payer.lastName">Фамилия</Label>
+                <Input
+                  id="payer.lastName"
+                  placeholder="Иванов"
+                  disabled={isSubmitting}
+                  {...form.register("payer.lastName")}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="payer.firstName">Имя</Label>
+                <Input
+                  id="payer.firstName"
+                  placeholder="Иван"
+                  disabled={isSubmitting}
+                  {...form.register("payer.firstName")}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="payer.middleName">Отчество</Label>
+                <Input
+                  id="payer.middleName"
+                  placeholder="Иванович"
+                  disabled={isSubmitting}
+                  {...form.register("payer.middleName")}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="payer.phone">Телефон</Label>
+              <Input
+                id="payer.phone"
+                placeholder="+7 (999) 000-00-00"
+                disabled={isSubmitting}
+                {...form.register("payer.phone")}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-4 pt-4 border-t">
+            <h3 className="text-lg font-medium">Приемщик</h3>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="receiver.lastName">Фамилия</Label>
+                <Input
+                  id="receiver.lastName"
+                  placeholder="Петров"
+                  disabled={isSubmitting}
+                  {...form.register("receiver.lastName")}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="receiver.firstName">Имя</Label>
+                <Input
+                  id="receiver.firstName"
+                  placeholder="Петр"
+                  disabled={isSubmitting}
+                  {...form.register("receiver.firstName")}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="receiver.middleName">Отчество</Label>
+                <Input
+                  id="receiver.middleName"
+                  placeholder="Петрович"
+                  disabled={isSubmitting}
+                  {...form.register("receiver.middleName")}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="receiver.phone">Телефон</Label>
+              <Input
+                id="receiver.phone"
+                placeholder="+7 (999) 111-11-11"
+                disabled={isSubmitting}
+                {...form.register("receiver.phone")}
+              />
+            </div>
+          </div>
+
           <div className="flex gap-2">
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "Создание..." : "Создать"}

@@ -56,6 +56,13 @@ export const updateDriverSchema = z.object({
   phone: z.string().max(20).optional(),
 });
 
+export const contactInfoSchema = z.object({
+  lastName: z.string().max(100).optional().nullable(),
+  firstName: z.string().max(100).optional().nullable(),
+  middleName: z.string().max(100).optional().nullable(),
+  phone: z.string().max(20).optional().nullable(),
+});
+
 export const createClientSchema = z
   .object({
     type: z.enum(["individual", "legal"], {
@@ -75,6 +82,10 @@ export const createClientSchema = z
     // Общие поля
     phone: z.string().max(20).optional().nullable(),
     email: z.string().email("Неверный формат email").optional().nullable(),
+    // Плательщик
+    payer: contactInfoSchema.optional().nullable(),
+    // Приемщик
+    receiver: contactInfoSchema.optional().nullable(),
   })
   .superRefine((data, ctx) => {
     if (data.type === "individual") {
