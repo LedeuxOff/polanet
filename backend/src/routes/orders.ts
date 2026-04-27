@@ -1,13 +1,6 @@
 import { Router } from "express";
 import { db } from "../db/index.js";
-import {
-  orders,
-  payments,
-  orderHistory,
-  users,
-  deliveries,
-  incomes,
-} from "../db/schema.js";
+import { orders, payments, orderHistory, users, deliveries, incomes } from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import {
   createOrderSchema,
@@ -41,70 +34,119 @@ async function logHistory(
     .run();
 }
 
-// Получить все заявки
+// Получить все заявки с фильтрами
 router.get("/", authenticate, (req: AuthRequest, res) => {
   try {
-    const allOrders = db
-      .select()
-      .from(orders)
-      .orderBy(desc(orders.createdAt))
-      .all();
+    // Парсинг query параметров
+    const queryId = req.query.id as string;
+    const queryStatus = req.query.status as string;
+    const queryCustomerDebt = req.query.customerDebt as string;
+    const queryCompanyDebt = req.query.companyDebt as string;
+    const queryDateFrom = req.query.dateFrom as string;
+    const queryDateTo = req.query.dateTo as string;
 
-    // Для каждой заявки получаем выплаты и доходы (через доставки)
-    const ordersWithPayments = allOrders.map((order) => {
-      const orderPayments = db
-        .select()
-        .from(payments)
-        .where(eq(payments.orderId, order.id))
-        .all();
-      const received = orderPayments.reduce((sum, p) => sum + p.amount, 0);
+    // Получаем все заявки
+    let allOrders = db.select().from(orders).orderBy(desc(orders.createdAt)).all();
 
-      // Получаем доставки и связанные доходы
-      const orderDeliveries = db
-        .select()
-        .from(deliveries)
-        .where(eq(deliveries.orderId, order.id))
-        .all();
+    // Применяем серверные фильтры
+    let filteredOrders = allOrders;
 
-      // "Реализовано" = сумма доходов по доставкам, которые оплачены
-      let completed = 0;
-      for (const delivery of orderDeliveries) {
-        if (delivery.incomeId) {
-          const income = db
-            .select()
-            .from(incomes)
-            .where(eq(incomes.id, delivery.incomeId))
-            .get();
-          if (income && income.isPaid) {
-            completed += income.amount;
-          }
+    // Фильтр по ID заявки (поиск по номеру)
+    if (queryId) {
+      const orderId = Number(queryId);
+      filteredOrders = filteredOrders.filter((o) => o.id === orderId);
+    }
+
+    // Фильтр по статусу
+    if (queryStatus) {
+      filteredOrders = filteredOrders.filter((o) => o.status === queryStatus);
+    }
+
+    // Фильтр по дате создания
+    if (queryDateFrom || queryDateTo) {
+      const dateFrom = queryDateFrom ? new Date(queryDateFrom).toISOString() : undefined;
+      const dateTo = queryDateTo
+        ? new Date(`${queryDateTo}T23:59:59.999`).toISOString()
+        : undefined;
+
+      filteredOrders = filteredOrders.filter((o) => {
+        const orderDate = new Date(o.createdAt).getTime();
+        if (dateFrom && dateTo) {
+          const fromTime = new Date(dateFrom).getTime();
+          const toTime = new Date(dateTo).getTime();
+          return orderDate >= fromTime && orderDate <= toTime;
         }
-      }
+        if (dateFrom) {
+          const fromTime = new Date(dateFrom).getTime();
+          return orderDate >= fromTime;
+        }
+        if (dateTo) {
+          const toTime = new Date(dateTo).getTime();
+          return orderDate <= toTime;
+        }
+        return true;
+      });
+    }
 
-      // Расчет долгов
-      // Долг клиента = реализовано - получено (если > 0)
-      // Долг компании = получено - реализовано (если > 0)
-      const customerDebt = completed > received ? completed - received : 0;
-      const companyDebt = received > completed ? received - completed : 0;
+    // Для каждой заявки получаем доходы и вычисляем финансовые значения
+    const ordersWithFinances = filteredOrders.map((order) => {
+      // Получаем доходы для заявки
+      const orderIncomes = db.select().from(incomes).where(eq(incomes.orderId, order.id)).all();
+
+      // Сумма предоплат с isPaid=true
+      const prepaymentTotal = orderIncomes
+        .filter((i) => i.incomeType === "prepayment" && i.isPaid)
+        .reduce((sum, i) => sum + i.amount, 0);
+
+      // Сумма оплат доставки с isPaid=true
+      const deliveryPaymentTotal = orderIncomes
+        .filter((i) => i.incomeType === "delivery_payment" && i.isPaid)
+        .reduce((sum, i) => sum + i.amount, 0);
+
+      // Получено средств - максимум между предоплатами и доставками (чтобы не дублировать)
+      const receivedAmount = Math.max(prepaymentTotal, deliveryPaymentTotal);
+
+      // Ожидает подтверждения - все доходы с isPaid=false
+      const pendingAmount = orderIncomes
+        .filter((i) => !i.isPaid)
+        .reduce((sum, i) => sum + i.amount, 0);
+
+      // Сумма всех доставок (независимо от isPaid)
+      const deliveryIncomes = orderIncomes
+        .filter((i) => i.incomeType === "delivery_payment")
+        .reduce((sum, i) => sum + i.amount, 0);
+
+      // Долг клиента - когда сумма доставок больше полученной (клиент должен за услуги)
+      const customerDebt = Math.max(0, deliveryIncomes - receivedAmount);
+
+      // Долг компании - сумма предоплат минус оплаченные доставки (компания должна оказать услуги)
+      const companyDebt = Math.max(0, prepaymentTotal - deliveryPaymentTotal);
 
       return {
         ...order,
-        payments: orderPayments,
-        received,
-        completed,
+        receivedAmount,
+        pendingAmount,
         customerDebt,
         companyDebt,
-        isPaid: received >= order.cost,
-        paymentStatus:
-          received === 0
-            ? "unpaid"
-            : received >= order.cost
-              ? "paid"
-              : "partial",
       };
     });
 
-    res.json(ordersWithPayments);
+    // Применяем фильтры по долгам (после вычисления финансовых значений)
+    let finalOrders = ordersWithFinances;
+
+    if (queryCustomerDebt === "has") {
+      finalOrders = finalOrders.filter((o) => (o.customerDebt ?? 0) > 0);
+    } else if (queryCustomerDebt === "none") {
+      finalOrders = finalOrders.filter((o) => (o.customerDebt ?? 0) === 0);
+    }
+
+    if (queryCompanyDebt === "has") {
+      finalOrders = finalOrders.filter((o) => (o.companyDebt ?? 0) > 0);
+    } else if (queryCompanyDebt === "none") {
+      finalOrders = finalOrders.filter((o) => (o.companyDebt ?? 0) === 0);
+    }
+
+    res.json(finalOrders);
   } catch (error) {
     console.error("Error getting orders:", error);
     res.status(500).json({
@@ -127,41 +169,37 @@ router.get("/:id", authenticate, (req: AuthRequest, res) => {
       return res.status(404).json({ error: "Заявка не найдена" });
     }
 
-    // Получаем выплаты
-    const orderPayments = db
-      .select()
-      .from(payments)
-      .where(eq(payments.orderId, order.id))
-      .all();
-    const received = orderPayments.reduce((sum, p) => sum + p.amount, 0);
+    // Получаем доходы для заявки
+    const orderIncomes = db.select().from(incomes).where(eq(incomes.orderId, order.id)).all();
 
-    // Получаем доставки и связанные доходы
-    const orderDeliveries = db
-      .select()
-      .from(deliveries)
-      .where(eq(deliveries.orderId, order.id))
-      .all();
+    // Сумма предоплат с isPaid=true
+    const prepaymentTotal = orderIncomes
+      .filter((i) => i.incomeType === "prepayment" && i.isPaid)
+      .reduce((sum, i) => sum + i.amount, 0);
 
-    // "Реализовано" = сумма доходов по доставкам, которые оплачены
-    let completed = 0;
-    for (const delivery of orderDeliveries) {
-      if (delivery.incomeId) {
-        const income = db
-          .select()
-          .from(incomes)
-          .where(eq(incomes.id, delivery.incomeId))
-          .get();
-        if (income && income.isPaid) {
-          completed += income.amount;
-        }
-      }
-    }
+    // Сумма оплат доставки с isPaid=true
+    const deliveryPaymentTotal = orderIncomes
+      .filter((i) => i.incomeType === "delivery_payment" && i.isPaid)
+      .reduce((sum, i) => sum + i.amount, 0);
 
-    // Расчет долгов
-    // Долг клиента = реализовано - получено (если > 0)
-    // Долг компании = получено - реализовано (если > 0)
-    const customerDebt = completed > received ? completed - received : 0;
-    const companyDebt = received > completed ? received - completed : 0;
+    // Получено средств - максимум между предоплатами и доставками (чтобы не дублировать)
+    const receivedAmount = Math.max(prepaymentTotal, deliveryPaymentTotal);
+
+    // Ожидает подтверждения - все доходы с isPaid=false
+    const pendingAmount = orderIncomes
+      .filter((i) => !i.isPaid)
+      .reduce((sum, i) => sum + i.amount, 0);
+
+    // Сумма всех доставок (независимо от isPaid)
+    const deliveryIncomes = orderIncomes
+      .filter((i) => i.incomeType === "delivery_payment")
+      .reduce((sum, i) => sum + i.amount, 0);
+
+    // Долг клиента - когда сумма доставок больше полученной (клиент должен за услуги)
+    const customerDebt = Math.max(0, deliveryIncomes - receivedAmount);
+
+    // Долг компании - сумма предоплат минус оплаченные доставки (компания должна оказать услуги)
+    const companyDebt = Math.max(0, prepaymentTotal - deliveryPaymentTotal);
 
     // Получаем историю
     const history = db
@@ -186,14 +224,10 @@ router.get("/:id", authenticate, (req: AuthRequest, res) => {
 
     res.json({
       ...order,
-      payments: orderPayments,
-      received,
-      completed,
+      receivedAmount,
+      pendingAmount,
       customerDebt,
       companyDebt,
-      isPaid: received >= order.cost,
-      paymentStatus:
-        received === 0 ? "unpaid" : received >= order.cost ? "paid" : "partial",
       history,
     });
   } catch (error) {
@@ -235,9 +269,7 @@ router.post("/quick", authenticate, async (req: AuthRequest, res) => {
   } catch (error) {
     console.error("Error creating order (quick):", error);
     if (error instanceof Error && error.name === "ZodError") {
-      return res
-        .status(400)
-        .json({ error: "Ошибка валидации", details: error });
+      return res.status(400).json({ error: "Ошибка валидации", details: error });
     }
     res.status(500).json({
       error: "Ошибка сервера",
@@ -276,9 +308,7 @@ router.post("/", authenticate, async (req: AuthRequest, res) => {
   } catch (error) {
     console.error("Error creating order:", error);
     if (error instanceof Error && error.name === "ZodError") {
-      return res
-        .status(400)
-        .json({ error: "Ошибка валидации", details: error });
+      return res.status(400).json({ error: "Ошибка валидации", details: error });
     }
     res.status(500).json({
       error: "Ошибка сервера",
@@ -296,11 +326,7 @@ router.put("/:id", authenticate, async (req: AuthRequest, res) => {
     const now = new Date().toISOString();
 
     // Получаем текущую заявку для сравнения
-    const currentOrder = db
-      .select()
-      .from(orders)
-      .where(eq(orders.id, orderId))
-      .get();
+    const currentOrder = db.select().from(orders).where(eq(orders.id, orderId)).get();
 
     if (!currentOrder) {
       return res.status(404).json({ error: "Заявка не найдена" });
@@ -328,19 +354,13 @@ router.put("/:id", authenticate, async (req: AuthRequest, res) => {
       }
     }
 
-    const updatedOrder = db
-      .select()
-      .from(orders)
-      .where(eq(orders.id, orderId))
-      .get();
+    const updatedOrder = db.select().from(orders).where(eq(orders.id, orderId)).get();
 
     res.json(updatedOrder);
   } catch (error) {
     console.error("Error updating order:", error);
     if (error instanceof Error && error.name === "ZodError") {
-      return res
-        .status(400)
-        .json({ error: "Ошибка валидации", details: error });
+      return res.status(400).json({ error: "Ошибка валидации", details: error });
     }
     res.status(500).json({
       error: "Ошибка сервера",
@@ -425,9 +445,7 @@ router.post("/:id/payments", authenticate, async (req: AuthRequest, res) => {
   } catch (error) {
     console.error("Error adding payment:", error);
     if (error instanceof Error && error.name === "ZodError") {
-      return res
-        .status(400)
-        .json({ error: "Ошибка валидации", details: error });
+      return res.status(400).json({ error: "Ошибка валидации", details: error });
     }
     res.status(500).json({
       error: "Ошибка сервера",
@@ -437,60 +455,46 @@ router.post("/:id/payments", authenticate, async (req: AuthRequest, res) => {
 });
 
 // Удалить выплату
-router.delete(
-  "/:orderId/payments/:paymentId",
-  authenticate,
-  async (req: AuthRequest, res) => {
-    try {
-      const { orderId, paymentId } = req.params;
-      const userId = req.userId!;
-      const now = new Date().toISOString();
+router.delete("/:orderId/payments/:paymentId", authenticate, async (req: AuthRequest, res) => {
+  try {
+    const { orderId, paymentId } = req.params;
+    const userId = req.userId!;
+    const now = new Date().toISOString();
 
-      // Получаем выплату для записи в историю
-      const payment = db
-        .select()
-        .from(payments)
-        .where(
-          and(
-            eq(payments.id, Number(paymentId)),
-            eq(payments.orderId, Number(orderId)),
-          ),
-        )
-        .get();
+    // Получаем выплату для записи в историю
+    const payment = db
+      .select()
+      .from(payments)
+      .where(and(eq(payments.id, Number(paymentId)), eq(payments.orderId, Number(orderId))))
+      .get();
 
-      if (!payment) {
-        return res.status(404).json({ error: "Выплата не найдена" });
-      }
-
-      db.delete(payments)
-        .where(
-          and(
-            eq(payments.id, Number(paymentId)),
-            eq(payments.orderId, Number(orderId)),
-          ),
-        )
-        .run();
-
-      // Запись в историю
-      await logHistory(
-        Number(orderId),
-        userId,
-        "payment_removed",
-        "payment",
-        `Выплата ${payment.amount} руб. от ${payment.paymentDate}`,
-        undefined,
-      );
-
-      res.status(204).send();
-    } catch (error) {
-      console.error("Error deleting payment:", error);
-      res.status(500).json({
-        error: "Ошибка сервера",
-        details: error instanceof Error ? error.message : error,
-      });
+    if (!payment) {
+      return res.status(404).json({ error: "Выплата не найдена" });
     }
-  },
-);
+
+    db.delete(payments)
+      .where(and(eq(payments.id, Number(paymentId)), eq(payments.orderId, Number(orderId))))
+      .run();
+
+    // Запись в историю
+    await logHistory(
+      Number(orderId),
+      userId,
+      "payment_removed",
+      "payment",
+      `Выплата ${payment.amount} руб. от ${payment.paymentDate}`,
+      undefined,
+    );
+
+    res.status(204).send();
+  } catch (error) {
+    console.error("Error deleting payment:", error);
+    res.status(500).json({
+      error: "Ошибка сервера",
+      details: error instanceof Error ? error.message : error,
+    });
+  }
+});
 
 // Получить историю заявки
 router.get("/:id/history", authenticate, async (req: AuthRequest, res) => {

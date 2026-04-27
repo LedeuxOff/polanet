@@ -74,8 +74,6 @@ export const orders = sqliteTable("orders", {
   type: text("type", { enum: ["delivery", "pickup"] }).notNull(),
   // Адрес
   address: text("address").notNull(),
-  // Стоимость
-  cost: integer("cost").notNull(),
   // Плательщик
   payerLastName: text("payer_last_name").notNull(),
   payerFirstName: text("payer_first_name").notNull(),
@@ -96,10 +94,6 @@ export const orders = sqliteTable("orders", {
   })
     .notNull()
     .default("new"),
-  // Тип оплаты
-  paymentType: text("payment_type", {
-    enum: ["cash", "bank_transfer"],
-  }).notNull(),
   // Связи
   clientId: integer("client_id").references(() => clients.id),
   // Аудит
@@ -332,46 +326,37 @@ export const transportCardHistory = sqliteTable("transport_card_history", {
 });
 
 // Relations
-export const transportCardsRelations = relations(
-  transportCards,
-  ({ one, many }) => ({
-    driver: one(drivers, {
-      fields: [transportCards.driverId],
-      references: [drivers.id],
-    }),
-    expenses: many(transportCardExpenses),
-    history: many(transportCardHistory),
+export const transportCardsRelations = relations(transportCards, ({ one, many }) => ({
+  driver: one(drivers, {
+    fields: [transportCards.driverId],
+    references: [drivers.id],
   }),
-);
+  expenses: many(transportCardExpenses),
+  history: many(transportCardHistory),
+}));
 
 export const driversRelations = relations(drivers, ({ one, many }) => ({
   orders: many(orders),
   transportCard: one(transportCards),
 }));
 
-export const transportCardExpensesRelations = relations(
-  transportCardExpenses,
-  ({ one }) => ({
-    card: one(transportCards, {
-      fields: [transportCardExpenses.cardId],
-      references: [transportCards.id],
-    }),
+export const transportCardExpensesRelations = relations(transportCardExpenses, ({ one }) => ({
+  card: one(transportCards, {
+    fields: [transportCardExpenses.cardId],
+    references: [transportCards.id],
   }),
-);
+}));
 
-export const transportCardHistoryRelations = relations(
-  transportCardHistory,
-  ({ one }) => ({
-    card: one(transportCards, {
-      fields: [transportCardHistory.cardId],
-      references: [transportCards.id],
-    }),
-    user: one(users, {
-      fields: [transportCardHistory.userId],
-      references: [users.id],
-    }),
+export const transportCardHistoryRelations = relations(transportCardHistory, ({ one }) => ({
+  card: one(transportCards, {
+    fields: [transportCardHistory.cardId],
+    references: [transportCards.id],
   }),
-);
+  user: one(users, {
+    fields: [transportCardHistory.userId],
+    references: [users.id],
+  }),
+}));
 
 // Types
 export type User = typeof users.$inferSelect;

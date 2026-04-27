@@ -2,10 +2,7 @@ import { Router } from "express";
 import { db } from "../db/index.js";
 import { incomes, orders, deliveries } from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
-import {
-  createIncomeSchema,
-  updateIncomeSchema,
-} from "../middleware/validators.js";
+import { createIncomeSchema, updateIncomeSchema } from "../middleware/validators.js";
 import { eq, and, desc } from "drizzle-orm";
 
 const router = Router();
@@ -22,9 +19,7 @@ router.get("/", authenticate, (req: AuthRequest, res) => {
       whereConditions.push(eq(incomes.isPaid, isPaid === "true"));
     }
     if (paymentMethod) {
-      whereConditions.push(
-        eq(incomes.paymentMethod, paymentMethod as "cash" | "bank_transfer"),
-      );
+      whereConditions.push(eq(incomes.paymentMethod, paymentMethod as "cash" | "bank_transfer"));
     }
     if (orderId) {
       whereConditions.push(eq(incomes.orderId, Number(orderId)));
@@ -94,7 +89,6 @@ router.get("/:id", authenticate, async (req: AuthRequest, res) => {
         orderAddress: orders.address,
         orderType: orders.type,
         orderStatus: orders.status,
-        orderCost: orders.cost,
         orderDateTime: orders.dateTime,
         // Данные доставки
         deliveryDateTime: deliveries.dateTime,
@@ -128,11 +122,7 @@ router.post("/", authenticate, async (req: AuthRequest, res) => {
     const now = new Date().toISOString();
 
     // Проверяем существование заявки
-    const order = await db
-      .select()
-      .from(orders)
-      .where(eq(orders.id, data.orderId))
-      .limit(1);
+    const order = await db.select().from(orders).where(eq(orders.id, data.orderId)).limit(1);
 
     if (!order || order.length === 0) {
       return res.status(404).json({ error: "Заявка не найдена" });
@@ -182,9 +172,7 @@ router.post("/", authenticate, async (req: AuthRequest, res) => {
   } catch (error) {
     console.error("Error creating income:", error);
     if (error instanceof Error && error.name === "ZodError") {
-      return res
-        .status(400)
-        .json({ error: "Ошибка валидации", details: error });
+      return res.status(400).json({ error: "Ошибка валидации", details: error });
     }
     res.status(500).json({
       error: "Ошибка сервера",
@@ -201,11 +189,7 @@ router.put("/:id", authenticate, async (req: AuthRequest, res) => {
     const now = new Date().toISOString();
 
     // Получаем текущий доход для проверки
-    const currentIncome = await db
-      .select()
-      .from(incomes)
-      .where(eq(incomes.id, incomeId))
-      .limit(1);
+    const currentIncome = await db.select().from(incomes).where(eq(incomes.id, incomeId)).limit(1);
 
     if (!currentIncome || currentIncome.length === 0) {
       return res.status(404).json({ error: "Доход не найден" });
@@ -230,10 +214,7 @@ router.put("/:id", authenticate, async (req: AuthRequest, res) => {
 
       // Удаляем связь со старой доставки
       if (oldDeliveryId) {
-        await db
-          .update(deliveries)
-          .set({ incomeId: null })
-          .where(eq(deliveries.id, oldDeliveryId));
+        await db.update(deliveries).set({ incomeId: null }).where(eq(deliveries.id, oldDeliveryId));
       }
 
       // Устанавливаем связь с новой доставкой
@@ -255,25 +236,15 @@ router.put("/:id", authenticate, async (req: AuthRequest, res) => {
       }
     }
 
-    await db
-      .update(incomes)
-      .set(updateData)
-      .where(eq(incomes.id, incomeId))
-      .run();
+    await db.update(incomes).set(updateData).where(eq(incomes.id, incomeId)).run();
 
-    const updatedIncome = await db
-      .select()
-      .from(incomes)
-      .where(eq(incomes.id, incomeId))
-      .limit(1);
+    const updatedIncome = await db.select().from(incomes).where(eq(incomes.id, incomeId)).limit(1);
 
     res.json(updatedIncome[0]);
   } catch (error) {
     console.error("Error updating income:", error);
     if (error instanceof Error && error.name === "ZodError") {
-      return res
-        .status(400)
-        .json({ error: "Ошибка валидации", details: error });
+      return res.status(400).json({ error: "Ошибка валидации", details: error });
     }
     res.status(500).json({
       error: "Ошибка сервера",
@@ -288,11 +259,7 @@ router.delete("/:id", authenticate, async (req: AuthRequest, res) => {
     const incomeId = Number(req.params.id);
 
     // Проверяем существование дохода
-    const income = await db
-      .select()
-      .from(incomes)
-      .where(eq(incomes.id, incomeId))
-      .limit(1);
+    const income = await db.select().from(incomes).where(eq(incomes.id, incomeId)).limit(1);
 
     if (!income || income.length === 0) {
       return res.status(404).json({ error: "Доход не найден" });
@@ -301,10 +268,7 @@ router.delete("/:id", authenticate, async (req: AuthRequest, res) => {
     // Удаляем связь с доставкой
     const deliveryId = income[0].deliveryId;
     if (deliveryId) {
-      await db
-        .update(deliveries)
-        .set({ incomeId: null })
-        .where(eq(deliveries.id, deliveryId));
+      await db.update(deliveries).set({ incomeId: null }).where(eq(deliveries.id, deliveryId));
     }
 
     await db.delete(incomes).where(eq(incomes.id, incomeId)).run();

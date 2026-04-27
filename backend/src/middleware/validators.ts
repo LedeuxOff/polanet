@@ -23,10 +23,7 @@ export const updateUserSchema = z.object({
   birthDate: z.string().optional(),
   email: z.string().email("Неверный формат email").optional(),
   phone: z.string().optional(),
-  password: z
-    .string()
-    .min(6, "Пароль должен быть не менее 6 символов")
-    .optional(),
+  password: z.string().min(6, "Пароль должен быть не менее 6 символов").optional(),
   roleId: z.number().int().positive("Роль обязательна").optional(),
 });
 
@@ -65,18 +62,8 @@ export const createClientSchema = z
       errorMap: () => ({ message: "Тип клиента обязателен" }),
     }),
     // Для физического лица
-    lastName: z
-      .string()
-      .min(1, "Фамилия обязательна")
-      .max(100)
-      .optional()
-      .nullable(),
-    firstName: z
-      .string()
-      .min(1, "Имя обязательно")
-      .max(100)
-      .optional()
-      .nullable(),
+    lastName: z.string().min(1, "Фамилия обязательна").max(100).optional().nullable(),
+    firstName: z.string().min(1, "Имя обязательно").max(100).optional().nullable(),
     middleName: z.string().max(100).optional().nullable(),
     // Для юридического лица
     organizationName: z
@@ -121,11 +108,7 @@ export const updateClientSchema = z.object({
   lastName: z.string().min(1, "Фамилия обязательна").max(100).optional(),
   firstName: z.string().min(1, "Имя обязательно").max(100).optional(),
   middleName: z.string().max(100).optional(),
-  organizationName: z
-    .string()
-    .min(1, "Название организации обязательно")
-    .max(200)
-    .optional(),
+  organizationName: z.string().min(1, "Название организации обязательно").max(200).optional(),
   phone: z.string().max(20).optional(),
   email: z.string().email("Неверный формат email").optional(),
 });
@@ -133,7 +116,6 @@ export const updateClientSchema = z.object({
 export const quickCreateOrderSchema = z.object({
   // Упрощенная схема для быстрого создания
   clientId: z.number().int().positive("Клиент обязателен"),
-  cost: z.number().int().positive("Стоимость должна быть положительной"),
   // Остальные поля со значениями по умолчанию
   type: z.enum(["delivery", "pickup"]).default("delivery"),
   address: z.string().default("Требуется уточнение"),
@@ -149,7 +131,6 @@ export const quickCreateOrderSchema = z.object({
   status: z
     .enum(["new", "in_progress", "completed", "cancelled", "archived", "draft"])
     .default("draft"),
-  paymentType: z.enum(["cash", "bank_transfer"]).default("cash"),
 });
 
 export const createOrderSchema = z.object({
@@ -159,8 +140,6 @@ export const createOrderSchema = z.object({
   }),
   // Адрес
   address: z.string().min(1, "Адрес обязателен").max(500),
-  // Стоимость
-  cost: z.number().int().positive("Стоимость должна быть положительной"),
   // Плательщик
   payerLastName: z.string().min(1, "Фамилия плательщика обязательна").max(100),
   payerFirstName: z.string().min(1, "Имя плательщика обязательно").max(100),
@@ -179,10 +158,6 @@ export const createOrderSchema = z.object({
   status: z
     .enum(["new", "in_progress", "completed", "cancelled", "archived", "draft"])
     .default("new"),
-  // Тип оплаты
-  paymentType: z.enum(["cash", "bank_transfer"], {
-    errorMap: () => ({ message: "Тип оплаты обязателен" }),
-  }),
   // Связи
   clientId: z.number().int().positive().optional().nullable(),
 });
@@ -190,40 +165,16 @@ export const createOrderSchema = z.object({
 export const updateOrderSchema = z.object({
   type: z.enum(["delivery", "pickup"]).optional(),
   address: z.string().min(1, "Адрес обязателен").max(500).optional(),
-  cost: z
-    .number()
-    .int()
-    .positive("Стоимость должна быть положительной")
-    .optional(),
-  payerLastName: z
-    .string()
-    .min(1, "Фамилия плательщика обязательна")
-    .max(100)
-    .optional(),
-  payerFirstName: z
-    .string()
-    .min(1, "Имя плательщика обязательно")
-    .max(100)
-    .optional(),
+  payerLastName: z.string().min(1, "Фамилия плательщика обязательна").max(100).optional(),
+  payerFirstName: z.string().min(1, "Имя плательщика обязательно").max(100).optional(),
   payerMiddleName: z.string().max(100).optional(),
-  receiverLastName: z
-    .string()
-    .min(1, "Фамилия приемщика обязательна")
-    .max(100)
-    .optional(),
-  receiverFirstName: z
-    .string()
-    .min(1, "Имя приемщика обязательно")
-    .max(100)
-    .optional(),
+  receiverLastName: z.string().min(1, "Фамилия приемщика обязательна").max(100).optional(),
+  receiverFirstName: z.string().min(1, "Имя приемщика обязательно").max(100).optional(),
   receiverMiddleName: z.string().max(100).optional(),
   dateTime: z.string().min(1, "Дата и время обязательны").optional(),
   hasPass: z.boolean().optional(),
   addressComment: z.string().max(1000).optional(),
-  status: z
-    .enum(["new", "in_progress", "completed", "cancelled", "archived", "draft"])
-    .optional(),
-  paymentType: z.enum(["cash", "bank_transfer"]).optional(),
+  status: z.enum(["new", "in_progress", "completed", "cancelled", "archived", "draft"]).optional(),
   clientId: z.number().int().positive().optional().nullable(),
 });
 
@@ -238,11 +189,7 @@ export const createPaymentSchema = z.object({
 });
 
 export const updatePaymentSchema = z.object({
-  amount: z
-    .number()
-    .int()
-    .positive("Сумма выплаты должна быть положительной")
-    .optional(),
+  amount: z.number().int().positive("Сумма выплаты должна быть положительной").optional(),
   paymentDate: z.string().min(1, "Дата выплаты обязательна").optional(),
   type: z.enum(["prepayment", "transfer", "delivery"]).optional(),
 });
@@ -264,11 +211,7 @@ export const createTransportCardExpenseSchema = z.object({
 });
 
 export const updateTransportCardExpenseSchema = z.object({
-  amount: z
-    .number()
-    .int()
-    .positive("Сумма должна быть положительной")
-    .optional(),
+  amount: z.number().int().positive("Сумма должна быть положительной").optional(),
   paymentDate: z.string().min(1, "Дата оплаты обязательна").optional(),
 });
 
@@ -291,11 +234,7 @@ export const updateDeliverySchema = z.object({
   driverId: z.number().int().positive().optional(),
   carId: z.number().int().positive().optional(),
   dateTime: z.string().min(1, "Дата и время обязательны").optional(),
-  amount: z
-    .number()
-    .int()
-    .positive("Стоимость должна быть положительной")
-    .optional(),
+  amount: z.number().int().positive("Стоимость должна быть положительной").optional(),
   volume: z.number().int().positive().optional().nullable(),
   comment: z.string().optional(),
   paymentMethod: z.enum(["cash", "bank_transfer"]).optional(),
@@ -331,11 +270,7 @@ export const updateIncomeSchema = z.object({
   paymentMethod: z.enum(["cash", "bank_transfer"]).optional(),
   isPaid: z.boolean().optional(),
   orderId: z.number().int().positive().optional(),
-  amount: z
-    .number()
-    .int()
-    .positive("Сумма должна быть положительной")
-    .optional(),
+  amount: z.number().int().positive("Сумма должна быть положительной").optional(),
   paymentDate: z.string().min(1, "Дата оплаты обязательна").optional(),
   deliveryId: z.number().int().positive().optional().nullable(),
 });
@@ -359,17 +294,9 @@ export type QuickCreateOrderInput = z.infer<typeof quickCreateOrderSchema>;
 export type UpdateOrderInput = z.infer<typeof updateOrderSchema>;
 export type CreatePaymentInput = z.infer<typeof createPaymentSchema>;
 export type UpdatePaymentInput = z.infer<typeof updatePaymentSchema>;
-export type CreateTransportCardInput = z.infer<
-  typeof createTransportCardSchema
->;
-export type UpdateTransportCardInput = z.infer<
-  typeof updateTransportCardSchema
->;
-export type CreateTransportCardExpenseInput = z.infer<
-  typeof createTransportCardExpenseSchema
->;
-export type UpdateTransportCardExpenseInput = z.infer<
-  typeof updateTransportCardExpenseSchema
->;
+export type CreateTransportCardInput = z.infer<typeof createTransportCardSchema>;
+export type UpdateTransportCardInput = z.infer<typeof updateTransportCardSchema>;
+export type CreateTransportCardExpenseInput = z.infer<typeof createTransportCardExpenseSchema>;
+export type UpdateTransportCardExpenseInput = z.infer<typeof updateTransportCardExpenseSchema>;
 export type CreateDeliveryInput = z.infer<typeof createDeliverySchema>;
 export type UpdateDeliveryInput = z.infer<typeof updateDeliverySchema>;
