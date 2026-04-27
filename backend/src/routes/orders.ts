@@ -6,6 +6,7 @@ import {
   orderHistory,
   users,
   deliveries,
+  incomes,
 } from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import {
@@ -14,7 +15,7 @@ import {
   createPaymentSchema,
   quickCreateOrderSchema,
 } from "../middleware/validators.js";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 
 const router = Router();
 
@@ -49,7 +50,7 @@ router.get("/", authenticate, (req: AuthRequest, res) => {
       .orderBy(desc(orders.createdAt))
       .all();
 
-    // Для каждой заявки получаем выплаты и доставки
+    // Для каждой заявки получаем выплаты и доходы (через доставки)
     const ordersWithPayments = allOrders.map((order) => {
       const orderPayments = db
         .select()
@@ -58,16 +59,27 @@ router.get("/", authenticate, (req: AuthRequest, res) => {
         .all();
       const received = orderPayments.reduce((sum, p) => sum + p.amount, 0);
 
-      // Получаем доставки
+      // Получаем доставки и связанные доходы
       const orderDeliveries = db
         .select()
         .from(deliveries)
         .where(eq(deliveries.orderId, order.id))
         .all();
-      // Реализовано - сумма оплаченных доставок
-      const completed = orderDeliveries
-        .filter((d) => d.isPaid)
-        .reduce((sum, d) => sum + d.cost, 0);
+
+      // "Реализовано" = сумма доходов по доставкам, которые оплачены
+      let completed = 0;
+      for (const delivery of orderDeliveries) {
+        if (delivery.incomeId) {
+          const income = db
+            .select()
+            .from(incomes)
+            .where(eq(incomes.id, delivery.incomeId))
+            .get();
+          if (income && income.isPaid) {
+            completed += income.amount;
+          }
+        }
+      }
 
       // Расчет долгов
       // Долг клиента = реализовано - получено (если > 0)
@@ -123,16 +135,27 @@ router.get("/:id", authenticate, (req: AuthRequest, res) => {
       .all();
     const received = orderPayments.reduce((sum, p) => sum + p.amount, 0);
 
-    // Получаем доставки
+    // Получаем доставки и связанные доходы
     const orderDeliveries = db
       .select()
       .from(deliveries)
       .where(eq(deliveries.orderId, order.id))
       .all();
-    // Реализовано - сумма оплаченных доставок
-    const completed = orderDeliveries
-      .filter((d) => d.isPaid)
-      .reduce((sum, d) => sum + d.cost, 0);
+
+    // "Реализовано" = сумма доходов по доставкам, которые оплачены
+    let completed = 0;
+    for (const delivery of orderDeliveries) {
+      if (delivery.incomeId) {
+        const income = db
+          .select()
+          .from(incomes)
+          .where(eq(incomes.id, delivery.incomeId))
+          .get();
+        if (income && income.isPaid) {
+          completed += income.amount;
+        }
+      }
+    }
 
     // Расчет долгов
     // Долг клиента = реализовано - получено (если > 0)
@@ -370,13 +393,6 @@ router.post("/:id/payments", authenticate, async (req: AuthRequest, res) => {
       return res.status(404).json({ error: "Заявка не найдена" });
     }
 
-    // Если тип "delivery", проверяем что deliveryId указан
-    if (data.type === "delivery" && !data.deliveryId) {
-      return res.status(400).json({
-        error: 'Для типа выплаты "delivery" необходимо указать deliveryId',
-      });
-    }
-
     const result = db
       .insert(payments)
       .values({
@@ -394,17 +410,6 @@ router.post("/:id/payments", authenticate, async (req: AuthRequest, res) => {
       .from(payments)
       .where(eq(payments.id, Number(result.lastInsertRowid)))
       .get();
-
-    // Если выплата для доставки, обновляем доставку
-    if (data.type === "delivery" && data.deliveryId) {
-      db.update(deliveries)
-        .set({
-          isPaid: true,
-          updatedAt: now,
-        })
-        .where(eq(deliveries.id, data.deliveryId))
-        .run();
-    }
 
     // Запись в историю
     await logHistory(
@@ -455,14 +460,6 @@ router.delete(
 
       if (!payment) {
         return res.status(404).json({ error: "Выплата не найдена" });
-      }
-
-      // Если выплата связана с доставкой, помечаем доставку как неоплаченную
-      if (payment.deliveryId) {
-        db.update(deliveries)
-          .set({ isPaid: false, updatedAt: now })
-          .where(eq(deliveries.id, payment.deliveryId))
-          .run();
       }
 
       db.delete(payments)

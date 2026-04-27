@@ -34,6 +34,7 @@ app.use("/api/clients", clientRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/transport-cards", transportCardRoutes);
 app.use("/api/deliveries", deliveryRoutes);
+app.use("/api/incomes", incomeRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);

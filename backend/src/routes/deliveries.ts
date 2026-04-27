@@ -4,15 +4,16 @@ import {
   deliveries,
   drivers,
   cars,
-  payments,
+  orders,
   orderHistory,
+  incomes,
 } from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import {
   createDeliverySchema,
   updateDeliverySchema,
 } from "../middleware/validators.js";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 const router = Router();
 
@@ -43,14 +44,28 @@ router.get("/order/:orderId", authenticate, (req: AuthRequest, res) => {
   try {
     const orderId = Number(req.params.orderId);
     const allDeliveries = db
-      .select()
+      .select({
+        id: deliveries.id,
+        orderId: deliveries.orderId,
+        driverId: deliveries.driverId,
+        carId: deliveries.carId,
+        dateTime: deliveries.dateTime,
+        volume: deliveries.volume,
+        comment: deliveries.comment,
+        paymentMethod: deliveries.paymentMethod,
+        isPaymentBeforeUnloading: deliveries.isPaymentBeforeUnloading,
+        status: deliveries.status,
+        incomeId: deliveries.incomeId,
+        createdAt: deliveries.createdAt,
+        updatedAt: deliveries.updatedAt,
+      })
       .from(deliveries)
       .where(eq(deliveries.orderId, orderId))
       .orderBy(desc(deliveries.createdAt))
       .all();
 
-    // Для каждой доставки получаем водителя и автомобиль
-    const deliveriesWithDetails = allDeliveries.map((delivery) => {
+    // Для каждой доставки получаем водителя, автомобиль и доход
+    const deliveriesWithDetails = allDeliveries.map((delivery: any) => {
       const driver = db
         .select()
         .from(drivers)
@@ -61,23 +76,30 @@ router.get("/order/:orderId", authenticate, (req: AuthRequest, res) => {
         .from(cars)
         .where(eq(cars.id, delivery.carId))
         .get();
+      let income = null;
+      if (delivery.incomeId) {
+        income = db
+          .select()
+          .from(incomes)
+          .where(eq(incomes.id, delivery.incomeId))
+          .get();
+      }
 
       return {
         ...delivery,
         driver,
         car,
+        income,
       };
     });
 
     res.json(deliveriesWithDetails);
   } catch (error) {
     console.error("Error getting deliveries:", error);
-    res
-      .status(500)
-      .json({
-        error: "Ошибка сервера",
-        details: error instanceof Error ? error.message : error,
-      });
+    res.status(500).json({
+      error: "Ошибка сервера",
+      details: error instanceof Error ? error.message : error,
+    });
   }
 });
 
@@ -85,7 +107,21 @@ router.get("/order/:orderId", authenticate, (req: AuthRequest, res) => {
 router.get("/:id", authenticate, (req: AuthRequest, res) => {
   try {
     const delivery = db
-      .select()
+      .select({
+        id: deliveries.id,
+        orderId: deliveries.orderId,
+        driverId: deliveries.driverId,
+        carId: deliveries.carId,
+        dateTime: deliveries.dateTime,
+        volume: deliveries.volume,
+        comment: deliveries.comment,
+        paymentMethod: deliveries.paymentMethod,
+        isPaymentBeforeUnloading: deliveries.isPaymentBeforeUnloading,
+        status: deliveries.status,
+        incomeId: deliveries.incomeId,
+        createdAt: deliveries.createdAt,
+        updatedAt: deliveries.updatedAt,
+      })
       .from(deliveries)
       .where(eq(deliveries.id, Number(req.params.id)))
       .get();
@@ -94,15 +130,34 @@ router.get("/:id", authenticate, (req: AuthRequest, res) => {
       return res.status(404).json({ error: "Доставка не найдена" });
     }
 
-    res.json(delivery);
+    // Получаем водителя, автомобиль и доход
+    const driver = db
+      .select()
+      .from(drivers)
+      .where(eq(drivers.id, delivery.driverId))
+      .get();
+    const car = db.select().from(cars).where(eq(cars.id, delivery.carId)).get();
+    let income = null;
+    if (delivery.incomeId) {
+      income = db
+        .select()
+        .from(incomes)
+        .where(eq(incomes.id, delivery.incomeId))
+        .get();
+    }
+
+    res.json({
+      ...delivery,
+      driver,
+      car,
+      income,
+    });
   } catch (error) {
     console.error("Error getting delivery:", error);
-    res
-      .status(500)
-      .json({
-        error: "Ошибка сервера",
-        details: error instanceof Error ? error.message : error,
-      });
+    res.status(500).json({
+      error: "Ошибка сервера",
+      details: error instanceof Error ? error.message : error,
+    });
   }
 });
 
@@ -113,10 +168,25 @@ router.post("/", authenticate, async (req: AuthRequest, res) => {
     const userId = req.userId!;
     const now = new Date().toISOString();
 
+    // Проверяем существование заявки
+    const order = db
+      .select()
+      .from(orders)
+      .where(eq(orders.id, data.orderId))
+      .limit(1)
+      .get();
+
+    if (!order) {
+      return res.status(404).json({ error: "Заявка не найдена" });
+    }
+
+    // Создаем доставку со статусом "в процессе"
     const result = db
       .insert(deliveries)
       .values({
         ...data,
+        status: "in_progress",
+        incomeId: null,
         createdAt: now,
         updatedAt: now,
       })
@@ -128,39 +198,74 @@ router.post("/", authenticate, async (req: AuthRequest, res) => {
       .where(eq(deliveries.id, Number(result.lastInsertRowid)))
       .get();
 
-    // Если доставка оплачена, создаем выплату
-    if (data.isPaid) {
-      db.insert(payments)
-        .values({
-          orderId: data.orderId,
-          amount: data.cost,
-          paymentDate: now.split("T")[0],
-          createdAt: now,
-        })
-        .run();
+    // Создаем связанный доход с указанной суммой и статусом оплаты
+    const incomeResult = db
+      .insert(incomes)
+      .values({
+        incomeType: "delivery_payment",
+        paymentMethod: data.paymentMethod,
+        isPaid: data.isPaid,
+        orderId: data.orderId,
+        deliveryId: Number(result.lastInsertRowid),
+        amount: data.amount,
+        paymentDate: now.split("T")[0],
+        createdAt: now,
+        updatedAt: now,
+      })
+      .run();
 
-      // Запись в историю заявки
-      await logOrderHistory(
-        data.orderId,
-        userId,
-        "delivery_added",
-        "delivery",
-        undefined,
-        `Доставка ${data.cost} руб. (оплачено)`,
-      );
-    } else {
-      // Запись в историю заявки
-      await logOrderHistory(
-        data.orderId,
-        userId,
-        "delivery_added",
-        "delivery",
-        undefined,
-        `Доставка ${data.cost} руб.`,
-      );
-    }
+    // Обновляем доставку, привязывая доход
+    db.update(deliveries)
+      .set({ incomeId: Number(incomeResult.lastInsertRowid), updatedAt: now })
+      .where(eq(deliveries.id, Number(result.lastInsertRowid)))
+      .run();
 
-    res.status(201).json(newDelivery);
+    // Запись в историю заявки
+    await logOrderHistory(
+      data.orderId,
+      userId,
+      "delivery_added",
+      "delivery",
+      undefined,
+      `Доставка создана (статус: в процессе)`,
+    );
+
+    // Получаем водителя, автомобиль и доход для ответа
+    const driver = db
+      .select()
+      .from(drivers)
+      .where(eq(drivers.id, Number(result.lastInsertRowid)))
+      .get();
+
+    // Получаем доставку заново для получения driverId
+    const createdDelivery = db
+      .select()
+      .from(deliveries)
+      .where(eq(deliveries.id, Number(result.lastInsertRowid)))
+      .get();
+
+    const driverData = db
+      .select()
+      .from(drivers)
+      .where(eq(drivers.id, createdDelivery!.driverId))
+      .get();
+    const carData = db
+      .select()
+      .from(cars)
+      .where(eq(cars.id, createdDelivery!.carId))
+      .get();
+    const incomeData = db
+      .select()
+      .from(incomes)
+      .where(eq(incomes.id, Number(incomeResult.lastInsertRowid)))
+      .get();
+
+    res.status(201).json({
+      ...createdDelivery,
+      driver: driverData,
+      car: carData,
+      income: incomeData,
+    });
   } catch (error) {
     console.error("Error creating delivery:", error);
     if (error instanceof Error && error.name === "ZodError") {
@@ -168,12 +273,10 @@ router.post("/", authenticate, async (req: AuthRequest, res) => {
         .status(400)
         .json({ error: "Ошибка валидации", details: error });
     }
-    res
-      .status(500)
-      .json({
-        error: "Ошибка сервера",
-        details: error instanceof Error ? error.message : error,
-      });
+    res.status(500).json({
+      error: "Ошибка сервера",
+      details: error instanceof Error ? error.message : error,
+    });
   }
 });
 
@@ -201,33 +304,34 @@ router.put("/:id", authenticate, async (req: AuthRequest, res) => {
       updatedAt: now,
     };
 
+    // Удаляем undefined значения
+    for (const key of Object.keys(updateData)) {
+      if (updateData[key] === undefined) {
+        delete updateData[key];
+      }
+    }
+
+    // Удаляем amount и isPaid из updateData - они обновляются в income
+    const { amount, isPaid, ...deliveryUpdateData } = updateData as any;
+
     db.update(deliveries)
-      .set(updateData)
+      .set(deliveryUpdateData)
       .where(eq(deliveries.id, deliveryId))
       .run();
 
-    // Если изменился статус оплаты
-    if (data.isPaid !== undefined && data.isPaid !== currentDelivery.isPaid) {
-      if (data.isPaid) {
-        // Создаем выплату
-        db.insert(payments)
-          .values({
-            orderId: currentDelivery.orderId,
-            amount: currentDelivery.cost,
-            paymentDate: now.split("T")[0],
-            createdAt: now,
-          })
-          .run();
+    // Если изменены amount или isPaid, обновляем связанный доход
+    if (amount !== undefined && currentDelivery.incomeId) {
+      db.update(incomes)
+        .set({ amount, updatedAt: now })
+        .where(eq(incomes.id, currentDelivery.incomeId))
+        .run();
+    }
 
-        await logOrderHistory(
-          currentDelivery.orderId,
-          userId,
-          "delivery_paid",
-          "delivery_status",
-          "Не оплачено",
-          "Оплачено",
-        );
-      }
+    if (isPaid !== undefined && currentDelivery.incomeId) {
+      db.update(incomes)
+        .set({ isPaid, updatedAt: now })
+        .where(eq(incomes.id, currentDelivery.incomeId))
+        .run();
     }
 
     const updatedDelivery = db
@@ -244,12 +348,10 @@ router.put("/:id", authenticate, async (req: AuthRequest, res) => {
         .status(400)
         .json({ error: "Ошибка валидации", details: error });
     }
-    res
-      .status(500)
-      .json({
-        error: "Ошибка сервера",
-        details: error instanceof Error ? error.message : error,
-      });
+    res.status(500).json({
+      error: "Ошибка сервера",
+      details: error instanceof Error ? error.message : error,
+    });
   }
 });
 
@@ -270,13 +372,18 @@ router.delete("/:id", authenticate, async (req: AuthRequest, res) => {
       return res.status(404).json({ error: "Доставка не найдена" });
     }
 
+    // Удаляем связанный доход
+    if (delivery.incomeId) {
+      db.delete(incomes).where(eq(incomes.id, delivery.incomeId)).run();
+    }
+
     // Запись в историю перед удалением
     await logOrderHistory(
       delivery.orderId,
       userId,
       "delivery_deleted",
       "delivery",
-      `Доставка ${delivery.cost} руб.`,
+      undefined,
       undefined,
     );
 
@@ -285,17 +392,15 @@ router.delete("/:id", authenticate, async (req: AuthRequest, res) => {
     res.status(204).send();
   } catch (error) {
     console.error("Error deleting delivery:", error);
-    res
-      .status(500)
-      .json({
-        error: "Ошибка сервера",
-        details: error instanceof Error ? error.message : error,
-      });
+    res.status(500).json({
+      error: "Ошибка сервера",
+      details: error instanceof Error ? error.message : error,
+    });
   }
 });
 
-// Отметить доставку как оплаченную
-router.post("/:id/pay", authenticate, async (req: AuthRequest, res) => {
+// Завершить доставку
+router.post("/:id/complete", authenticate, async (req: AuthRequest, res) => {
   try {
     const deliveryId = Number(req.params.id);
     const userId = req.userId!;
@@ -311,30 +416,32 @@ router.post("/:id/pay", authenticate, async (req: AuthRequest, res) => {
       return res.status(404).json({ error: "Доставка не найдена" });
     }
 
-    // Обновляем статус оплаты
+    if (delivery.status === "completed") {
+      return res.status(400).json({ error: "Доставка уже завершена" });
+    }
+
+    // Обновляем статус доставки на completed
     db.update(deliveries)
-      .set({ isPaid: true, updatedAt: now })
+      .set({ status: "completed", updatedAt: now })
       .where(eq(deliveries.id, deliveryId))
       .run();
 
-    // Создаем выплату
-    db.insert(payments)
-      .values({
-        orderId: delivery.orderId,
-        amount: delivery.cost,
-        paymentDate: now.split("T")[0],
-        createdAt: now,
-      })
-      .run();
+    // Обновляем связанный доход, устанавливая isPaid = true
+    if (delivery.incomeId) {
+      db.update(incomes)
+        .set({ isPaid: true, updatedAt: now })
+        .where(eq(incomes.id, delivery.incomeId))
+        .run();
+    }
 
     // Запись в историю
     await logOrderHistory(
       delivery.orderId,
       userId,
-      "delivery_paid",
+      "delivery_completed",
       "delivery_status",
-      "Не оплачено",
-      "Оплачено",
+      "В процессе",
+      "Завершена",
     );
 
     const updatedDelivery = db
@@ -345,13 +452,11 @@ router.post("/:id/pay", authenticate, async (req: AuthRequest, res) => {
 
     res.json(updatedDelivery);
   } catch (error) {
-    console.error("Error marking delivery as paid:", error);
-    res
-      .status(500)
-      .json({
-        error: "Ошибка сервера",
-        details: error instanceof Error ? error.message : error,
-      });
+    console.error("Error completing delivery:", error);
+    res.status(500).json({
+      error: "Ошибка сервера",
+      details: error instanceof Error ? error.message : error,
+    });
   }
 });
 

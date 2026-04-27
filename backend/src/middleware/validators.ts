@@ -273,85 +273,74 @@ export const updateTransportCardExpenseSchema = z.object({
 });
 
 export const createDeliverySchema = z.object({
-  orderId: z.number().int().positive(),
+  orderId: z.number().int().positive("ID заявки обязателен"),
   driverId: z.number().int().positive("Водитель обязателен"),
   carId: z.number().int().positive("Автомобиль обязателен"),
   dateTime: z.string().min(1, "Дата и время обязательны"),
-  cost: z.number().int().positive("Стоимость должна быть положительной"),
+  amount: z.number().int().positive("Стоимость должна быть положительной"),
   volume: z.number().int().positive().optional().nullable(),
   comment: z.string().optional(),
+  paymentMethod: z.enum(["cash", "bank_transfer"], {
+    errorMap: () => ({ message: "Тип оплаты обязателен" }),
+  }),
   isPaid: z.boolean().default(false),
-  isCashPayment: z.boolean().default(false),
-  isUnloadingBeforeUnloading: z.boolean().default(false),
+  isPaymentBeforeUnloading: z.boolean().default(false),
 });
 
 export const updateDeliverySchema = z.object({
   driverId: z.number().int().positive().optional(),
   carId: z.number().int().positive().optional(),
   dateTime: z.string().min(1, "Дата и время обязательны").optional(),
-  cost: z
+  amount: z
     .number()
     .int()
     .positive("Стоимость должна быть положительной")
     .optional(),
   volume: z.number().int().positive().optional().nullable(),
   comment: z.string().optional(),
+  paymentMethod: z.enum(["cash", "bank_transfer"]).optional(),
   isPaid: z.boolean().optional(),
-  isCashPayment: z.boolean().optional(),
-  isUnloadingBeforeUnloading: z.boolean().optional(),
+  isPaymentBeforeUnloading: z.boolean().optional(),
 });
 
 // === Incomes (Доходы) Validators ===
 
-export const createIncomeSchema = z
-  .object({
-    // Вид дохода - предоплата | оплата доставки
-    incomeType: z.enum(["prepayment", "delivery_payment"], {
-      errorMap: () => ({ message: "Вид дохода обязателен" }),
-    }),
-    // Тип дохода - наличный расчет | безналичный расчет
-    paymentMethod: z.enum(["cash", "bank_transfer"], {
-      errorMap: () => ({ message: "Тип оплаты обязателен" }),
-    }),
-    // Оплата произведена - true или false
-    isPaid: z.boolean().optional().default(false),
-    // Айди заявки к которой привязан доход
-    orderId: z.number().int().positive("ID заявки обязателен"),
-    // Айди доставки (опционально, только для delivery_payment)
-    deliveryId: z.number().int().positive().optional().nullable(),
-    // Сумма дохода
-    amount: z.number().int().positive("Сумма должна быть положительной"),
-    // Дата оплаты
-    paymentDate: z.string().min(1, "Дата оплаты обязательна"),
-  })
-  .refine(
-    (data) => {
-      // Если вид дохода - оплата доставки, deliveryId обязателен
-      if (data.incomeType === "delivery_payment" && !data.deliveryId) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message:
-        "Для вида дохода 'оплата доставки' необходимо указать deliveryId",
-      path: ["deliveryId"],
-    },
-  );
+export const createIncomeSchema = z.object({
+  // Вид дохода - предоплата | оплата доставки
+  incomeType: z.enum(["prepayment", "delivery_payment"], {
+    errorMap: () => ({ message: "Вид дохода обязателен" }),
+  }),
+  // Тип дохода - наличный расчет | безналичный расчет
+  paymentMethod: z.enum(["cash", "bank_transfer"], {
+    errorMap: () => ({ message: "Тип оплаты обязателен" }),
+  }),
+  // Оплата произведена - true или false
+  isPaid: z.boolean().optional().default(false),
+  // Айди заявки к которой привязан доход
+  orderId: z.number().int().positive("ID заявки обязателен"),
+  // Сумма дохода
+  amount: z.number().int().positive("Сумма должна быть положительной"),
+  // Дата оплаты
+  paymentDate: z.string().min(1, "Дата оплаты обязательна"),
+  // Айди доставки к которой привязан доход (опционально)
+  deliveryId: z.number().int().positive().optional().nullable(),
+});
 
 export const updateIncomeSchema = z.object({
   incomeType: z.enum(["prepayment", "delivery_payment"]).optional(),
   paymentMethod: z.enum(["cash", "bank_transfer"]).optional(),
   isPaid: z.boolean().optional(),
   orderId: z.number().int().positive().optional(),
-  deliveryId: z.number().int().positive().optional().nullable(),
   amount: z
     .number()
     .int()
     .positive("Сумма должна быть положительной")
     .optional(),
   paymentDate: z.string().min(1, "Дата оплаты обязательна").optional(),
+  deliveryId: z.number().int().positive().optional().nullable(),
 });
+
+export const completeDeliverySchema = z.object({});
 
 export type CreateIncomeInput = z.infer<typeof createIncomeSchema>;
 export type UpdateIncomeInput = z.infer<typeof updateIncomeSchema>;

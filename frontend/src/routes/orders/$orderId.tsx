@@ -36,8 +36,10 @@ import type {
   CreatePaymentInput,
   Driver,
   Car,
+  UpdateDeliveryInput,
+  Income,
 } from "@/lib/types";
-import { carsApi, clientsApi, deliveriesApi, driversApi, ordersApi } from "@/lib/api";
+import { carsApi, clientsApi, deliveriesApi, driversApi, incomesApi, ordersApi } from "@/lib/api";
 
 const orderSchema = z.object({
   type: z.enum(["delivery", "pickup"]),
@@ -63,12 +65,12 @@ const deliverySchema = z.object({
   driverId: z.coerce.number().positive("Водитель обязателен"),
   carId: z.coerce.number().positive("Автомобиль обязателен"),
   dateTime: z.string().min(1, "Дата и время обязательны"),
-  cost: z.coerce.number().int().positive("Стоимость должна быть положительной"),
+  amount: z.coerce.number().int().positive("Стоимость должна быть положительной"),
   volume: z.coerce.number().optional().nullable(),
   comment: z.string().optional(),
+  paymentMethod: z.enum(["cash", "bank_transfer"]).default("cash"),
   isPaid: z.boolean().default(false),
-  isCashPayment: z.boolean().default(false),
-  isUnloadingBeforeUnloading: z.boolean().default(false),
+  isPaymentBeforeUnloading: z.boolean().default(false),
 });
 
 type DeliveryForm = z.infer<typeof deliverySchema>;
@@ -112,6 +114,21 @@ const paymentTypeLabels: Record<string, string> = {
   delivery: "Доставка",
 };
 
+const deliveryStatusLabels: Record<string, string> = {
+  in_progress: "В процессе",
+  completed: "Завершена",
+};
+
+const paymentMethodLabels: Record<string, string> = {
+  cash: "Наличные",
+  bank_transfer: "Безналичный расчет",
+};
+
+const incomeTypeLabels: Record<string, string> = {
+  prepayment: "Предоплата",
+  delivery_payment: "Оплата доставки",
+};
+
 function OrderDetailPage() {
   const { orderId } = useParams({ from: "/orders/$orderId" });
   const navigate = useNavigate();
@@ -122,6 +139,7 @@ function OrderDetailPage() {
   const [drivers, setDrivers] = React.useState<Driver[]>([]);
   const [cars, setCars] = React.useState<Car[]>([]);
   const [deliveries, setDeliveries] = React.useState<Delivery[]>([]);
+  const [incomes, setIncomes] = React.useState<Income[]>([]);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -160,6 +178,12 @@ function OrderDetailPage() {
     setValue: setDeliveryValue,
   } = useForm<DeliveryForm>({
     resolver: zodResolver(deliverySchema),
+    defaultValues: {
+      amount: 0,
+      paymentMethod: "cash",
+      isPaid: false,
+      isPaymentBeforeUnloading: false,
+    },
   });
 
   const {
@@ -209,6 +233,8 @@ function OrderDetailPage() {
 
       // Загружаем доставки
       deliveriesApi.list(Number(orderId)).then(setDeliveries).catch(console.error);
+      // Загружаем доходы
+      incomesApi.list(Number(orderId)).then(setIncomes).catch(console.error);
     } else {
       setIsLoading(false);
       setValue("status", "draft");
@@ -301,9 +327,32 @@ function OrderDetailPage() {
     setError(null);
     try {
       if (editingDelivery) {
-        await deliveriesApi.update(editingDelivery.id, data);
+        const updateData: UpdateDeliveryInput = {
+          driverId: data.driverId,
+          carId: data.carId,
+          dateTime: data.dateTime,
+          amount: data.amount,
+          volume: data.volume,
+          comment: data.comment,
+          paymentMethod: data.paymentMethod,
+          isPaid: data.isPaid,
+          isPaymentBeforeUnloading: data.isPaymentBeforeUnloading,
+        };
+        await deliveriesApi.update(editingDelivery.id, updateData);
       } else {
-        await deliveriesApi.create({ ...data, orderId: Number(orderId) });
+        const createData: CreateDeliveryInput = {
+          orderId: Number(orderId),
+          driverId: data.driverId,
+          carId: data.carId,
+          dateTime: data.dateTime,
+          amount: data.amount,
+          volume: data.volume,
+          comment: data.comment,
+          paymentMethod: data.paymentMethod,
+          isPaid: data.isPaid,
+          isPaymentBeforeUnloading: data.isPaymentBeforeUnloading,
+        };
+        await deliveriesApi.create(createData);
       }
       setShowDeliveryDialog(false);
       setEditingDelivery(null);
@@ -322,16 +371,18 @@ function OrderDetailPage() {
   const handleEditDelivery = (delivery: Delivery) => {
     setEditingDelivery(delivery);
     setShowDeliveryDialog(true);
+    // Получаем связанный доход для извлечения суммы и статуса оплаты
+    const income = (delivery as any).income;
     resetDelivery({
       driverId: delivery.driverId,
       carId: delivery.carId,
       dateTime: delivery.dateTime,
-      cost: delivery.cost,
+      amount: income?.amount || 0,
       volume: delivery.volume || undefined,
       comment: delivery.comment || undefined,
-      isPaid: delivery.isPaid,
-      isCashPayment: delivery.isCashPayment,
-      isUnloadingBeforeUnloading: delivery.isUnloadingBeforeUnloading,
+      paymentMethod: delivery.paymentMethod,
+      isPaid: income?.isPaid || false,
+      isPaymentBeforeUnloading: delivery.isPaymentBeforeUnloading,
     });
   };
 
@@ -352,16 +403,20 @@ function OrderDetailPage() {
     }
   };
 
-  const handleMarkAsPaid = async (deliveryId: number) => {
+  const handleCompleteDelivery = async (deliveryId: number) => {
+    if (!confirm("Завершить эту доставку?")) {
+      return;
+    }
+
     try {
-      await deliveriesApi.pay(deliveryId);
+      await deliveriesApi.complete(deliveryId);
       const updatedDeliveries = await deliveriesApi.list(Number(orderId));
       setDeliveries(updatedDeliveries);
       // Обновляем заявку
       const updated = await ordersApi.get(Number(orderId));
       setOrder(updated);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка при отметке оплаты");
+      setError(err instanceof Error ? err.message : "Ошибка при завершении доставки");
     }
   };
 
@@ -745,6 +800,36 @@ function OrderDetailPage() {
                   </div>
                 </div>
               )}
+
+              {/* Доходы */}
+              {incomes.length > 0 && (
+                <div>
+                  <h4 className="font-semibold mb-2">Доходы</h4>
+                  <div className="space-y-2">
+                    {incomes.map((income) => (
+                      <div
+                        key={income.id}
+                        className="flex items-center justify-between p-3 border rounded-md"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">{income.amount} ₽</p>
+                            <Badge variant="outline">{incomeTypeLabels[income.incomeType]}</Badge>
+                            {income.isPaid && <Badge variant="secondary">Оплачен</Badge>}
+                            {income.deliveryId && (
+                              <Badge variant="outline">Доставка ID: {income.deliveryId}</Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span>{new Date(income.paymentDate).toLocaleDateString("ru-RU")}</span>
+                            <span>{paymentMethodLabels[income.paymentMethod]}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -795,7 +880,7 @@ function OrderDetailPage() {
                     <SelectContent>
                       <SelectItem value="prepayment">Предоплата</SelectItem>
                       <SelectItem value="transfer">Перевод средств</SelectItem>
-                      {deliveries.filter((d) => !d.isPaid).length > 0 && (
+                      {deliveries.filter((d) => d.status === "in_progress").length > 0 && (
                         <SelectItem value="delivery">Доставка</SelectItem>
                       )}
                     </SelectContent>
@@ -817,11 +902,11 @@ function OrderDetailPage() {
                       </SelectTrigger>
                       <SelectContent>
                         {deliveries
-                          .filter((d) => !d.isPaid)
+                          .filter((d) => d.status === "in_progress")
                           .map((delivery) => (
                             <SelectItem key={delivery.id} value={String(delivery.id)}>
                               {new Date(delivery.dateTime).toLocaleDateString("ru-RU")} -{" "}
-                              {delivery.cost} ₽
+                              {delivery.incomeId ? "Доход ID: " + delivery.incomeId : "N/A"}
                             </SelectItem>
                           ))}
                       </SelectContent>
@@ -871,21 +956,24 @@ function OrderDetailPage() {
                     <div key={delivery.id} className="border rounded-md p-4 space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <Badge variant={delivery.isPaid ? "default" : "outline"}>
-                            {delivery.isPaid ? "Оплачено" : "Не оплачено"}
+                          <Badge variant={delivery.status === "completed" ? "default" : "outline"}>
+                            {deliveryStatusLabels[delivery.status]}
+                          </Badge>
+                          <Badge variant="secondary">
+                            {paymentMethodLabels[delivery.paymentMethod]}
                           </Badge>
                           <span className="font-medium">
                             {new Date(delivery.dateTime).toLocaleString("ru-RU")}
                           </span>
                         </div>
                         <div className="flex items-center gap-2">
-                          {!delivery.isPaid && (
+                          {delivery.status === "in_progress" && (
                             <Button
                               variant="default"
                               size="sm"
-                              onClick={() => handleMarkAsPaid(delivery.id)}
+                              onClick={() => handleCompleteDelivery(delivery.id)}
                             >
-                              Оплатить
+                              Завершить
                             </Button>
                           )}
                           <Button
@@ -907,15 +995,9 @@ function OrderDetailPage() {
 
                       <div className="grid grid-cols-3 gap-4 text-sm">
                         <div>
-                          <span className="text-muted-foreground">Стоимость: </span>
-                          {delivery.cost} ₽
+                          <span className="text-muted-foreground">Объем: </span>
+                          {delivery.volume ? `${delivery.volume} м³` : "N/A"}
                         </div>
-                        {delivery.volume && (
-                          <div>
-                            <span className="text-muted-foreground">Объем: </span>
-                            {delivery.volume} м³
-                          </div>
-                        )}
                         {delivery.comment && (
                           <div className="col-span-2">
                             <span className="text-muted-foreground">Комментарий: </span>
@@ -924,14 +1006,9 @@ function OrderDetailPage() {
                         )}
                       </div>
 
-                      {(delivery.isCashPayment || delivery.isUnloadingBeforeUnloading) && (
+                      {delivery.isPaymentBeforeUnloading && (
                         <div className="flex gap-4 text-sm">
-                          {delivery.isCashPayment && (
-                            <Badge variant="secondary">Оплата наличными</Badge>
-                          )}
-                          {delivery.isUnloadingBeforeUnloading && (
-                            <Badge variant="secondary">Выгрузка до выгрузки</Badge>
-                          )}
+                          <Badge variant="secondary">Оплата до выгрузки</Badge>
                         </div>
                       )}
                     </div>
@@ -997,61 +1074,78 @@ function OrderDetailPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label>Дата и время *</Label>
                     <Input type="datetime-local" {...registerDelivery("dateTime")} />
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Стоимость (₽) *</Label>
-                    <Input type="number" {...registerDelivery("cost")} />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
                     <Label>Объем груза (м³)</Label>
                     <Input type="number" step="0.1" {...registerDelivery("volume")} />
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Комментарий</Label>
-                    <Textarea {...registerDelivery("comment")} rows={2} />
+                    <Label>Стоимость *</Label>
+                    <Input type="number" {...registerDelivery("amount")} />
+                    {deliveryErrors.amount && (
+                      <p className="text-sm text-destructive">{deliveryErrors.amount.message}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Комментарий</Label>
+                  <Textarea {...registerDelivery("comment")} rows={2} />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Тип оплаты *</Label>
+                    <Select
+                      value={watchDelivery("paymentMethod")}
+                      onValueChange={(value: "cash" | "bank_transfer") =>
+                        setDeliveryValue("paymentMethod", value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Выберите тип оплаты" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="cash">Наличные</SelectItem>
+                        <SelectItem value="bank_transfer">Безналичный расчет</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {deliveryErrors.paymentMethod && (
+                      <p className="text-sm text-destructive">
+                        {deliveryErrors.paymentMethod.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Checkbox
+                        checked={watchDelivery("isPaid")}
+                        onCheckedChange={(checked: boolean) => setDeliveryValue("isPaid", checked)}
+                      />
+                      Оплата произведена
+                    </Label>
+                    {deliveryErrors.isPaid && (
+                      <p className="text-sm text-destructive">{deliveryErrors.isPaid.message}</p>
+                    )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     <Checkbox
-                      checked={watchDelivery("isPaid")}
-                      onCheckedChange={(checked: boolean) => setDeliveryValue("isPaid", checked)}
-                    />
-                    Оплата произведена
-                  </Label>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Checkbox
-                      checked={watchDelivery("isCashPayment")}
+                      checked={watchDelivery("isPaymentBeforeUnloading")}
                       onCheckedChange={(checked: boolean) =>
-                        setDeliveryValue("isCashPayment", checked)
+                        setDeliveryValue("isPaymentBeforeUnloading", checked)
                       }
                     />
-                    Оплата наличными
-                  </Label>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-2">
-                    <Checkbox
-                      checked={watchDelivery("isUnloadingBeforeUnloading")}
-                      onCheckedChange={(checked: boolean) =>
-                        setDeliveryValue("isUnloadingBeforeUnloading", checked)
-                      }
-                    />
-                    Выгрузка до выгрузки
+                    Оплата до выгрузки
                   </Label>
                 </div>
 

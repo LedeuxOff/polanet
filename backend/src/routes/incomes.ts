@@ -6,20 +6,20 @@ import {
   createIncomeSchema,
   updateIncomeSchema,
 } from "../middleware/validators.js";
-import { eq, and, desc, like, eq as eqOp } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 
 const router = Router();
 
 // Получить все доходы с фильтрацией
 router.get("/", authenticate, (req: AuthRequest, res) => {
   try {
-    const { isPaid, paymentMethod, orderId, id } = req.query;
+    const { isPaid, paymentMethod, orderId, id, deliveryId } = req.query;
 
     // Строим запрос с фильтрами
     const whereConditions = [];
 
     if (isPaid !== undefined) {
-      whereConditions.push(eqOp(incomes.isPaid, isPaid === "true"));
+      whereConditions.push(eq(incomes.isPaid, isPaid === "true"));
     }
     if (paymentMethod) {
       whereConditions.push(
@@ -27,10 +27,13 @@ router.get("/", authenticate, (req: AuthRequest, res) => {
       );
     }
     if (orderId) {
-      whereConditions.push(eqOp(incomes.orderId, Number(orderId)));
+      whereConditions.push(eq(incomes.orderId, Number(orderId)));
     }
     if (id) {
-      whereConditions.push(eqOp(incomes.id, Number(id)));
+      whereConditions.push(eq(incomes.id, Number(id)));
+    }
+    if (deliveryId) {
+      whereConditions.push(eq(incomes.deliveryId, Number(deliveryId)));
     }
 
     const query = db
@@ -49,13 +52,9 @@ router.get("/", authenticate, (req: AuthRequest, res) => {
         orderAddress: orders.address,
         orderType: orders.type,
         orderStatus: orders.status,
-        // Данные доставки
-        deliveryDateTime: deliveries.dateTime,
-        deliveryCost: deliveries.cost,
       })
       .from(incomes)
       .leftJoin(orders, eq(incomes.orderId, orders.id))
-      .leftJoin(deliveries, eq(incomes.deliveryId, deliveries.id))
       .orderBy(desc(incomes.createdAt));
 
     if (whereConditions.length > 0) {
@@ -99,9 +98,7 @@ router.get("/:id", authenticate, async (req: AuthRequest, res) => {
         orderDateTime: orders.dateTime,
         // Данные доставки
         deliveryDateTime: deliveries.dateTime,
-        deliveryCost: deliveries.cost,
-        deliveryDriverId: deliveries.driverId,
-        deliveryCarId: deliveries.carId,
+        deliveryStatus: deliveries.status,
       })
       .from(incomes)
       .leftJoin(orders, eq(incomes.orderId, orders.id))
@@ -141,15 +138,8 @@ router.post("/", authenticate, async (req: AuthRequest, res) => {
       return res.status(404).json({ error: "Заявка не найдена" });
     }
 
-    // Если вид дохода - оплата доставки, проверяем существование доставки
-    if (data.incomeType === "delivery_payment") {
-      if (!data.deliveryId) {
-        return res.status(400).json({
-          error:
-            "Для вида дохода 'оплата доставки' необходимо указать deliveryId",
-        });
-      }
-
+    // Если указан deliveryId, проверяем существование доставки
+    if (data.deliveryId) {
       const delivery = await db
         .select()
         .from(deliveries)
@@ -160,12 +150,11 @@ router.post("/", authenticate, async (req: AuthRequest, res) => {
         return res.status(404).json({ error: "Доставка не найдена" });
       }
 
-      // Проверяем что доставка принадлежит этой заявке
-      if (delivery[0].orderId !== data.orderId) {
-        return res.status(400).json({
-          error: "Доставка не принадлежит указанной заявке",
-        });
-      }
+      // Обновляем delivery.incomeId при привязке дохода к доставке
+      await db
+        .update(deliveries)
+        .set({ incomeId: data.orderId })
+        .where(eq(deliveries.id, data.deliveryId));
     }
 
     const result = await db
@@ -222,28 +211,6 @@ router.put("/:id", authenticate, async (req: AuthRequest, res) => {
       return res.status(404).json({ error: "Доход не найден" });
     }
 
-    // Если изменяется incomeType на delivery_payment, проверяем deliveryId
-    const newIncomeType = data.incomeType || currentIncome[0].incomeType;
-    if (newIncomeType === "delivery_payment") {
-      const newDeliveryId = data.deliveryId || currentIncome[0].deliveryId;
-      if (!newDeliveryId) {
-        return res.status(400).json({
-          error:
-            "Для вида дохода 'оплата доставки' необходимо указать deliveryId",
-        });
-      }
-
-      const delivery = await db
-        .select()
-        .from(deliveries)
-        .where(eq(deliveries.id, newDeliveryId))
-        .limit(1);
-
-      if (!delivery || delivery.length === 0) {
-        return res.status(404).json({ error: "Доставка не найдена" });
-      }
-    }
-
     const updateData: Record<string, unknown> = {
       ...data,
       updatedAt: now,
@@ -253,6 +220,38 @@ router.put("/:id", authenticate, async (req: AuthRequest, res) => {
     for (const key of Object.keys(updateData)) {
       if (updateData[key] === undefined) {
         delete updateData[key];
+      }
+    }
+
+    // Если изменяется deliveryId, обновляем delivery.incomeId
+    if ("deliveryId" in data) {
+      const oldDeliveryId = currentIncome[0].deliveryId;
+      const newDeliveryId = data.deliveryId;
+
+      // Удаляем связь со старой доставки
+      if (oldDeliveryId) {
+        await db
+          .update(deliveries)
+          .set({ incomeId: null })
+          .where(eq(deliveries.id, oldDeliveryId));
+      }
+
+      // Устанавливаем связь с новой доставкой
+      if (newDeliveryId) {
+        const delivery = await db
+          .select()
+          .from(deliveries)
+          .where(eq(deliveries.id, newDeliveryId))
+          .limit(1);
+
+        if (!delivery || delivery.length === 0) {
+          return res.status(404).json({ error: "Доставка не найдена" });
+        }
+
+        await db
+          .update(deliveries)
+          .set({ incomeId: data.orderId ?? currentIncome[0].orderId })
+          .where(eq(deliveries.id, newDeliveryId));
       }
     }
 
@@ -297,6 +296,15 @@ router.delete("/:id", authenticate, async (req: AuthRequest, res) => {
 
     if (!income || income.length === 0) {
       return res.status(404).json({ error: "Доход не найден" });
+    }
+
+    // Удаляем связь с доставкой
+    const deliveryId = income[0].deliveryId;
+    if (deliveryId) {
+      await db
+        .update(deliveries)
+        .set({ incomeId: null })
+        .where(eq(deliveries.id, deliveryId));
     }
 
     await db.delete(incomes).where(eq(incomes.id, incomeId)).run();

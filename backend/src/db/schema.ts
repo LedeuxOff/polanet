@@ -122,22 +122,28 @@ export const deliveries = sqliteTable("deliveries", {
     .references(() => cars.id),
   // Дата и время доставки
   dateTime: text("date_time").notNull(),
-  // Стоимость доставки
-  cost: integer("cost").notNull(),
   // Объем груза (м³)
   volume: integer("volume"),
   // Комментарий
   comment: text("comment"),
-  // Оплата
-  isPaid: integer("is_paid", { mode: "boolean" }).notNull().default(false),
-  isCashPayment: integer("is_cash_payment", { mode: "boolean" })
-    .notNull()
-    .default(false),
-  isUnloadingBeforeUnloading: integer("is_unloading_before_unloading", {
+  // Тип оплаты - наличный расчет | безналичный расчет
+  paymentMethod: text("payment_method", {
+    enum: ["cash", "bank_transfer"],
+  }).notNull(),
+  // Оплата до выгрузки
+  isPaymentBeforeUnloading: integer("is_payment_before_unloading", {
     mode: "boolean",
   })
     .notNull()
     .default(false),
+  // Статус доставки - in_progress | completed
+  status: text("status", {
+    enum: ["in_progress", "completed"],
+  })
+    .notNull()
+    .default("in_progress"),
+  // Связь с доходом (ссылка на income, создается при привязке дохода к доставке)
+  incomeId: integer("income_id"),
   // Аудит
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
@@ -192,14 +198,12 @@ export const incomes = sqliteTable("incomes", {
   orderId: integer("order_id")
     .notNull()
     .references(() => orders.id, { onDelete: "cascade" }),
-  // Айди доставки, к которой привязан доход (только в случае если вид дохода - оплата доставки)
-  deliveryId: integer("delivery_id").references(() => deliveries.id, {
-    onDelete: "set null",
-  }),
   // Сумма дохода
   amount: integer("amount").notNull(),
   // Дата оплаты
   paymentDate: text("payment_date").notNull(),
+  // Айди доставки к которой привязан доход (опционально)
+  deliveryId: integer("delivery_id"),
   // Аудит
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
@@ -254,6 +258,10 @@ export const deliveriesRelations = relations(deliveries, ({ one, many }) => ({
   car: one(cars, {
     fields: [deliveries.carId],
     references: [cars.id],
+  }),
+  income: one(incomes, {
+    fields: [deliveries.incomeId],
+    references: [incomes.id],
   }),
   incomes: many(incomes),
 }));
