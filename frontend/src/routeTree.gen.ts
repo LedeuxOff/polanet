@@ -59,14 +59,14 @@ const UsersIndexRoute = UsersIndexRouteImport.update({
   getParentRoute: () => UsersRoute,
 } as any)
 const TransportCardsIndexRoute = TransportCardsIndexRouteImport.update({
-  id: '/transport-cards/',
-  path: '/transport-cards/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => TransportCardsRoute,
 } as any)
 const SystemLogsIndexRoute = SystemLogsIndexRouteImport.update({
-  id: '/system-logs/',
-  path: '/system-logs/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => SystemLogsRoute,
 } as any)
 const SystemInfoIndexRoute = SystemInfoIndexRouteImport.update({
   id: '/system-info/',
@@ -74,9 +74,9 @@ const SystemInfoIndexRoute = SystemInfoIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const RolesIndexRoute = RolesIndexRouteImport.update({
-  id: '/roles/',
-  path: '/roles/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => RolesRoute,
 } as any)
 const OrdersIndexRoute = OrdersIndexRouteImport.update({
   id: '/orders/',
@@ -89,9 +89,9 @@ const MoneyStatisticIndexRoute = MoneyStatisticIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const DriversIndexRoute = DriversIndexRouteImport.update({
-  id: '/drivers/',
-  path: '/drivers/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => DriversRoute,
 } as any)
 const ClientsIndexRoute = ClientsIndexRouteImport.update({
   id: '/clients/',
@@ -99,14 +99,14 @@ const ClientsIndexRoute = ClientsIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarsIndexRoute = CarsIndexRouteImport.update({
-  id: '/cars/',
-  path: '/cars/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => CarsRoute,
 } as any)
 const BackupsIndexRoute = BackupsIndexRouteImport.update({
-  id: '/backups/',
-  path: '/backups/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => BackupsRoute,
 } as any)
 const UsersNewRoute = UsersNewRouteImport.update({
   id: '/new',
@@ -119,24 +119,24 @@ const UsersUserIdRoute = UsersUserIdRouteImport.update({
   getParentRoute: () => UsersRoute,
 } as any)
 const TransportCardsNewRoute = TransportCardsNewRouteImport.update({
-  id: '/transport-cards/new',
-  path: '/transport-cards/new',
-  getParentRoute: () => rootRouteImport,
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => TransportCardsRoute,
 } as any)
 const TransportCardsCardIdRoute = TransportCardsCardIdRouteImport.update({
-  id: '/transport-cards/$cardId',
-  path: '/transport-cards/$cardId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$cardId',
+  path: '/$cardId',
+  getParentRoute: () => TransportCardsRoute,
 } as any)
 const RolesNewRoute = RolesNewRouteImport.update({
-  id: '/roles/new',
-  path: '/roles/new',
-  getParentRoute: () => rootRouteImport,
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => RolesRoute,
 } as any)
 const RolesRoleIdRoute = RolesRoleIdRouteImport.update({
-  id: '/roles/$roleId',
-  path: '/roles/$roleId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$roleId',
+  path: '/$roleId',
+  getParentRoute: () => RolesRoute,
 } as any)
 const OrdersNewRoute = OrdersNewRouteImport.update({
   id: '/orders/new',
@@ -149,14 +149,14 @@ const OrdersOrderIdRoute = OrdersOrderIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const DriversNewRoute = DriversNewRouteImport.update({
-  id: '/drivers/new',
-  path: '/drivers/new',
-  getParentRoute: () => rootRouteImport,
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => DriversRoute,
 } as any)
 const DriversDriverIdRoute = DriversDriverIdRouteImport.update({
-  id: '/drivers/$driverId',
-  path: '/drivers/$driverId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$driverId',
+  path: '/$driverId',
+  getParentRoute: () => DriversRoute,
 } as any)
 const ClientsNewRoute = ClientsNewRouteImport.update({
   id: '/clients/new',
@@ -169,14 +169,14 @@ const ClientsClientIdRoute = ClientsClientIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarsNewRoute = CarsNewRouteImport.update({
-  id: '/cars/new',
-  path: '/cars/new',
-  getParentRoute: () => rootRouteImport,
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => CarsRoute,
 } as any)
 const CarsCarIdRoute = CarsCarIdRouteImport.update({
-  id: '/cars/$carId',
-  path: '/cars/$carId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$carId',
+  path: '/$carId',
+  getParentRoute: () => CarsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -365,28 +365,14 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   UsersRoute: typeof UsersRouteWithChildren
-  CarsCarIdRoute: typeof CarsCarIdRoute
-  CarsNewRoute: typeof CarsNewRoute
   ClientsClientIdRoute: typeof ClientsClientIdRoute
   ClientsNewRoute: typeof ClientsNewRoute
-  DriversDriverIdRoute: typeof DriversDriverIdRoute
-  DriversNewRoute: typeof DriversNewRoute
   OrdersOrderIdRoute: typeof OrdersOrderIdRoute
   OrdersNewRoute: typeof OrdersNewRoute
-  RolesRoleIdRoute: typeof RolesRoleIdRoute
-  RolesNewRoute: typeof RolesNewRoute
-  TransportCardsCardIdRoute: typeof TransportCardsCardIdRoute
-  TransportCardsNewRoute: typeof TransportCardsNewRoute
-  BackupsIndexRoute: typeof BackupsIndexRoute
-  CarsIndexRoute: typeof CarsIndexRoute
   ClientsIndexRoute: typeof ClientsIndexRoute
-  DriversIndexRoute: typeof DriversIndexRoute
   MoneyStatisticIndexRoute: typeof MoneyStatisticIndexRoute
   OrdersIndexRoute: typeof OrdersIndexRoute
-  RolesIndexRoute: typeof RolesIndexRoute
   SystemInfoIndexRoute: typeof SystemInfoIndexRoute
-  SystemLogsIndexRoute: typeof SystemLogsIndexRoute
-  TransportCardsIndexRoute: typeof TransportCardsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -421,17 +407,17 @@ declare module '@tanstack/react-router' {
     }
     '/transport-cards/': {
       id: '/transport-cards/'
-      path: '/transport-cards'
+      path: '/'
       fullPath: '/transport-cards/'
       preLoaderRoute: typeof TransportCardsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TransportCardsRoute
     }
     '/system-logs/': {
       id: '/system-logs/'
-      path: '/system-logs'
+      path: '/'
       fullPath: '/system-logs/'
       preLoaderRoute: typeof SystemLogsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SystemLogsRoute
     }
     '/system-info/': {
       id: '/system-info/'
@@ -442,10 +428,10 @@ declare module '@tanstack/react-router' {
     }
     '/roles/': {
       id: '/roles/'
-      path: '/roles'
+      path: '/'
       fullPath: '/roles/'
       preLoaderRoute: typeof RolesIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof RolesRoute
     }
     '/orders/': {
       id: '/orders/'
@@ -463,10 +449,10 @@ declare module '@tanstack/react-router' {
     }
     '/drivers/': {
       id: '/drivers/'
-      path: '/drivers'
+      path: '/'
       fullPath: '/drivers/'
       preLoaderRoute: typeof DriversIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DriversRoute
     }
     '/clients/': {
       id: '/clients/'
@@ -477,17 +463,17 @@ declare module '@tanstack/react-router' {
     }
     '/cars/': {
       id: '/cars/'
-      path: '/cars'
+      path: '/'
       fullPath: '/cars/'
       preLoaderRoute: typeof CarsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof CarsRoute
     }
     '/backups/': {
       id: '/backups/'
-      path: '/backups'
+      path: '/'
       fullPath: '/backups/'
       preLoaderRoute: typeof BackupsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof BackupsRoute
     }
     '/users/new': {
       id: '/users/new'
@@ -505,31 +491,31 @@ declare module '@tanstack/react-router' {
     }
     '/transport-cards/new': {
       id: '/transport-cards/new'
-      path: '/transport-cards/new'
+      path: '/new'
       fullPath: '/transport-cards/new'
       preLoaderRoute: typeof TransportCardsNewRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TransportCardsRoute
     }
     '/transport-cards/$cardId': {
       id: '/transport-cards/$cardId'
-      path: '/transport-cards/$cardId'
+      path: '/$cardId'
       fullPath: '/transport-cards/$cardId'
       preLoaderRoute: typeof TransportCardsCardIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TransportCardsRoute
     }
     '/roles/new': {
       id: '/roles/new'
-      path: '/roles/new'
+      path: '/new'
       fullPath: '/roles/new'
       preLoaderRoute: typeof RolesNewRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof RolesRoute
     }
     '/roles/$roleId': {
       id: '/roles/$roleId'
-      path: '/roles/$roleId'
+      path: '/$roleId'
       fullPath: '/roles/$roleId'
       preLoaderRoute: typeof RolesRoleIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof RolesRoute
     }
     '/orders/new': {
       id: '/orders/new'
@@ -547,17 +533,17 @@ declare module '@tanstack/react-router' {
     }
     '/drivers/new': {
       id: '/drivers/new'
-      path: '/drivers/new'
+      path: '/new'
       fullPath: '/drivers/new'
       preLoaderRoute: typeof DriversNewRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DriversRoute
     }
     '/drivers/$driverId': {
       id: '/drivers/$driverId'
-      path: '/drivers/$driverId'
+      path: '/$driverId'
       fullPath: '/drivers/$driverId'
       preLoaderRoute: typeof DriversDriverIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DriversRoute
     }
     '/clients/new': {
       id: '/clients/new'
@@ -575,17 +561,17 @@ declare module '@tanstack/react-router' {
     }
     '/cars/new': {
       id: '/cars/new'
-      path: '/cars/new'
+      path: '/new'
       fullPath: '/cars/new'
       preLoaderRoute: typeof CarsNewRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof CarsRoute
     }
     '/cars/$carId': {
       id: '/cars/$carId'
-      path: '/cars/$carId'
+      path: '/$carId'
       fullPath: '/cars/$carId'
       preLoaderRoute: typeof CarsCarIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof CarsRoute
     }
   }
 }
@@ -608,28 +594,14 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   UsersRoute: UsersRouteWithChildren,
-  CarsCarIdRoute: CarsCarIdRoute,
-  CarsNewRoute: CarsNewRoute,
   ClientsClientIdRoute: ClientsClientIdRoute,
   ClientsNewRoute: ClientsNewRoute,
-  DriversDriverIdRoute: DriversDriverIdRoute,
-  DriversNewRoute: DriversNewRoute,
   OrdersOrderIdRoute: OrdersOrderIdRoute,
   OrdersNewRoute: OrdersNewRoute,
-  RolesRoleIdRoute: RolesRoleIdRoute,
-  RolesNewRoute: RolesNewRoute,
-  TransportCardsCardIdRoute: TransportCardsCardIdRoute,
-  TransportCardsNewRoute: TransportCardsNewRoute,
-  BackupsIndexRoute: BackupsIndexRoute,
-  CarsIndexRoute: CarsIndexRoute,
   ClientsIndexRoute: ClientsIndexRoute,
-  DriversIndexRoute: DriversIndexRoute,
   MoneyStatisticIndexRoute: MoneyStatisticIndexRoute,
   OrdersIndexRoute: OrdersIndexRoute,
-  RolesIndexRoute: RolesIndexRoute,
   SystemInfoIndexRoute: SystemInfoIndexRoute,
-  SystemLogsIndexRoute: SystemLogsIndexRoute,
-  TransportCardsIndexRoute: TransportCardsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
