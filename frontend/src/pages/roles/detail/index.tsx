@@ -3,13 +3,33 @@ import { useRoleDetailPage } from "./hooks";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, TrashIcon } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import { ChevronLeft, TrashIcon, SaveIcon } from "lucide-react";
+import { useState } from "react";
 
 export const EditRolePage = () => {
+  const { roleId: roleIdStr } = useParams({ from: "/roles/$roleId" });
+  const roleId = parseInt(roleIdStr);
   const navigate = useNavigate();
-  const { isLoading, role, handleDelete, isDeleting, form, onSubmit, isSubmitting } =
-    useRoleDetailPage();
+  const [showPermissions, setShowPermissions] = useState(false);
+  const {
+    isLoading,
+    isDeleting,
+    isSubmitting,
+    isSavingPermissions,
+    role,
+    rolePermissions,
+    permissionsByModule,
+    moduleNames,
+    form,
+    onSubmit,
+    savePermissions,
+    handleDelete,
+    togglePermission,
+    toggleModulePermissions,
+    canDelete,
+  } = useRoleDetailPage(roleId);
 
   if (isLoading) {
     return (
@@ -28,6 +48,10 @@ export const EditRolePage = () => {
       </Card>
     );
   }
+
+  const handleSavePermissions = async () => {
+    await savePermissions(rolePermissions);
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -84,6 +108,62 @@ export const EditRolePage = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Секция прав доступа */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <CardTitle>Права доступа</CardTitle>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowPermissions(!showPermissions)}
+                >
+                  {showPermissions ? "Скрыть" : "Показать"}
+                </Button>
+              </CardHeader>
+              {showPermissions && (
+                <CardContent>
+                  <div className="space-y-6">
+                    {Object.entries(permissionsByModule).map(([moduleKey, modulePermissions]) => (
+                      <div key={moduleKey} className="border rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h3 className="font-semibold text-base">
+                            {moduleNames[moduleKey] || moduleKey}
+                          </h3>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => toggleModulePermissions(modulePermissions)}
+                          >
+                            {modulePermissions.every((p) => rolePermissions.includes(p.code))
+                              ? "Снять все"
+                              : "Выбрать все"}
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {modulePermissions.map((permission) => (
+                            <div key={permission.id} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={permission.code}
+                                checked={rolePermissions.includes(permission.code)}
+                                onCheckedChange={() => togglePermission(permission.code)}
+                              />
+                              <label
+                                htmlFor={permission.code}
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                              >
+                                {permission.name}
+                              </label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              )}
+            </Card>
           </div>
         </div>
 
@@ -97,7 +177,7 @@ export const EditRolePage = () => {
             <ChevronLeft className="w-4 h-4" />
           </Button>
 
-          {role && (
+          {role && canDelete && (
             <Button
               type="button"
               className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
@@ -107,6 +187,16 @@ export const EditRolePage = () => {
               <TrashIcon className="w-4 h-4" />
             </Button>
           )}
+
+          <Button
+            type="button"
+            onClick={handleSavePermissions}
+            disabled={isSavingPermissions || isSubmitting}
+            className="px-6 py-4 bg-green-600 rounded-md hover:bg-green-700"
+          >
+            <SaveIcon className="w-4 h-4 mr-2" />
+            {isSavingPermissions ? "Сохранение..." : "Сохранить права"}
+          </Button>
 
           <Button
             type="submit"

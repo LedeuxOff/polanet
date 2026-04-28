@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useUserDetailPage } from "./hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,9 +12,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ChevronLeft, Send } from "lucide-react";
+import { usePermissions } from "@/lib/contexts/permission-context";
+import { useToast } from "@/lib/contexts/toast-context";
 
 export const EditUserPage = () => {
   const navigate = useNavigate();
+  const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
+  const { showToast } = useToast();
   const {
     isLoading,
     user,
@@ -26,10 +30,27 @@ export const EditUserPage = () => {
     handleSendPassword,
   } = useUserDetailPage();
 
-  if (isLoading) {
+  // Показываем лоадер пока загружаются данные или permissions
+  if (isLoading || isPermissionsLoading) {
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">Загрузка...</CardContent>
+      </Card>
+    );
+  }
+
+  // Проверяем права на просмотр деталки
+  if (!hasPermission("users:detail")) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center">
+          <p className="text-muted-foreground mb-4">У вас нет доступа к этой странице</p>
+          <Link to="/">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              Вернуться на главную
+            </button>
+          </Link>
+        </CardContent>
       </Card>
     );
   }
@@ -66,7 +87,21 @@ export const EditUserPage = () => {
         </CardHeader>
       </Card>
 
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        onSubmit={form.handleSubmit(async (data) => {
+          if (!hasPermission("users:update")) {
+            showToast("У вас нет прав на редактирование пользователя", "error");
+            return { success: false };
+          }
+          const result = await onSubmit(data);
+          if (result.success) {
+            showToast("Пользователь успешно сохранен", "success");
+            navigate({ to: "/users" });
+          } else if (result.error) {
+            showToast(result.error, "error");
+          }
+        })}
+      >
         <div className="flex gap-4">
           <div className="flex flex-col gap-4 flex-1">
             <Card>
@@ -190,7 +225,13 @@ export const EditUserPage = () => {
           <Button
             type="button"
             disabled={isSendingPassword}
-            onClick={handleSendPassword}
+            onClick={() => {
+              if (!hasPermission("users:sendPassword")) {
+                showToast("У вас нет прав на отправку пароля", "error");
+                return;
+              }
+              handleSendPassword();
+            }}
             className="bg-zinc-800 hover:bg-zinc-900"
           >
             <Send className="w-4 h-4 mr-2" />

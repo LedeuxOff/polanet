@@ -1,6 +1,7 @@
 import { Router } from "express";
 import os from "os";
 import { authenticate } from "../middleware/auth";
+import { requirePermission } from "../middleware/permissions";
 import { exec, execSync } from "child_process";
 import { promisify } from "util";
 
@@ -413,7 +414,7 @@ function getOSInfo(): OSInfo {
   return osInformation;
 }
 
-router.get("/stats", authenticate, (req, res) => {
+router.get("/stats", authenticate, requirePermission("system-info:view"), (req, res) => {
   const cpuUsage = calculateCpuUsage();
   const memoryUsage = getMemoryUsagePercent();
   const diskUsage = getDiskInfo();

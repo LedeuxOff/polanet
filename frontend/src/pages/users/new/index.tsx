@@ -12,10 +12,41 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
+import { usePermissions } from "@/lib/contexts/permission-context";
+import { useToast } from "@/lib/contexts/toast-context";
 
 export const NewUserPage = () => {
   const navigate = useNavigate();
+  const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
+  const { showToast } = useToast();
   const { form, onSubmit, error, isSubmitting, roles } = useNewUserPage();
+
+  // Показываем лоадер пока загружаются permissions
+  if (isPermissionsLoading) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-muted-foreground">
+          Загрузка прав доступа...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Проверяем права на создание пользователя
+  if (!hasPermission("users:create")) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center">
+          <p className="text-muted-foreground mb-4">У вас нет доступа к этой странице</p>
+          <Link to="/">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              Вернуться на главную
+            </button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -37,7 +68,21 @@ export const NewUserPage = () => {
         </CardHeader>
       </Card>
 
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        onSubmit={form.handleSubmit(async (data) => {
+          if (!hasPermission("users:create")) {
+            showToast("У вас нет прав на создание пользователя", "error");
+            return { success: false };
+          }
+          const result = await onSubmit(data);
+          if (result.success) {
+            showToast("Пользователь успешно создан", "success");
+            navigate({ to: "/users" });
+          } else if (result.error) {
+            showToast(result.error, "error");
+          }
+        })}
+      >
         <div className="flex gap-4">
           <div className="flex flex-col gap-4 flex-1">
             <Card>

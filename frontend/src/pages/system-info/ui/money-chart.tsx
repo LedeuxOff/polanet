@@ -1,5 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { CandleData } from "../hooks";
+import { CandleData } from "../../money-statistic/hooks";
 
 interface MoneyChartProps {
   data: CandleData[];

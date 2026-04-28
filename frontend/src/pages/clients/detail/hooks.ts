@@ -5,8 +5,7 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
-export const useClientDetailPage = () => {
-  const { clientId } = useParams({ from: "/clients/$clientId" });
+export const useClientDetailPage = (clientId: string) => {
   const navigate = useNavigate();
   const [client, setClient] = useState<Client | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,7 +44,7 @@ export const useClientDetailPage = () => {
       .finally(() => setIsLoading(false));
   }, [clientId, form.setValue]);
 
-  const onSubmit = async (data: ClientForm) => {
+  const onSubmit = async (data: ClientForm): Promise<{ success: boolean; error?: string }> => {
     setError(null);
     setIsSubmitting(true);
     try {
@@ -69,15 +68,22 @@ export const useClientDetailPage = () => {
       if (data.receiverPhone !== undefined) updateData.receiverPhone = data.receiverPhone;
 
       await clientsApi.update(Number(clientId), updateData);
-      navigate({ to: "/clients" });
+      return { success: true };
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка при обновлении");
+      const message = err instanceof Error ? err.message : "Ошибка при обновлении";
+      setError(message);
+      return { success: false, error: message };
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (
+    showToast: (
+      message: string,
+      variant: "success" | "error" | "warning" | "info" | "default",
+    ) => void,
+  ) => {
     if (!confirm("Вы уверены, что хотите удалить этого клиента?")) {
       return;
     }
@@ -85,9 +91,12 @@ export const useClientDetailPage = () => {
     setIsDeleting(true);
     try {
       await clientsApi.delete(Number(clientId));
+      showToast("Клиент успешно удален", "success");
       navigate({ to: "/clients" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка при удалении");
+      const message = err instanceof Error ? err.message : "Ошибка при удалении";
+      setError(message);
+      showToast(message, "error");
     } finally {
       setIsDeleting(false);
     }

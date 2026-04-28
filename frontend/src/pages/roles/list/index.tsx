@@ -9,7 +9,7 @@ import { HomeIcon } from "lucide-react";
 
 export const RolesPage = () => {
   const navigate = useNavigate();
-  const { roles, isLoading, handleDelete } = useRolesListPage();
+  const { roles, isLoading, handleDelete, canCreate } = useRolesListPage();
 
   const columns: ColumnDef<Role>[] = [
     {
@@ -61,11 +61,13 @@ export const RolesPage = () => {
           </Button>
         </Link>
 
-        <Link to="/roles/new">
-          <Button type="button" className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700">
-            Создать роль
-          </Button>
-        </Link>
+        {canCreate && (
+          <Link to="/roles/new">
+            <Button type="button" className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700">
+              Создать роль
+            </Button>
+          </Link>
+        )}
       </div>
     </div>
   );

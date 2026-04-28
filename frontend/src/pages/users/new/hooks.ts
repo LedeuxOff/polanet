@@ -22,14 +22,16 @@ export const useNewUserPage = () => {
     rolesApi.list().then(setRoles).catch(console.error);
   }, []);
 
-  const onSubmit = async (data: UserForm) => {
+  const onSubmit = async (data: UserForm): Promise<{ success: boolean; error?: string }> => {
     setError(null);
     setIsSubmitting(true);
     try {
       await usersApi.create(data);
-      navigate({ to: "/users" });
+      return { success: true };
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка при создании");
+      const message = err instanceof Error ? err.message : "Ошибка при создании";
+      setError(message);
+      return { success: false, error: message };
     } finally {
       setIsSubmitting(false);
     }

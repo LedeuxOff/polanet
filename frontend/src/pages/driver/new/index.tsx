@@ -5,10 +5,39 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
+import { usePermissions } from "@/lib/contexts/permission-context";
+import { useToast } from "@/lib/contexts/toast-context";
 
 export const NewDriverPage = () => {
   const navigate = useNavigate();
+  const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
+  const { showToast } = useToast();
   const { form, isSubmitting, error, onSubmit } = useNewDriverPage();
+
+  if (isPermissionsLoading) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-muted-foreground">
+          Загрузка прав доступа...
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!hasPermission("drivers:create")) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center">
+          <p className="text-muted-foreground mb-4">У вас нет доступа к этой странице</p>
+          <Link to="/">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              Вернуться на главную
+            </button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -30,7 +59,17 @@ export const NewDriverPage = () => {
         </CardHeader>
       </Card>
 
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        onSubmit={form.handleSubmit(async (data) => {
+          if (!hasPermission("drivers:create")) {
+            showToast("У вас нет прав на создание водителя", "error");
+            return;
+          }
+          await onSubmit(data);
+          showToast("Водитель успешно создан", "success");
+          navigate({ to: "/drivers" });
+        })}
+      >
         <div className="flex gap-4">
           <div className="flex flex-col gap-4 flex-1">
             <Card>

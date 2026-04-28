@@ -9,6 +9,29 @@ export const roles = sqliteTable("roles", {
   updatedAt: text("updated_at").default("CURRENT_TIMESTAMP").notNull(),
 });
 
+// Таблица прав доступа
+export const permissions = sqliteTable("permissions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  code: text("code").notNull().unique(),
+  name: text("name").notNull(),
+  module: text("module").notNull(),
+  description: text("description"),
+  createdAt: text("created_at").default("CURRENT_TIMESTAMP").notNull(),
+  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP").notNull(),
+});
+
+// Таблица связей ролей с правами
+export const rolePermissions = sqliteTable("role_permissions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  roleId: integer("role_id")
+    .references(() => roles.id, { onDelete: "cascade" })
+    .notNull(),
+  permissionId: integer("permission_id")
+    .references(() => permissions.id, { onDelete: "cascade" })
+    .notNull(),
+  createdAt: text("created_at").default("CURRENT_TIMESTAMP").notNull(),
+});
+
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   lastName: text("last_name").notNull(),
@@ -218,6 +241,7 @@ export const incomes = sqliteTable("incomes", {
 // Relations
 export const rolesRelations = relations(roles, ({ many }) => ({
   users: many(users),
+  rolePermissions: many(rolePermissions),
 }));
 
 export const usersRelations = relations(users, ({ one, many }) => ({
@@ -434,3 +458,24 @@ export type Income = typeof incomes.$inferSelect;
 export type NewIncome = typeof incomes.$inferInsert;
 export type Expense = typeof expenses.$inferSelect;
 export type NewExpense = typeof expenses.$inferInsert;
+export type Permission = typeof permissions.$inferSelect;
+export type NewPermission = typeof permissions.$inferInsert;
+export type RolePermission = typeof rolePermissions.$inferSelect;
+export type NewRolePermission = typeof rolePermissions.$inferInsert;
+
+// Отношения для permissions
+export const permissionsRelations = relations(permissions, ({ many }) => ({
+  rolePermissions: many(rolePermissions),
+}));
+
+// Отношения для rolePermissions
+export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => ({
+  role: one(roles, {
+    fields: [rolePermissions.roleId],
+    references: [roles.id],
+  }),
+  permission: one(permissions, {
+    fields: [rolePermissions.permissionId],
+    references: [permissions.id],
+  }),
+}));

@@ -5,16 +5,35 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ChevronLeft, TrashIcon } from "lucide-react";
+import { usePermissions } from "@/lib/contexts/permission-context";
+import { useToast } from "@/lib/contexts/toast-context";
 
 export const EditCarPage = () => {
   const navigate = useNavigate();
+  const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
+  const { showToast } = useToast();
   const { isLoading, car, handleDelete, isDeleting, form, onSubmit, error, isSubmitting } =
     useCarDetailPage();
 
-  if (isLoading) {
+  if (isLoading || isPermissionsLoading) {
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">Загрузка...</CardContent>
+      </Card>
+    );
+  }
+
+  if (!hasPermission("cars:detail")) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center">
+          <p className="text-muted-foreground mb-4">У вас нет доступа к этой странице</p>
+          <Link to="/">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              Вернуться на главную
+            </button>
+          </Link>
+        </CardContent>
       </Card>
     );
   }
@@ -49,7 +68,17 @@ export const EditCarPage = () => {
         </CardHeader>
       </Card>
 
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form
+        onSubmit={form.handleSubmit(async (data) => {
+          if (!hasPermission("cars:update")) {
+            showToast("У вас нет прав на редактирование автомобиля", "error");
+            return;
+          }
+          await onSubmit(data);
+          showToast("Автомобиль успешно сохранен", "success");
+          navigate({ to: "/cars" });
+        })}
+      >
         <div className="flex gap-4">
           <div className="flex flex-col gap-4 flex-1">
             <Card>
@@ -98,8 +127,14 @@ export const EditCarPage = () => {
           {car && (
             <Button
               type="button"
-              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
-              onClick={handleDelete}
+              className="px-3 py-4 bg-red-600 rounded-md hover:bg-red-700"
+              onClick={() => {
+                if (!hasPermission("cars:delete")) {
+                  showToast("У вас нет прав на удаление автомобиля", "error");
+                  return;
+                }
+                handleDelete();
+              }}
               disabled={isDeleting || isSubmitting}
             >
               <TrashIcon className="w-4 h-4" />

@@ -11,12 +11,27 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { APP_VERSION } from "@/lib/api";
+import { usePermissions } from "@/lib/contexts/permission-context";
 
 export const RootLayout = () => {
   const { isLoading, isAuthenticated, isLoginPage, navigate, logout, user } = useRootLayout();
   const location = useLocation();
+  const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
 
-  if (isLoading) {
+  // Filter menu items based on permissions
+  const filteredMenuItems = menuItems
+    .map((menuItem) => ({
+      ...menuItem,
+      links: menuItem.links.filter((link) => {
+        if (!link.permission) {
+          return true;
+        }
+        return hasPermission(link.permission);
+      }),
+    }))
+    .filter((menuItem) => menuItem.links.length > 0);
+
+  if (isLoading || isPermissionsLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-muted-foreground">Загрузка...</div>
@@ -58,7 +73,7 @@ export const RootLayout = () => {
 
         <div className="px-4 flex-1">
           <Accordion type="multiple" className="w-full" defaultValue={["1"]}>
-            {menuItems.map((menuItem) => (
+            {filteredMenuItems.map((menuItem) => (
               <AccordionItem value={menuItem.id} className="border-0">
                 <AccordionTrigger className="text-base flex gap-2 items-center text-[14px] font-medium border-0 [&>.lucide-chevron-down]:text-blue-600">
                   <div className="flex gap-2 items-center">

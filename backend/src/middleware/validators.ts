@@ -112,15 +112,45 @@ export const createClientSchema = z
     }
   });
 
-export const updateClientSchema = z.object({
-  type: z.enum(["individual", "legal"]).optional(),
-  lastName: z.string().min(1, "Фамилия обязательна").max(100).optional(),
-  firstName: z.string().min(1, "Имя обязательно").max(100).optional(),
-  middleName: z.string().max(100).optional(),
-  organizationName: z.string().min(1, "Название организации обязательно").max(200).optional(),
-  phone: z.string().max(20).optional(),
-  email: z.string().email("Неверный формат email").optional(),
-});
+export const updateClientSchema = z
+  .object({
+    type: z.enum(["individual", "legal"]).optional(),
+    lastName: z.string().max(100).optional().nullable(),
+    firstName: z.string().max(100).optional().nullable(),
+    middleName: z.string().max(100).optional().nullable(),
+    organizationName: z.string().max(200).optional().nullable(),
+    phone: z.string().max(20).optional().nullable(),
+    email: z.string().email("Неверный формат email").optional().nullable(),
+  })
+  .superRefine((data, ctx) => {
+    // Если тип указан и это физическое лицо - проверяем обязательные поля
+    if (data.type === "individual") {
+      if (!data.lastName || data.lastName.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Фамилия обязательна для физического лица",
+          path: ["lastName"],
+        });
+      }
+      if (!data.firstName || data.firstName.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Имя обязательно для физического лица",
+          path: ["firstName"],
+        });
+      }
+    }
+    // Если тип указан и это юридическое лицо - проверяем название организации
+    else if (data.type === "legal") {
+      if (!data.organizationName || data.organizationName.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Название организации обязательно для юридического лица",
+          path: ["organizationName"],
+        });
+      }
+    }
+  });
 
 export const quickCreateOrderSchema = z.object({
   // Упрощенная схема для быстрого создания

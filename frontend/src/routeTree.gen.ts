@@ -10,7 +10,14 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsersRouteImport } from './routes/users'
+import { Route as TransportCardsRouteImport } from './routes/transport-cards'
+import { Route as SystemLogsRouteImport } from './routes/system-logs'
+import { Route as SystemInfoRouteImport } from './routes/system-info'
+import { Route as RolesRouteImport } from './routes/roles'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DriversRouteImport } from './routes/drivers'
+import { Route as CarsRouteImport } from './routes/cars'
+import { Route as BackupsRouteImport } from './routes/backups'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UsersIndexRouteImport } from './routes/users/index'
 import { Route as TransportCardsIndexRouteImport } from './routes/transport-cards/index'
@@ -43,9 +50,44 @@ const UsersRoute = UsersRouteImport.update({
   path: '/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TransportCardsRoute = TransportCardsRouteImport.update({
+  id: '/transport-cards',
+  path: '/transport-cards',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SystemLogsRoute = SystemLogsRouteImport.update({
+  id: '/system-logs',
+  path: '/system-logs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SystemInfoRoute = SystemInfoRouteImport.update({
+  id: '/system-info',
+  path: '/system-info',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RolesRoute = RolesRouteImport.update({
+  id: '/roles',
+  path: '/roles',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DriversRoute = DriversRouteImport.update({
+  id: '/drivers',
+  path: '/drivers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarsRoute = CarsRouteImport.update({
+  id: '/cars',
+  path: '/cars',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BackupsRoute = BackupsRouteImport.update({
+  id: '/backups',
+  path: '/backups',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -69,9 +111,9 @@ const SystemLogsIndexRoute = SystemLogsIndexRouteImport.update({
   getParentRoute: () => SystemLogsRoute,
 } as any)
 const SystemInfoIndexRoute = SystemInfoIndexRouteImport.update({
-  id: '/system-info/',
-  path: '/system-info/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => SystemInfoRoute,
 } as any)
 const RolesIndexRoute = RolesIndexRouteImport.update({
   id: '/',
@@ -181,7 +223,14 @@ const CarsCarIdRoute = CarsCarIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/backups': typeof BackupsRouteWithChildren
+  '/cars': typeof CarsRouteWithChildren
+  '/drivers': typeof DriversRouteWithChildren
   '/login': typeof LoginRoute
+  '/roles': typeof RolesRouteWithChildren
+  '/system-info': typeof SystemInfoRouteWithChildren
+  '/system-logs': typeof SystemLogsRouteWithChildren
+  '/transport-cards': typeof TransportCardsRouteWithChildren
   '/users': typeof UsersRouteWithChildren
   '/cars/$carId': typeof CarsCarIdRoute
   '/cars/new': typeof CarsNewRoute
@@ -241,7 +290,14 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/backups': typeof BackupsRouteWithChildren
+  '/cars': typeof CarsRouteWithChildren
+  '/drivers': typeof DriversRouteWithChildren
   '/login': typeof LoginRoute
+  '/roles': typeof RolesRouteWithChildren
+  '/system-info': typeof SystemInfoRouteWithChildren
+  '/system-logs': typeof SystemLogsRouteWithChildren
+  '/transport-cards': typeof TransportCardsRouteWithChildren
   '/users': typeof UsersRouteWithChildren
   '/cars/$carId': typeof CarsCarIdRoute
   '/cars/new': typeof CarsNewRoute
@@ -273,7 +329,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/backups'
+    | '/cars'
+    | '/drivers'
     | '/login'
+    | '/roles'
+    | '/system-info'
+    | '/system-logs'
+    | '/transport-cards'
     | '/users'
     | '/cars/$carId'
     | '/cars/new'
@@ -332,7 +395,14 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/backups'
+    | '/cars'
+    | '/drivers'
     | '/login'
+    | '/roles'
+    | '/system-info'
+    | '/system-logs'
+    | '/transport-cards'
     | '/users'
     | '/cars/$carId'
     | '/cars/new'
@@ -363,7 +433,14 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BackupsRoute: typeof BackupsRouteWithChildren
+  CarsRoute: typeof CarsRouteWithChildren
+  DriversRoute: typeof DriversRouteWithChildren
   LoginRoute: typeof LoginRoute
+  RolesRoute: typeof RolesRouteWithChildren
+  SystemInfoRoute: typeof SystemInfoRouteWithChildren
+  SystemLogsRoute: typeof SystemLogsRouteWithChildren
+  TransportCardsRoute: typeof TransportCardsRouteWithChildren
   UsersRoute: typeof UsersRouteWithChildren
   ClientsClientIdRoute: typeof ClientsClientIdRoute
   ClientsNewRoute: typeof ClientsNewRoute
@@ -372,7 +449,6 @@ export interface RootRouteChildren {
   ClientsIndexRoute: typeof ClientsIndexRoute
   MoneyStatisticIndexRoute: typeof MoneyStatisticIndexRoute
   OrdersIndexRoute: typeof OrdersIndexRoute
-  SystemInfoIndexRoute: typeof SystemInfoIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -384,11 +460,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/transport-cards': {
+      id: '/transport-cards'
+      path: '/transport-cards'
+      fullPath: '/transport-cards'
+      preLoaderRoute: typeof TransportCardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/system-logs': {
+      id: '/system-logs'
+      path: '/system-logs'
+      fullPath: '/system-logs'
+      preLoaderRoute: typeof SystemLogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/system-info': {
+      id: '/system-info'
+      path: '/system-info'
+      fullPath: '/system-info'
+      preLoaderRoute: typeof SystemInfoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roles': {
+      id: '/roles'
+      path: '/roles'
+      fullPath: '/roles'
+      preLoaderRoute: typeof RolesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/drivers': {
+      id: '/drivers'
+      path: '/drivers'
+      fullPath: '/drivers'
+      preLoaderRoute: typeof DriversRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cars': {
+      id: '/cars'
+      path: '/cars'
+      fullPath: '/cars'
+      preLoaderRoute: typeof CarsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/backups': {
+      id: '/backups'
+      path: '/backups'
+      fullPath: '/backups'
+      preLoaderRoute: typeof BackupsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -421,10 +546,10 @@ declare module '@tanstack/react-router' {
     }
     '/system-info/': {
       id: '/system-info/'
-      path: '/system-info'
+      path: '/'
       fullPath: '/system-info/'
       preLoaderRoute: typeof SystemInfoIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof SystemInfoRoute
     }
     '/roles/': {
       id: '/roles/'
@@ -576,6 +701,100 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface BackupsRouteChildren {
+  BackupsIndexRoute: typeof BackupsIndexRoute
+}
+
+const BackupsRouteChildren: BackupsRouteChildren = {
+  BackupsIndexRoute: BackupsIndexRoute,
+}
+
+const BackupsRouteWithChildren =
+  BackupsRoute._addFileChildren(BackupsRouteChildren)
+
+interface CarsRouteChildren {
+  CarsCarIdRoute: typeof CarsCarIdRoute
+  CarsNewRoute: typeof CarsNewRoute
+  CarsIndexRoute: typeof CarsIndexRoute
+}
+
+const CarsRouteChildren: CarsRouteChildren = {
+  CarsCarIdRoute: CarsCarIdRoute,
+  CarsNewRoute: CarsNewRoute,
+  CarsIndexRoute: CarsIndexRoute,
+}
+
+const CarsRouteWithChildren = CarsRoute._addFileChildren(CarsRouteChildren)
+
+interface DriversRouteChildren {
+  DriversDriverIdRoute: typeof DriversDriverIdRoute
+  DriversNewRoute: typeof DriversNewRoute
+  DriversIndexRoute: typeof DriversIndexRoute
+}
+
+const DriversRouteChildren: DriversRouteChildren = {
+  DriversDriverIdRoute: DriversDriverIdRoute,
+  DriversNewRoute: DriversNewRoute,
+  DriversIndexRoute: DriversIndexRoute,
+}
+
+const DriversRouteWithChildren =
+  DriversRoute._addFileChildren(DriversRouteChildren)
+
+interface RolesRouteChildren {
+  RolesRoleIdRoute: typeof RolesRoleIdRoute
+  RolesNewRoute: typeof RolesNewRoute
+  RolesIndexRoute: typeof RolesIndexRoute
+}
+
+const RolesRouteChildren: RolesRouteChildren = {
+  RolesRoleIdRoute: RolesRoleIdRoute,
+  RolesNewRoute: RolesNewRoute,
+  RolesIndexRoute: RolesIndexRoute,
+}
+
+const RolesRouteWithChildren = RolesRoute._addFileChildren(RolesRouteChildren)
+
+interface SystemInfoRouteChildren {
+  SystemInfoIndexRoute: typeof SystemInfoIndexRoute
+}
+
+const SystemInfoRouteChildren: SystemInfoRouteChildren = {
+  SystemInfoIndexRoute: SystemInfoIndexRoute,
+}
+
+const SystemInfoRouteWithChildren = SystemInfoRoute._addFileChildren(
+  SystemInfoRouteChildren,
+)
+
+interface SystemLogsRouteChildren {
+  SystemLogsIndexRoute: typeof SystemLogsIndexRoute
+}
+
+const SystemLogsRouteChildren: SystemLogsRouteChildren = {
+  SystemLogsIndexRoute: SystemLogsIndexRoute,
+}
+
+const SystemLogsRouteWithChildren = SystemLogsRoute._addFileChildren(
+  SystemLogsRouteChildren,
+)
+
+interface TransportCardsRouteChildren {
+  TransportCardsCardIdRoute: typeof TransportCardsCardIdRoute
+  TransportCardsNewRoute: typeof TransportCardsNewRoute
+  TransportCardsIndexRoute: typeof TransportCardsIndexRoute
+}
+
+const TransportCardsRouteChildren: TransportCardsRouteChildren = {
+  TransportCardsCardIdRoute: TransportCardsCardIdRoute,
+  TransportCardsNewRoute: TransportCardsNewRoute,
+  TransportCardsIndexRoute: TransportCardsIndexRoute,
+}
+
+const TransportCardsRouteWithChildren = TransportCardsRoute._addFileChildren(
+  TransportCardsRouteChildren,
+)
+
 interface UsersRouteChildren {
   UsersUserIdRoute: typeof UsersUserIdRoute
   UsersNewRoute: typeof UsersNewRoute
@@ -592,7 +811,14 @@ const UsersRouteWithChildren = UsersRoute._addFileChildren(UsersRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BackupsRoute: BackupsRouteWithChildren,
+  CarsRoute: CarsRouteWithChildren,
+  DriversRoute: DriversRouteWithChildren,
   LoginRoute: LoginRoute,
+  RolesRoute: RolesRouteWithChildren,
+  SystemInfoRoute: SystemInfoRouteWithChildren,
+  SystemLogsRoute: SystemLogsRouteWithChildren,
+  TransportCardsRoute: TransportCardsRouteWithChildren,
   UsersRoute: UsersRouteWithChildren,
   ClientsClientIdRoute: ClientsClientIdRoute,
   ClientsNewRoute: ClientsNewRoute,
@@ -601,7 +827,6 @@ const rootRouteChildren: RootRouteChildren = {
   ClientsIndexRoute: ClientsIndexRoute,
   MoneyStatisticIndexRoute: MoneyStatisticIndexRoute,
   OrdersIndexRoute: OrdersIndexRoute,
-  SystemInfoIndexRoute: SystemInfoIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

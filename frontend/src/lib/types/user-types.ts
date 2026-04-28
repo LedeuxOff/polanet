@@ -9,8 +9,8 @@ export interface User {
   email: string;
   phone: string | null;
   roleId: number;
-  roleCode?: string;
-  roleName?: string;
+  roleCode: string;
+  roleName: string;
   createdAt: string;
   updatedAt: string;
 }

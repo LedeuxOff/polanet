@@ -133,8 +133,11 @@ router.get("/me", authenticate, (req: AuthRequest, res) => {
         birthDate: users.birthDate,
         phone: users.phone,
         roleId: users.roleId,
+        roleCode: roles.code,
+        roleName: roles.name,
       })
       .from(users)
+      .leftJoin(roles, eq(users.roleId, roles.id))
       .where(eq(users.id, req.userId!))
       .get();
 
