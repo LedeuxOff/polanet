@@ -108,22 +108,7 @@ export const NewUserPage = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Пароль *</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      disabled={isSubmitting}
-                      {...form.register("password")}
-                    />
-                    {form.formState.errors.password && (
-                      <p className="text-sm text-destructive">
-                        {form.formState.errors.password.message}
-                      </p>
-                    )}
-                  </div>
-
+                <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="roleId">Роль *</Label>
                     <Select

@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 
@@ -49,4 +50,5 @@ startAutoBackup();
 app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
   console.log(`📍 API доступно на http://localhost:${PORT}/api`);
+  console.log(`📱 SMS_API_ID настроен: ${!!process.env.SMS_API_ID}`);
 });

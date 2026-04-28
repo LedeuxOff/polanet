@@ -11,21 +11,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Send } from "lucide-react";
 
 export const EditUserPage = () => {
   const navigate = useNavigate();
   const {
     isLoading,
     user,
-    handleDelete,
-    isDeleting,
-    currentUser,
     form,
     onSubmit,
-    error,
     isSubmitting,
     roles,
+    isSendingPassword,
+    handleSendPassword,
   } = useUserDetailPage();
 
   if (isLoading) {
@@ -139,22 +137,7 @@ export const EditUserPage = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="password">Пароль *</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      disabled={isSubmitting}
-                      {...form.register("password")}
-                    />
-                    {form.formState.errors.password && (
-                      <p className="text-sm text-destructive">
-                        {form.formState.errors.password.message}
-                      </p>
-                    )}
-                  </div>
-
+                <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="roleId">Роль *</Label>
                     <Select
@@ -178,6 +161,22 @@ export const EditUserPage = () => {
                       </p>
                     )}
                   </div>
+                </div>
+
+                {/* Кнопка отправки нового пароля */}
+                <div className="mt-6 pt-6 border-t">
+                  <Button
+                    type="button"
+                    disabled={isSendingPassword}
+                    onClick={handleSendPassword}
+                    className="bg-yellow-600 hover:bg-yellow-700"
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    {isSendingPassword ? "Отправка..." : "Выслать новый пароль"}
+                  </Button>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Новый пароль будет отправлен на указанный номер телефона
+                  </p>
                 </div>
               </CardContent>
             </Card>

@@ -12,7 +12,6 @@ export const registerSchema = z.object({
   birthDate: z.string().optional(),
   email: z.string().email("Неверный формат email"),
   phone: z.string().optional(),
-  password: z.string().min(6, "Пароль должен быть не менее 6 символов"),
   roleId: z.number().int().positive("Роль обязательна"),
 });
 
@@ -23,7 +22,6 @@ export const updateUserSchema = z.object({
   birthDate: z.string().optional(),
   email: z.string().email("Неверный формат email").optional(),
   phone: z.string().optional(),
-  password: z.string().min(6, "Пароль должен быть не менее 6 символов").optional(),
   roleId: z.number().int().positive("Роль обязательна").optional(),
 });
 

@@ -1,6 +1,5 @@
 import { usersApi } from "@/lib/api";
 import { rolesApi } from "@/lib/api/roles-api";
-import { useAuth } from "@/lib/contexts/auth-context";
 import { User, UserForm, userSchema } from "@/lib/types";
 import { Role } from "@/lib/types/role-types";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,14 +10,13 @@ import { useForm } from "react-hook-form";
 export const useUserDetailPage = () => {
   const navigate = useNavigate();
   const { userId } = useParams({ from: "/users/$userId" });
-  const { user: currentUser } = useAuth();
 
   const [user, setUser] = useState<User | null>(null);
   const [roles, setRoles] = useState<Role[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSendingPassword, setIsSendingPassword] = useState(false);
 
   const form = useForm<UserForm>({
     resolver: zodResolver(userSchema),
@@ -54,7 +52,6 @@ export const useUserDetailPage = () => {
       if (data.birthDate !== undefined) updateData.birthDate = data.birthDate;
       if (data.email) updateData.email = data.email;
       if (data.phone !== undefined) updateData.phone = data.phone;
-      if (data.password) updateData.password = data.password;
       if (data.roleId) updateData.roleId = data.roleId;
 
       await usersApi.update(Number(userId), updateData);
@@ -66,32 +63,28 @@ export const useUserDetailPage = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm("Вы уверены, что хотите удалить этого пользователя?")) {
-      return;
-    }
-
-    setIsDeleting(true);
+  const handleSendPassword = async () => {
+    setIsSendingPassword(true);
+    setError(null);
     try {
-      await usersApi.delete(Number(userId));
-      navigate({ to: "/users" });
+      await usersApi.sendPassword(Number(userId));
+      alert("Новый пароль был отправлен на указанный номер телефона");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка при удалении");
+      setError(err instanceof Error ? err.message : "Ошибка при отправке пароля");
     } finally {
-      setIsDeleting(false);
+      setIsSendingPassword(false);
     }
   };
 
   return {
     isLoading,
     user,
-    handleDelete,
-    isDeleting,
-    currentUser,
     form,
     onSubmit,
     error,
     isSubmitting,
     roles,
+    isSendingPassword,
+    handleSendPassword,
   };
 };
