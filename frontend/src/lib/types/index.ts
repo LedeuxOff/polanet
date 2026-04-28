@@ -7,3 +7,5 @@ export * from "./role-types";
 export * from "./delivery-types";
 export * from "./order-types";
 export * from "./payment-types";
+export * from "./income-types";
+export * from "./expense-types";

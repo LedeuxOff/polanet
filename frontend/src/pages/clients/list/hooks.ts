@@ -21,21 +21,7 @@ export const useClientsListPage = () => {
     loadClients();
   }, []);
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Вы уверены, что хотите удалить этого клиента?")) {
-      return;
-    }
-
-    try {
-      await clientsApi.delete(id);
-      setClients(clients.filter((c) => c.id !== id));
-    } catch (error) {
-      alert("Ошибка при удалении: " + (error as Error).message);
-    }
-  };
-
   return {
-    handleDelete,
     clients,
     isLoading,
   };

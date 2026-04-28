@@ -1,33 +1,31 @@
+import z from "zod";
 import { Payment } from "./payment-types";
 
 export interface Order {
   id: number;
   type: "delivery" | "pickup";
   address: string;
-  cost: number;
   payerLastName: string;
   payerFirstName: string;
   payerMiddleName: string | null;
+  payerPhone: string | null;
   receiverLastName: string;
   receiverFirstName: string;
   receiverMiddleName: string | null;
+  receiverPhone: string | null;
   dateTime: string;
   hasPass: boolean;
   addressComment: string | null;
   status: "new" | "in_progress" | "completed" | "cancelled" | "archived" | "draft";
-  paymentType: "cash" | "bank_transfer";
   clientId: number | null;
   createdById: number | null;
   createdAt: string;
   updatedAt: string;
-  // Вычисляемые поля
-  payments?: Payment[];
-  received?: number;
-  completed?: number;
+  // Вычисляемые поля (от сервера)
+  receivedAmount?: number;
+  pendingAmount?: number;
   customerDebt?: number;
   companyDebt?: number;
-  isPaid?: boolean;
-  paymentStatus?: "unpaid" | "paid" | "partial";
   history?: OrderHistory[];
 }
 
@@ -48,17 +46,62 @@ export interface OrderHistory {
 export interface CreateOrderInput {
   type: "delivery" | "pickup";
   address: string;
-  cost: number;
   payerLastName: string;
   payerFirstName: string;
   payerMiddleName?: string;
+  payerPhone?: string;
   receiverLastName: string;
   receiverFirstName: string;
   receiverMiddleName?: string;
+  receiverPhone?: string;
   dateTime: string;
   hasPass?: boolean;
   addressComment?: string;
   status?: "new" | "in_progress" | "completed" | "cancelled" | "archived" | "draft";
-  paymentType: "cash" | "bank_transfer";
   clientId?: number | null;
+}
+
+export const orderSchema = z.object({
+  type: z.enum(["delivery", "pickup"]),
+  address: z.string().min(1, "Адрес обязателен"),
+  payerLastName: z.string().min(1, "Фамилия плательщика обязательна"),
+  payerFirstName: z.string().min(1, "Имя плательщика обязательно"),
+  payerMiddleName: z.string().optional(),
+  payerPhone: z.string().optional(),
+  receiverLastName: z.string().min(1, "Фамилия приемщика обязательна"),
+  receiverFirstName: z.string().min(1, "Имя приемщика обязательно"),
+  receiverMiddleName: z.string().optional(),
+  receiverPhone: z.string().optional(),
+  dateTime: z.string().min(1, "Дата и время обязательны"),
+  hasPass: z.boolean().default(false),
+  addressComment: z.string().optional(),
+  status: z.enum(["new", "in_progress", "completed", "cancelled", "archived", "draft"]),
+  clientId: z.coerce.number().optional().nullable(),
+});
+
+export type OrderForm = z.infer<typeof orderSchema>;
+
+// Допустимые переходы между статусами заявок
+export const orderStatusTransitions: Record<string, string[]> = {
+  draft: ["new", "in_progress", "cancelled"],
+  new: ["in_progress", "cancelled"],
+  in_progress: ["completed"],
+  completed: ["archived"],
+  cancelled: ["archived"],
+  archived: [],
+};
+
+// Все статусы с метками
+export const statusLabels: Record<string, string> = {
+  draft: "Черновик",
+  new: "Новая",
+  in_progress: "Выполняется",
+  completed: "Завершено",
+  cancelled: "Отменено",
+  archived: "Архив",
+};
+
+// Получить доступные следующие статусы для данного статуса
+export function getAvailableStatusTransitions(currentStatus: string): string[] {
+  return orderStatusTransitions[currentStatus] || [];
 }

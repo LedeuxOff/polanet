@@ -13,9 +13,14 @@ export interface CreateCarInput {
   licensePlate: string;
 }
 
-export const carSchema = z.object({
-  brand: z.string().min(1, "Марка автомобиля обязательна").optional(),
-  licensePlate: z.string().min(1, "Гос номер обязателен").optional(),
-});
+export const carSchema = z
+  .object({
+    brand: z.string().min(1, "Марка автомобиля обязательна"),
+    licensePlate: z.string().min(1, "Гос номер обязателен"),
+  })
+  .transform((data) => ({
+    brand: data.brand || "",
+    licensePlate: data.licensePlate || "",
+  }));
 
 export type CarForm = z.infer<typeof carSchema>;

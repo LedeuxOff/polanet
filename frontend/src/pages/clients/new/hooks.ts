@@ -15,6 +15,18 @@ export const useNewClientPage = () => {
     resolver: zodResolver(newClientSchema),
     defaultValues: {
       type: "individual",
+      payer: {
+        lastName: "",
+        firstName: "",
+        middleName: "",
+        phone: "",
+      },
+      receiver: {
+        lastName: "",
+        firstName: "",
+        middleName: "",
+        phone: "",
+      },
     },
   });
 
@@ -22,7 +34,13 @@ export const useNewClientPage = () => {
     setError(null);
     setIsSubmitting(true);
     try {
-      await clientsApi.create(data);
+      // Преобразуем пустые строки в null и отправляем данные
+      const payload = {
+        ...data,
+        payer: data.payer || undefined,
+        receiver: data.receiver || undefined,
+      };
+      await clientsApi.create(payload);
       navigate({ to: "/clients" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка при создании");

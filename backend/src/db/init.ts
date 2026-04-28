@@ -1,12 +1,12 @@
-import Database from 'better-sqlite3'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import Database from "better-sqlite3";
+import path from "path";
+import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-const sqlite = new Database('./data/polanet.db')
-sqlite.pragma('journal_mode = wal')
+const sqlite = new Database("./data/polanet.db");
+sqlite.pragma("journal_mode = wal");
 
 const createTables = `
 -- Roles table
@@ -80,7 +80,6 @@ CREATE TABLE IF NOT EXISTS orders (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   type TEXT NOT NULL CHECK(type IN ('delivery', 'pickup')),
   address TEXT NOT NULL,
-  cost INTEGER NOT NULL,
   payer_last_name TEXT NOT NULL,
   payer_first_name TEXT NOT NULL,
   payer_middle_name TEXT,
@@ -91,7 +90,6 @@ CREATE TABLE IF NOT EXISTS orders (
   has_pass INTEGER NOT NULL DEFAULT 0,
   address_comment TEXT,
   status TEXT NOT NULL DEFAULT 'new' CHECK(status IN ('new', 'in_progress', 'completed', 'cancelled', 'archived', 'draft')),
-  payment_type TEXT NOT NULL CHECK(payment_type IN ('cash', 'bank_transfer')),
   client_id INTEGER REFERENCES clients(id),
   created_by_id INTEGER REFERENCES users(id),
   created_at TEXT NOT NULL,
@@ -168,13 +166,13 @@ CREATE TABLE IF NOT EXISTS transport_card_history (
   new_value TEXT,
   created_at TEXT NOT NULL
 );
-`
+`;
 
 try {
-  sqlite.exec(createTables)
-  console.log('✅ Талицы успешно созданы!')
+  sqlite.exec(createTables);
+  console.log("✅ Талицы успешно созданы!");
 } catch (error) {
-  console.error('❌ Ошибка при создании таблиц:', error)
+  console.error("❌ Ошибка при создании таблиц:", error);
 } finally {
-  sqlite.close()
+  sqlite.close();
 }

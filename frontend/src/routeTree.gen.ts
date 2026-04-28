@@ -19,6 +19,7 @@ import { Route as OrdersIndexRouteImport } from './routes/orders/index'
 import { Route as DriversIndexRouteImport } from './routes/drivers/index'
 import { Route as ClientsIndexRouteImport } from './routes/clients/index'
 import { Route as CarsIndexRouteImport } from './routes/cars/index'
+import { Route as BackupsIndexRouteImport } from './routes/backups/index'
 import { Route as UsersNewRouteImport } from './routes/users/new'
 import { Route as UsersUserIdRouteImport } from './routes/users/$userId'
 import { Route as TransportCardsNewRouteImport } from './routes/transport-cards/new'
@@ -82,6 +83,11 @@ const ClientsIndexRoute = ClientsIndexRouteImport.update({
 const CarsIndexRoute = CarsIndexRouteImport.update({
   id: '/cars/',
   path: '/cars/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BackupsIndexRoute = BackupsIndexRouteImport.update({
+  id: '/backups/',
+  path: '/backups/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UsersNewRoute = UsersNewRouteImport.update({
@@ -173,6 +179,7 @@ export interface FileRoutesByFullPath {
   '/transport-cards/new': typeof TransportCardsNewRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/users/new': typeof UsersNewRoute
+  '/backups/': typeof BackupsIndexRoute
   '/cars/': typeof CarsIndexRoute
   '/clients/': typeof ClientsIndexRoute
   '/drivers/': typeof DriversIndexRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByTo {
   '/transport-cards/new': typeof TransportCardsNewRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/users/new': typeof UsersNewRoute
+  '/backups': typeof BackupsIndexRoute
   '/cars': typeof CarsIndexRoute
   '/clients': typeof ClientsIndexRoute
   '/drivers': typeof DriversIndexRoute
@@ -225,6 +233,7 @@ export interface FileRoutesById {
   '/transport-cards/new': typeof TransportCardsNewRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/users/new': typeof UsersNewRoute
+  '/backups/': typeof BackupsIndexRoute
   '/cars/': typeof CarsIndexRoute
   '/clients/': typeof ClientsIndexRoute
   '/drivers/': typeof DriversIndexRoute
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
     | '/transport-cards/new'
     | '/users/$userId'
     | '/users/new'
+    | '/backups/'
     | '/cars/'
     | '/clients/'
     | '/drivers/'
@@ -278,6 +288,7 @@ export interface FileRouteTypes {
     | '/transport-cards/new'
     | '/users/$userId'
     | '/users/new'
+    | '/backups'
     | '/cars'
     | '/clients'
     | '/drivers'
@@ -304,6 +315,7 @@ export interface FileRouteTypes {
     | '/transport-cards/new'
     | '/users/$userId'
     | '/users/new'
+    | '/backups/'
     | '/cars/'
     | '/clients/'
     | '/drivers/'
@@ -329,6 +341,7 @@ export interface RootRouteChildren {
   RolesNewRoute: typeof RolesNewRoute
   TransportCardsCardIdRoute: typeof TransportCardsCardIdRoute
   TransportCardsNewRoute: typeof TransportCardsNewRoute
+  BackupsIndexRoute: typeof BackupsIndexRoute
   CarsIndexRoute: typeof CarsIndexRoute
   ClientsIndexRoute: typeof ClientsIndexRoute
   DriversIndexRoute: typeof DriversIndexRoute
@@ -407,6 +420,13 @@ declare module '@tanstack/react-router' {
       path: '/cars'
       fullPath: '/cars/'
       preLoaderRoute: typeof CarsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/backups/': {
+      id: '/backups/'
+      path: '/backups'
+      fullPath: '/backups/'
+      preLoaderRoute: typeof BackupsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/users/new': {
@@ -540,6 +560,7 @@ const rootRouteChildren: RootRouteChildren = {
   RolesNewRoute: RolesNewRoute,
   TransportCardsCardIdRoute: TransportCardsCardIdRoute,
   TransportCardsNewRoute: TransportCardsNewRoute,
+  BackupsIndexRoute: BackupsIndexRoute,
   CarsIndexRoute: CarsIndexRoute,
   ClientsIndexRoute: ClientsIndexRoute,
   DriversIndexRoute: DriversIndexRoute,
