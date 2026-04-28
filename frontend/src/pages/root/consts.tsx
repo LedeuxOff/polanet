@@ -1,4 +1,4 @@
-import { Home, SettingsIcon } from "lucide-react";
+import { BarChartIcon, Home, SettingsIcon } from "lucide-react";
 
 export const menuItems = [
   {
@@ -37,8 +37,19 @@ export const menuItems = [
     ],
   },
   {
-    title: "Системные настройки",
+    title: "Статистика",
     id: "2",
+    icon: BarChartIcon,
+    links: [
+      {
+        title: "Статистика по финансам",
+        url: "/money-statistic",
+      },
+    ],
+  },
+  {
+    title: "Системные настройки",
+    id: "3",
     icon: SettingsIcon,
     links: [
       {

@@ -16,6 +16,7 @@ import { Route as UsersIndexRouteImport } from './routes/users/index'
 import { Route as TransportCardsIndexRouteImport } from './routes/transport-cards/index'
 import { Route as RolesIndexRouteImport } from './routes/roles/index'
 import { Route as OrdersIndexRouteImport } from './routes/orders/index'
+import { Route as MoneyStatisticIndexRouteImport } from './routes/money-statistic/index'
 import { Route as DriversIndexRouteImport } from './routes/drivers/index'
 import { Route as ClientsIndexRouteImport } from './routes/clients/index'
 import { Route as CarsIndexRouteImport } from './routes/cars/index'
@@ -68,6 +69,11 @@ const RolesIndexRoute = RolesIndexRouteImport.update({
 const OrdersIndexRoute = OrdersIndexRouteImport.update({
   id: '/orders/',
   path: '/orders/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MoneyStatisticIndexRoute = MoneyStatisticIndexRouteImport.update({
+  id: '/money-statistic/',
+  path: '/money-statistic/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DriversIndexRoute = DriversIndexRouteImport.update({
@@ -183,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/cars/': typeof CarsIndexRoute
   '/clients/': typeof ClientsIndexRoute
   '/drivers/': typeof DriversIndexRoute
+  '/money-statistic/': typeof MoneyStatisticIndexRoute
   '/orders/': typeof OrdersIndexRoute
   '/roles/': typeof RolesIndexRoute
   '/transport-cards/': typeof TransportCardsIndexRoute
@@ -209,6 +216,7 @@ export interface FileRoutesByTo {
   '/cars': typeof CarsIndexRoute
   '/clients': typeof ClientsIndexRoute
   '/drivers': typeof DriversIndexRoute
+  '/money-statistic': typeof MoneyStatisticIndexRoute
   '/orders': typeof OrdersIndexRoute
   '/roles': typeof RolesIndexRoute
   '/transport-cards': typeof TransportCardsIndexRoute
@@ -237,6 +245,7 @@ export interface FileRoutesById {
   '/cars/': typeof CarsIndexRoute
   '/clients/': typeof ClientsIndexRoute
   '/drivers/': typeof DriversIndexRoute
+  '/money-statistic/': typeof MoneyStatisticIndexRoute
   '/orders/': typeof OrdersIndexRoute
   '/roles/': typeof RolesIndexRoute
   '/transport-cards/': typeof TransportCardsIndexRoute
@@ -266,6 +275,7 @@ export interface FileRouteTypes {
     | '/cars/'
     | '/clients/'
     | '/drivers/'
+    | '/money-statistic/'
     | '/orders/'
     | '/roles/'
     | '/transport-cards/'
@@ -292,6 +302,7 @@ export interface FileRouteTypes {
     | '/cars'
     | '/clients'
     | '/drivers'
+    | '/money-statistic'
     | '/orders'
     | '/roles'
     | '/transport-cards'
@@ -319,6 +330,7 @@ export interface FileRouteTypes {
     | '/cars/'
     | '/clients/'
     | '/drivers/'
+    | '/money-statistic/'
     | '/orders/'
     | '/roles/'
     | '/transport-cards/'
@@ -345,6 +357,7 @@ export interface RootRouteChildren {
   CarsIndexRoute: typeof CarsIndexRoute
   ClientsIndexRoute: typeof ClientsIndexRoute
   DriversIndexRoute: typeof DriversIndexRoute
+  MoneyStatisticIndexRoute: typeof MoneyStatisticIndexRoute
   OrdersIndexRoute: typeof OrdersIndexRoute
   RolesIndexRoute: typeof RolesIndexRoute
   TransportCardsIndexRoute: typeof TransportCardsIndexRoute
@@ -399,6 +412,13 @@ declare module '@tanstack/react-router' {
       path: '/orders'
       fullPath: '/orders/'
       preLoaderRoute: typeof OrdersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/money-statistic/': {
+      id: '/money-statistic/'
+      path: '/money-statistic'
+      fullPath: '/money-statistic/'
+      preLoaderRoute: typeof MoneyStatisticIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/drivers/': {
@@ -564,6 +584,7 @@ const rootRouteChildren: RootRouteChildren = {
   CarsIndexRoute: CarsIndexRoute,
   ClientsIndexRoute: ClientsIndexRoute,
   DriversIndexRoute: DriversIndexRoute,
+  MoneyStatisticIndexRoute: MoneyStatisticIndexRoute,
   OrdersIndexRoute: OrdersIndexRoute,
   RolesIndexRoute: RolesIndexRoute,
   TransportCardsIndexRoute: TransportCardsIndexRoute,
