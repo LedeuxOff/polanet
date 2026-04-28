@@ -15,7 +15,7 @@ import { ChevronLeft } from "lucide-react";
 
 export const NewTransportCardPage = () => {
   const navigate = useNavigate();
-  const { form, drivers, isSubmitting, error, onSubmit } = useNewTransportCardPage();
+  const { form, drivers, isSubmitting, onSubmit } = useNewTransportCardPage();
 
   return (
     <div className="flex flex-col gap-4">
