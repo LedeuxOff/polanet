@@ -1,10 +1,14 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DriverTransportCardSection } from "./ui/driver-transport-card-section";
 import { useDriverDetailPage } from "./hooks";
 import { DriverSection } from "./ui/driver-section";
 import { DriveRemoveTransportCardModal } from "./ui/driver-remove-transport-card-modal";
+import { Button } from "@/components/ui/button";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { ChevronLeft, TrashIcon } from "lucide-react";
 
 export const EditDriverPage = () => {
+  const navigate = useNavigate();
   const {
     isLoading,
     driver,
@@ -12,7 +16,6 @@ export const EditDriverPage = () => {
     isDeleting,
     form,
     onSubmit,
-    error,
     isSubmitting,
     showUnbindDialog,
     setShowUnbindDialog,
@@ -42,36 +45,97 @@ export const EditDriverPage = () => {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Информация о водителе */}
-      <DriverSection
-        driver={driver}
-        handleDelete={handleDelete}
-        isDeleting={isDeleting}
-        form={form}
-        onSubmit={onSubmit}
-        error={error}
-        isSubmitting={isSubmitting}
-      />
+    <div className="flex flex-col gap-4">
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col gap-2">
+            <CardTitle>Водители</CardTitle>
 
-      {/* Транспортная карта водителя */}
-      <DriverTransportCardSection
-        driver={driver}
-        setShowUnbindDialog={setShowUnbindDialog}
-        isUnbinding={isUnbinding}
-        selectedCardId={selectedCardId}
-        setSelectedCardId={setSelectedCardId}
-        transportCards={transportCards}
-      />
+            <div className="flex items-center gap-2">
+              <Link to="/drivers" className="text-sm text-muted-foreground">
+                Список водителей
+              </Link>
 
-      {/* Модальное окно подтверждения отвязки */}
-      <DriveRemoveTransportCardModal
-        setShowUnbindDialog={setShowUnbindDialog}
-        showUnbindDialog={showUnbindDialog}
-        driver={driver}
-        isUnbinding={isUnbinding}
-        handleUnbindCard={handleUnbindCard}
-      />
+              <span className="text-sm text-muted-foreground">/</span>
+
+              <span className="text-sm text-black">
+                {`${driver.lastName} ${driver.firstName} ${driver.middleName || ""}`.trim()}
+              </span>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      <form onSubmit={form.handleSubmit(onSubmit)}>
+        <div className="flex gap-4">
+          <div className="flex flex-col gap-4 flex-1">
+            <Card>
+              <CardHeader>
+                <CardTitle>Основная информация</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DriverSection form={form} isSubmitting={isSubmitting} />
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="flex flex-col gap-4 flex-1">
+            <Card>
+              <CardHeader>
+                <CardTitle>Транспортная карта</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DriverTransportCardSection
+                  driver={driver}
+                  setShowUnbindDialog={setShowUnbindDialog}
+                  isUnbinding={isUnbinding}
+                  selectedCardId={selectedCardId}
+                  setSelectedCardId={setSelectedCardId}
+                  transportCards={transportCards}
+                />
+
+                <DriveRemoveTransportCardModal
+                  setShowUnbindDialog={setShowUnbindDialog}
+                  showUnbindDialog={showUnbindDialog}
+                  driver={driver}
+                  isUnbinding={isUnbinding}
+                  handleUnbindCard={handleUnbindCard}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
+          <Button
+            type="button"
+            disabled={isDeleting || isSubmitting}
+            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+            onClick={() => navigate({ to: "/drivers" })}
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+
+          {driver && (
+            <Button
+              type="button"
+              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              onClick={handleDelete}
+              disabled={isDeleting || isSubmitting}
+            >
+              <TrashIcon className="w-4 h-4" />
+            </Button>
+          )}
+
+          <Button
+            type="submit"
+            disabled={isDeleting || isSubmitting}
+            className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
+          >
+            {isSubmitting ? "Сохранение..." : "Сохранить"}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 };

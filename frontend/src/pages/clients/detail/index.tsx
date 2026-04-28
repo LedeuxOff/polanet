@@ -2,15 +2,6 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useClientDetailPage } from "./hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { ClientMainInfo } from "./ui/client-main-info";
 import { ClientPayerInfo } from "./ui/client-payer-info";
 import { ClientReceiverInfo } from "./ui/client-receiver-info";
@@ -25,7 +16,6 @@ export const EditClientPage = () => {
     isDeleting,
     form,
     onSubmit,
-    error,
     clientType,
     setClientType,
     isSubmitting,
