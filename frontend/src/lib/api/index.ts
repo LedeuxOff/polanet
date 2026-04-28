@@ -11,11 +11,16 @@ export { ordersApi, type OrdersListQuery } from "./orders-api";
 export { incomesApi } from "./incomes-api";
 export { expensesApi } from "./expenses-api";
 
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || "1.0.0";
+
+export { APP_VERSION };
+
 export async function request<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const token = localStorage.getItem("token");
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
+    "X-App-Version": APP_VERSION,
     ...(token && { Authorization: `Bearer ${token}` }),
   };
 

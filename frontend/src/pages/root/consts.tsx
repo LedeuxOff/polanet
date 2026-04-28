@@ -56,6 +56,10 @@ export const menuItems = [
         title: "Информация о системе",
         url: "/system-info",
       },
+      {
+        title: "Серверные логи",
+        url: "/system-logs",
+      },
     ],
   },
   {

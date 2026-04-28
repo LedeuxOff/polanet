@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UsersIndexRouteImport } from './routes/users/index'
 import { Route as TransportCardsIndexRouteImport } from './routes/transport-cards/index'
+import { Route as SystemLogsIndexRouteImport } from './routes/system-logs/index'
 import { Route as SystemInfoIndexRouteImport } from './routes/system-info/index'
 import { Route as RolesIndexRouteImport } from './routes/roles/index'
 import { Route as OrdersIndexRouteImport } from './routes/orders/index'
@@ -60,6 +61,11 @@ const UsersIndexRoute = UsersIndexRouteImport.update({
 const TransportCardsIndexRoute = TransportCardsIndexRouteImport.update({
   id: '/transport-cards/',
   path: '/transport-cards/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SystemLogsIndexRoute = SystemLogsIndexRouteImport.update({
+  id: '/system-logs/',
+  path: '/system-logs/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SystemInfoIndexRoute = SystemInfoIndexRouteImport.update({
@@ -199,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/orders/': typeof OrdersIndexRoute
   '/roles/': typeof RolesIndexRoute
   '/system-info/': typeof SystemInfoIndexRoute
+  '/system-logs/': typeof SystemLogsIndexRoute
   '/transport-cards/': typeof TransportCardsIndexRoute
   '/users/': typeof UsersIndexRoute
 }
@@ -227,6 +234,7 @@ export interface FileRoutesByTo {
   '/orders': typeof OrdersIndexRoute
   '/roles': typeof RolesIndexRoute
   '/system-info': typeof SystemInfoIndexRoute
+  '/system-logs': typeof SystemLogsIndexRoute
   '/transport-cards': typeof TransportCardsIndexRoute
   '/users': typeof UsersIndexRoute
 }
@@ -257,6 +265,7 @@ export interface FileRoutesById {
   '/orders/': typeof OrdersIndexRoute
   '/roles/': typeof RolesIndexRoute
   '/system-info/': typeof SystemInfoIndexRoute
+  '/system-logs/': typeof SystemLogsIndexRoute
   '/transport-cards/': typeof TransportCardsIndexRoute
   '/users/': typeof UsersIndexRoute
 }
@@ -288,6 +297,7 @@ export interface FileRouteTypes {
     | '/orders/'
     | '/roles/'
     | '/system-info/'
+    | '/system-logs/'
     | '/transport-cards/'
     | '/users/'
   fileRoutesByTo: FileRoutesByTo
@@ -316,6 +326,7 @@ export interface FileRouteTypes {
     | '/orders'
     | '/roles'
     | '/system-info'
+    | '/system-logs'
     | '/transport-cards'
     | '/users'
   id:
@@ -345,6 +356,7 @@ export interface FileRouteTypes {
     | '/orders/'
     | '/roles/'
     | '/system-info/'
+    | '/system-logs/'
     | '/transport-cards/'
     | '/users/'
   fileRoutesById: FileRoutesById
@@ -373,6 +385,7 @@ export interface RootRouteChildren {
   OrdersIndexRoute: typeof OrdersIndexRoute
   RolesIndexRoute: typeof RolesIndexRoute
   SystemInfoIndexRoute: typeof SystemInfoIndexRoute
+  SystemLogsIndexRoute: typeof SystemLogsIndexRoute
   TransportCardsIndexRoute: typeof TransportCardsIndexRoute
 }
 
@@ -411,6 +424,13 @@ declare module '@tanstack/react-router' {
       path: '/transport-cards'
       fullPath: '/transport-cards/'
       preLoaderRoute: typeof TransportCardsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/system-logs/': {
+      id: '/system-logs/'
+      path: '/system-logs'
+      fullPath: '/system-logs/'
+      preLoaderRoute: typeof SystemLogsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/system-info/': {
@@ -608,6 +628,7 @@ const rootRouteChildren: RootRouteChildren = {
   OrdersIndexRoute: OrdersIndexRoute,
   RolesIndexRoute: RolesIndexRoute,
   SystemInfoIndexRoute: SystemInfoIndexRoute,
+  SystemLogsIndexRoute: SystemLogsIndexRoute,
   TransportCardsIndexRoute: TransportCardsIndexRoute,
 }
 export const routeTree = rootRouteImport

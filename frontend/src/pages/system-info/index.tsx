@@ -91,9 +91,6 @@ export const SystemInfoPage = () => {
             {lastUpdated && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span>Обновлено: {lastUpdated}</span>
-                <Button onClick={refresh} variant="ghost" size="icon" className="h-6 w-6">
-                  <RefreshCw className={`w-3 h-3 ${isLoading ? "animate-spin" : ""}`} />
-                </Button>
               </div>
             )}
           </div>
@@ -249,6 +246,16 @@ export const SystemInfoPage = () => {
             <HomeIcon className="w-4 h-4" />
           </Button>
         </Link>
+
+        <Button
+          onClick={refresh}
+          disabled={isLoading}
+          type="button"
+          className="px-3 py-4 bg-blue-600 rounded-md hover:bg-blue-700 flex items-center gap-2"
+        >
+          <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+          <span>Обновить</span>
+        </Button>
       </div>
     </div>
   );

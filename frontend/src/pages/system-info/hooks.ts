@@ -13,6 +13,7 @@ export const useSystemInfo = () => {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   const loadStats = useCallback(async () => {
+    setIsLoading(true);
     try {
       const data: SystemStats = await systemInfoApi.getStats();
       setCpuUsage(data.cpuUsage);
