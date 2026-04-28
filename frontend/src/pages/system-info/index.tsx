@@ -16,8 +16,11 @@ import { useSystemInfo } from "./hooks";
 import { DonutChart } from "./ui/donut-chart";
 import { DiskChart } from "./ui/disk-chart";
 import { NetworkChart } from "./ui/network-chart";
+import { usePermissions } from "@/lib/contexts/permission-context";
 
 export const SystemInfoPage = () => {
+  const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
+
   const {
     cpuUsage,
     memoryUsage,
@@ -30,6 +33,29 @@ export const SystemInfoPage = () => {
     lastUpdated,
     refresh,
   } = useSystemInfo();
+
+  if (isPermissionsLoading) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-muted-foreground">Загрузка...</CardContent>
+      </Card>
+    );
+  }
+
+  if (!hasPermission("system-info:view")) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center">
+          <p className="text-muted-foreground mb-4">У вас нет доступа к этой странице</p>
+          <Link to="/">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              Вернуться на главную
+            </button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
 
   if (isLoading && !lastUpdated) {
     return (

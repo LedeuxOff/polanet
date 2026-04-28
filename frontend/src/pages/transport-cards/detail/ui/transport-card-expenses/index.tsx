@@ -40,6 +40,8 @@ interface Props {
   setExpenseDateTime: Dispatch<SetStateAction<string>>;
   handleAddExpense: () => Promise<void>;
   isAddingExpense: boolean;
+  hasPermission: (permission: string) => boolean;
+  showToast: (message: string, type: "success" | "error" | "info" | "warning") => void;
 }
 
 const ITEMS_PER_PAGE = 3;
@@ -59,6 +61,8 @@ export const TransportCardExpenses = ({
   setExpenseDateTime,
   handleAddExpense,
   isAddingExpense,
+  hasPermission,
+  showToast,
 }: Props) => {
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -83,92 +87,94 @@ export const TransportCardExpenses = ({
     }
   };
 
+  const hasExpensesCreatePermission = hasPermission("expenses:create");
+
   return (
-    <>
-      <div className="flex flex-col gap-4">
-        <div>
-          <p className="text-sm text-muted-foreground">Общая сумма расходов</p>
-          <p className="text-2xl font-bold text-destructive">{totalExpenses} ₽</p>
-        </div>
+    <div className="flex flex-col gap-4">
+      <div>
+        <p className="text-sm text-muted-foreground">Общая сумма расходов</p>
+        <p className="text-2xl font-bold text-destructive">{totalExpenses} ₽</p>
+      </div>
 
-        {/* История расходов */}
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="expenses">
-            <AccordionTrigger className="text-base">
-              Расходы ({card?.expenses?.length || 0})
-            </AccordionTrigger>
-            <AccordionContent>
-              <div className="flex flex-col gap-2">
-                {paginatedExpenses.map((expense) => (
-                  <div
-                    key={expense.id}
-                    className="flex items-center justify-between p-3 border rounded-md"
-                  >
-                    <div className="space-y-1">
-                      <p className="font-medium">{expense.amount} ₽</p>
-                      <div className="flex gap-2 text-sm text-muted-foreground">
-                        <span>{expense.expenseType === "salary" ? "Зарплата" : "Топливо"}</span>
-                        <span>•</span>
-                        <span>{expense.paymentType === "cash" ? "Наличные" : "Безналичные"}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(expense.dateTime).toLocaleDateString("ru-RU")}
-                      </p>
+      {/* История расходов */}
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="expenses">
+          <AccordionTrigger className="text-base">
+            Расходы ({card?.expenses?.length || 0})
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="flex flex-col gap-2">
+              {paginatedExpenses.map((expense) => (
+                <div
+                  key={expense.id}
+                  className="flex items-center justify-between p-3 border rounded-md"
+                >
+                  <div className="space-y-1">
+                    <p className="font-medium">{expense.amount} ₽</p>
+                    <div className="flex gap-2 text-sm text-muted-foreground">
+                      <span>{expense.expenseType === "salary" ? "Зарплата" : "Топливо"}</span>
+                      <span>•</span>
+                      <span>{expense.paymentType === "cash" ? "Наличные" : "Безналичные"}</span>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveExpense(expense.id)}
-                    >
-                      Удалить
-                    </Button>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(expense.dateTime).toLocaleDateString("ru-RU")}
+                    </p>
                   </div>
-                ))}
-              </div>
-
-              {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2 mt-6">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handlePreviousPage}
-                    disabled={currentPage === 1}
-                    className="h-10 w-10 bg-zinc-800 text-white hover:bg-zinc-900 hover:text-white"
-                    type="button"
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <div className="flex items-center gap-2 px-4 py-2 border rounded-md">
-                    <span className="text-sm font-medium">{currentPage}</span>
-                    <span className="text-sm text-muted-foreground">/ {totalPages}</span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleNextPage}
-                    disabled={currentPage === totalPages}
-                    className="h-10 w-10 bg-zinc-800 text-white hover:bg-zinc-900 hover:text-white"
-                    type="button"
-                  >
-                    <ChevronRight className="h-4 w-4" />
+                  <Button variant="ghost" size="sm" onClick={() => handleRemoveExpense(expense.id)}>
+                    Удалить
                   </Button>
                 </div>
-              )}
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
+              ))}
+            </div>
 
-        {/* Кнопка добавления расхода */}
-        <div className="flex justify-end">
-          <Button
-            onClick={openExpenseDialog}
-            variant="outline"
-            type="button"
-            className="bg-blue-500 text-white hover:bg-blue-600 hover:text-white"
-          >
-            Добавить расход
-          </Button>
-        </div>
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                  className="h-10 w-10 bg-zinc-800 text-white hover:bg-zinc-900 hover:text-white"
+                  type="button"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="flex items-center gap-2 px-4 py-2 border rounded-md">
+                  <span className="text-sm font-medium">{currentPage}</span>
+                  <span className="text-sm text-muted-foreground">/ {totalPages}</span>
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                  className="h-10 w-10 bg-zinc-800 text-white hover:bg-zinc-900 hover:text-white"
+                  type="button"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+
+      {/* Кнопка добавления расхода */}
+      <div className="flex justify-end">
+        <Button
+          onClick={() => {
+            if (!hasExpensesCreatePermission) {
+              showToast("У вас нет прав на добавление расходов", "error");
+              return;
+            }
+            openExpenseDialog();
+          }}
+          variant="outline"
+          type="button"
+          className="bg-blue-500 text-white hover:bg-blue-600 hover:text-white"
+        >
+          Добавить расход
+        </Button>
       </div>
 
       <Dialog open={showExpenseDialog} onOpenChange={setShowExpenseDialog}>
@@ -227,6 +233,6 @@ export const TransportCardExpenses = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 };

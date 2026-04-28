@@ -4,10 +4,37 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { HomeIcon } from "lucide-react";
 import { useMoneyStatistic } from "./hooks";
 import { MoneyChart } from "./ui/money-chart";
+import { usePermissions } from "@/lib/contexts/permission-context";
+import { useToast } from "@/lib/contexts/toast-context";
 
 export const MoneyStatisticPage = () => {
   const navigate = useNavigate();
+  const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
+  const { showToast } = useToast();
   const { isLoading, error, candleData } = useMoneyStatistic();
+
+  if (isPermissionsLoading) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-muted-foreground">Загрузка...</CardContent>
+      </Card>
+    );
+  }
+
+  if (!hasPermission("finances:view")) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center">
+          <p className="text-muted-foreground mb-4">У вас нет доступа к этой странице</p>
+          <Link to="/">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              Вернуться на главную
+            </button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">

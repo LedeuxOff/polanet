@@ -6,8 +6,16 @@ import { useSystemLogs } from "./hooks";
 import { Badge } from "@/components/ui/badge";
 
 export const SystemLogsPage = () => {
-  const { errors, isLoading, error, lastUpdated, refresh, clearAllErrors, formatTimestamp } =
-    useSystemLogs();
+  const {
+    errors,
+    isLoading,
+    error,
+    lastUpdated,
+    refresh,
+    clearAllErrors,
+    formatTimestamp,
+    canClearErrors,
+  } = useSystemLogs();
 
   if (isLoading && errors.length === 0) {
     return (
@@ -153,7 +161,7 @@ export const SystemLogsPage = () => {
             <span>Обновить</span>
           </Button>
         </div>
-        {errors.length > 0 && (
+        {errors.length > 0 && canClearErrors && (
           <Button
             onClick={clearAllErrors}
             disabled={isLoading}

@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { systemLogsApi, type ServerError } from "@/lib/api/system-logs-api";
+import { usePermissions } from "@/lib/contexts/permission-context";
 
 export const useSystemLogs = () => {
   const [errors, setErrors] = useState<ServerError[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const { hasPermission } = usePermissions();
 
   const loadErrors = useCallback(async () => {
     setIsLoading(true);
@@ -40,6 +42,8 @@ export const useSystemLogs = () => {
     return new Date(timestamp).toLocaleString("ru-RU");
   };
 
+  const canClearErrors = hasPermission("system-logs:clear");
+
   return {
     errors,
     isLoading,
@@ -48,5 +52,6 @@ export const useSystemLogs = () => {
     refresh: loadErrors,
     clearAllErrors,
     formatTimestamp,
+    canClearErrors,
   };
 };

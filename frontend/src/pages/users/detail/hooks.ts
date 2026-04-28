@@ -41,7 +41,7 @@ export const useUserDetailPage = () => {
     }
   }, [user, form.setValue]);
 
-  const onSubmit = async (data: UserForm) => {
+  const onSubmit = async (data: UserForm): Promise<{ success: boolean; error?: string }> => {
     setError(null);
     setIsSubmitting(true);
     try {
@@ -55,9 +55,11 @@ export const useUserDetailPage = () => {
       if (data.roleId) updateData.roleId = data.roleId;
 
       await usersApi.update(Number(userId), updateData);
-      navigate({ to: "/users" });
+      return { success: true };
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка при обновлении");
+      const message = err instanceof Error ? err.message : "Ошибка при обновлении";
+      setError(message);
+      return { success: false, error: message };
     } finally {
       setIsSubmitting(false);
     }

@@ -18,6 +18,9 @@ export const BackupsPage = () => {
     handleDelete,
     formatFileSize,
     formatDate,
+    canCreate,
+    canRestore,
+    canDelete,
   } = useBackupsListPage();
 
   const columns: ColumnDef<{
@@ -46,26 +49,30 @@ export const BackupsPage = () => {
       header: "Действия",
       cell: ({ row }) => (
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleRestore(row.original.filename)}
-            disabled={isRestoring === row.original.filename}
-            title="Восстановить базу данных"
-          >
-            <RotateCcw className="w-4 h-4 mr-1" />
-            {isRestoring === row.original.filename ? "Восстановление..." : "Восстановить"}
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => handleDelete(row.original.filename)}
-            disabled={isDeleting === row.original.filename}
-            title="Удалить резервную копию"
-          >
-            <Trash2 className="w-4 h-4 mr-1" />
-            {isDeleting === row.original.filename ? "Удаление..." : "Удалить"}
-          </Button>
+          {canRestore && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleRestore(row.original.filename)}
+              disabled={isRestoring === row.original.filename}
+              title="Восстановить базу данных"
+            >
+              <RotateCcw className="w-4 h-4 mr-1" />
+              {isRestoring === row.original.filename ? "Восстановление..." : "Восстановить"}
+            </Button>
+          )}
+          {canDelete && (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => handleDelete(row.original.filename)}
+              disabled={isDeleting === row.original.filename}
+              title="Удалить резервную копию"
+            >
+              <Trash2 className="w-4 h-4 mr-1" />
+              {isDeleting === row.original.filename ? "Удаление..." : "Удалить"}
+            </Button>
+          )}
         </div>
       ),
     },
@@ -103,13 +110,15 @@ export const BackupsPage = () => {
           </Button>
         </Link>
 
-        <Button
-          onClick={handleCreate}
-          type="button"
-          className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
-        >
-          Создать копию
-        </Button>
+        {canCreate && (
+          <Button
+            onClick={handleCreate}
+            type="button"
+            className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
+          >
+            Создать копию
+          </Button>
+        )}
       </div>
     </div>
   );

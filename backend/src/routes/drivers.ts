@@ -2,13 +2,14 @@ import { Router } from "express";
 import { db } from "../db/index.js";
 import { drivers, transportCards, expenses } from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
+import { requirePermission } from "../middleware/permissions.js";
 import { createDriverSchema, updateDriverSchema } from "../middleware/validators.js";
 import { eq } from "drizzle-orm";
 
 const router = Router();
 
 // Получить всех водителей
-router.get("/", authenticate, (req: AuthRequest, res) => {
+router.get("/", authenticate, requirePermission("drivers:list"), (req: AuthRequest, res) => {
   try {
     const allDrivers = db.select().from(drivers).all();
     res.json(allDrivers);
@@ -21,7 +22,7 @@ router.get("/", authenticate, (req: AuthRequest, res) => {
 });
 
 // Получить водителя по ID
-router.get("/:id", authenticate, (req: AuthRequest, res) => {
+router.get("/:id", authenticate, requirePermission("drivers:detail"), (req: AuthRequest, res) => {
   try {
     const driver = db
       .select()
@@ -72,7 +73,7 @@ router.get("/:id", authenticate, (req: AuthRequest, res) => {
 });
 
 // Создать водителя
-router.post("/", authenticate, (req: AuthRequest, res) => {
+router.post("/", authenticate, requirePermission("drivers:create"), (req: AuthRequest, res) => {
   try {
     const data = createDriverSchema.parse(req.body);
 
@@ -97,7 +98,7 @@ router.post("/", authenticate, (req: AuthRequest, res) => {
 });
 
 // Обновить водителя
-router.put("/:id", authenticate, (req: AuthRequest, res) => {
+router.put("/:id", authenticate, requirePermission("drivers:update"), (req: AuthRequest, res) => {
   try {
     const data = updateDriverSchema.parse(req.body);
     const driverId = Number(req.params.id);
@@ -124,19 +125,24 @@ router.put("/:id", authenticate, (req: AuthRequest, res) => {
 });
 
 // Удалить водителя
-router.delete("/:id", authenticate, (req: AuthRequest, res) => {
-  try {
-    const driverId = Number(req.params.id);
+router.delete(
+  "/:id",
+  authenticate,
+  requirePermission("drivers:delete"),
+  (req: AuthRequest, res) => {
+    try {
+      const driverId = Number(req.params.id);
 
-    db.delete(drivers).where(eq(drivers.id, driverId)).run();
+      db.delete(drivers).where(eq(drivers.id, driverId)).run();
 
-    res.status(204).send();
-  } catch (error) {
-    console.error("Error deleting driver:", error);
-    res
-      .status(500)
-      .json({ error: "Ошибка сервера", details: error instanceof Error ? error.message : error });
-  }
-});
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting driver:", error);
+      res
+        .status(500)
+        .json({ error: "Ошибка сервера", details: error instanceof Error ? error.message : error });
+    }
+  },
+);
 
 export default router;

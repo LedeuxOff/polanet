@@ -6,9 +6,19 @@ import { TransportCardMainInfo } from "./ui/transport-card-main-info";
 import { TransportCardExpenses } from "./ui/transport-card-expenses";
 import { TransportCardHistory } from "./ui/transport-card-history";
 import { ChevronLeft, TrashIcon } from "lucide-react";
+import { usePermissions } from "@/lib/contexts/permission-context";
+import { useToast } from "@/lib/contexts/toast-context";
+import { useAuth } from "@/lib/contexts/auth-context";
 
 export const TransportCardDetailPage = () => {
   const navigate = useNavigate();
+  const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
+  const { showToast } = useToast();
+  const { user } = useAuth();
+
+  // Проверяем, является ли пользователь администратором или разработчиком
+  const isRoleAdminOrDeveloper = user?.roleCode === "ADMIN" || user?.roleCode === "DEVELOPER";
+
   const {
     isLoading,
     card,
@@ -32,10 +42,35 @@ export const TransportCardDetailPage = () => {
     openExpenseDialog,
   } = useTransportCardDetailPage();
 
-  if (isLoading) {
+  if (isLoading || isPermissionsLoading) {
     return (
       <Card>
         <CardContent className="py-8 text-center text-muted-foreground">Загрузка...</CardContent>
+      </Card>
+    );
+  }
+
+  if (!hasPermission("transport-cards:detail")) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center">
+          <p className="text-muted-foreground mb-4">У вас нет доступа к этой странице</p>
+          <Link to="/">
+            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              Вернуться на главную
+            </button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!card) {
+    return (
+      <Card>
+        <CardContent className="py-8 text-center text-muted-foreground">
+          Транспортная карта не найдена
+        </CardContent>
       </Card>
     );
   }
@@ -62,7 +97,17 @@ export const TransportCardDetailPage = () => {
         </CardHeader>
       </Card>
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        onSubmit={form.handleSubmit(async (data) => {
+          if (!hasPermission("transport-cards:update")) {
+            showToast("У вас нет прав на редактирование карты", "error");
+            return;
+          }
+          await onSubmit(data);
+          showToast("Транспортная карта успешно сохранена", "success");
+          navigate({ to: "/transport-cards" });
+        })}
+      >
         <div className="flex gap-4">
           <div className="flex flex-col gap-4 flex-1">
             <Card>
@@ -81,38 +126,44 @@ export const TransportCardDetailPage = () => {
           </div>
 
           <div className="flex flex-col gap-4 flex-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Расходы</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TransportCardExpenses
-                  totalExpenses={totalExpenses}
-                  openExpenseDialog={openExpenseDialog}
-                  card={card}
-                  handleRemoveExpense={handleRemoveExpense}
-                  showExpenseDialog={showExpenseDialog}
-                  setShowExpenseDialog={setShowExpenseDialog}
-                  expensePaymentType={expensePaymentType}
-                  setExpensePaymentType={setExpensePaymentType}
-                  expenseAmount={expenseAmount}
-                  setExpenseAmount={setExpenseAmount}
-                  expenseDateTime={expenseDateTime}
-                  setExpenseDateTime={setExpenseDateTime}
-                  handleAddExpense={handleAddExpense}
-                  isAddingExpense={isAddingExpense}
-                />
-              </CardContent>
-            </Card>
+            {hasPermission("expenses:list") && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Расходы</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TransportCardExpenses
+                    totalExpenses={totalExpenses}
+                    openExpenseDialog={openExpenseDialog}
+                    card={card}
+                    handleRemoveExpense={handleRemoveExpense}
+                    showExpenseDialog={showExpenseDialog}
+                    setShowExpenseDialog={setShowExpenseDialog}
+                    expensePaymentType={expensePaymentType}
+                    setExpensePaymentType={setExpensePaymentType}
+                    expenseAmount={expenseAmount}
+                    setExpenseAmount={setExpenseAmount}
+                    expenseDateTime={expenseDateTime}
+                    setExpenseDateTime={setExpenseDateTime}
+                    handleAddExpense={handleAddExpense}
+                    isAddingExpense={isAddingExpense}
+                    hasPermission={hasPermission}
+                    showToast={showToast}
+                  />
+                </CardContent>
+              </Card>
+            )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle>История изменений</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <TransportCardHistory card={card} />
-              </CardContent>
-            </Card>
+            {isRoleAdminOrDeveloper && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>История изменений</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <TransportCardHistory card={card} />
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
 
@@ -129,8 +180,14 @@ export const TransportCardDetailPage = () => {
           {card && (
             <Button
               type="button"
-              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
-              onClick={handleDelete}
+              className="px-3 py-4 bg-red-600 rounded-md hover:bg-red-700"
+              onClick={() => {
+                if (!hasPermission("transport-cards:delete")) {
+                  showToast("У вас нет прав на удаление карты", "error");
+                  return;
+                }
+                handleDelete();
+              }}
               disabled={isDeleting || isSubmitting}
             >
               <TrashIcon className="w-4 h-4" />
