@@ -7,7 +7,7 @@ import { eq, and, desc } from "drizzle-orm";
 const router = Router();
 
 // Список расходов с фильтрацией
-router.get("/", authenticate, (req: AuthRequest, res) => {
+router.get("/", authenticate, async (req: AuthRequest, res) => {
   try {
     const { id, expenseType, paymentType, transportCardId, driverId } = req.query;
 
@@ -49,7 +49,7 @@ router.get("/", authenticate, (req: AuthRequest, res) => {
       query.where(and(...whereConditions));
     }
 
-    const result = query;
+    const result = await query;
     res.json(result);
   } catch (error) {
     console.error("Error fetching expenses:", error);

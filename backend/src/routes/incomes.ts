@@ -8,7 +8,7 @@ import { eq, and, desc } from "drizzle-orm";
 const router = Router();
 
 // Получить все доходы с фильтрацией
-router.get("/", authenticate, (req: AuthRequest, res) => {
+router.get("/", authenticate, async (req: AuthRequest, res) => {
   try {
     const { isPaid, paymentMethod, orderId, id, deliveryId } = req.query;
 

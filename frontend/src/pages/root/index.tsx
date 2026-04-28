@@ -10,6 +10,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import { APP_VERSION } from "@/lib/api";
 
 export const RootLayout = () => {
   const { isLoading, isAuthenticated, isLoginPage, navigate, logout, user } = useRootLayout();
@@ -118,6 +119,8 @@ export const RootLayout = () => {
             <LogOut className="h-4 w-4" />
             <span>Выйти</span>
           </Button>
+
+          <div className="text-center text-xs text-muted-foreground">v{APP_VERSION}</div>
         </div>
       </div>
       <main className="flex-1 overflow-auto min-h-screen ml-[360px] pt-[40px] pr-[40px]">
