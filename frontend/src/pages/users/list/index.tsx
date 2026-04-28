@@ -5,6 +5,7 @@ import { User } from "@/lib/types";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ColumnDef } from "@tanstack/react-table";
 import { useUsersList } from "./hooks";
+import { HomeIcon } from "lucide-react";
 
 export const UsersPage = () => {
   const navigate = useNavigate();
@@ -23,19 +24,7 @@ export const UsersPage = () => {
 
         const fullName = initials ? `${lastName} ${initials}.` : lastName;
 
-        return (
-          <button
-            onClick={() =>
-              navigate({
-                to: "/users/$userId",
-                params: { userId: String(row.original.id) },
-              })
-            }
-            className="inline-flex items-center gap-2 px-2 py-1 rounded-md border bg-background hover:bg-muted/50 transition-colors shadow-sm text-sm"
-          >
-            <span className="font-medium">{fullName}</span>
-          </button>
-        );
+        return fullName;
       },
     },
     {
@@ -55,22 +44,48 @@ export const UsersPage = () => {
   ];
 
   return (
-    <Card className="border-none">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Пользователи</CardTitle>
-          <Link to="/users/new">
-            <Button>Добавить пользователя</Button>
-          </Link>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
-        ) : (
-          <DataTable columns={columns} data={users} />
-        )}
-      </CardContent>
-    </Card>
+    <div className="flex flex-col gap-4">
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col gap-2">
+            <CardTitle>Пользователи</CardTitle>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-black">Список пользователей</span>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-8">
+          {isLoading ? (
+            <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
+          ) : (
+            <DataTable
+              columns={columns}
+              data={users}
+              onRowClick={(row) =>
+                navigate({ to: "/users/$userId", params: { userId: row.id.toString() } })
+              }
+            />
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
+        <Link to="/">
+          <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
+            <HomeIcon className="w-4 h-4" />
+          </Button>
+        </Link>
+
+        <Link to="/users/new">
+          <Button type="button" className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700">
+            Создать пользователя
+          </Button>
+        </Link>
+      </div>
+    </div>
   );
 };
