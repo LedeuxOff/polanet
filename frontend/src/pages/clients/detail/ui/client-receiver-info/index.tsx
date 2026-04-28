@@ -16,7 +16,7 @@ export const ClientReceiverInfo = ({ form, isSubmitting }: Props) => {
         <CardTitle>Приемщик</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4 pt-4 border-t">
+        <div className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="receiverLastName">Фамилия</Label>

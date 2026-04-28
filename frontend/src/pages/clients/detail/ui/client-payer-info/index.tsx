@@ -16,7 +16,7 @@ export const ClientPayerInfo = ({ form, isSubmitting }: Props) => {
         <CardTitle>Плательщик</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4 pt-4 border-t">
+        <div className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="payerLastName">Фамилия</Label>

@@ -162,43 +162,39 @@ export const EditUserPage = () => {
                     )}
                   </div>
                 </div>
-
-                {/* Кнопка отправки нового пароля */}
-                <div className="mt-6 pt-6 border-t">
-                  <Button
-                    type="button"
-                    disabled={isSendingPassword}
-                    onClick={handleSendPassword}
-                    className="bg-yellow-600 hover:bg-yellow-700"
-                  >
-                    <Send className="w-4 h-4 mr-2" />
-                    {isSendingPassword ? "Отправка..." : "Выслать новый пароль"}
-                  </Button>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Новый пароль будет отправлен на указанный номер телефона
-                  </p>
-                </div>
               </CardContent>
             </Card>
           </div>
         </div>
 
-        <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
-          <Button
-            type="button"
-            disabled={isSubmitting}
-            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
-            onClick={() => navigate({ to: "/users" })}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
+        <div className="fixed bottom-8 left-1/2 flex flex-col gap-2 p-2 bg-zinc-800/80 rounded-md">
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              disabled={isSubmitting}
+              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              onClick={() => navigate({ to: "/users" })}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700 flex-1"
+            >
+              {isSubmitting ? "Сохранение..." : "Сохранить"}
+            </Button>
+          </div>
 
           <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
+            type="button"
+            disabled={isSendingPassword}
+            onClick={handleSendPassword}
+            className="bg-zinc-800 hover:bg-zinc-900"
           >
-            {isSubmitting ? "Сохранение..." : "Сохранить"}
+            <Send className="w-4 h-4 mr-2" />
+            {isSendingPassword ? "Отправка..." : "Выслать новый пароль"}
           </Button>
         </div>
       </form>
