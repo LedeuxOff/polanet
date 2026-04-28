@@ -45,6 +45,10 @@ export const menuItems = [
         title: "Роли",
         url: "/roles",
       },
+      {
+        title: "Резервные копии",
+        url: "/backups",
+      },
     ],
   },
 ];
