@@ -14,6 +14,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UsersIndexRouteImport } from './routes/users/index'
 import { Route as TransportCardsIndexRouteImport } from './routes/transport-cards/index'
+import { Route as SystemInfoIndexRouteImport } from './routes/system-info/index'
 import { Route as RolesIndexRouteImport } from './routes/roles/index'
 import { Route as OrdersIndexRouteImport } from './routes/orders/index'
 import { Route as MoneyStatisticIndexRouteImport } from './routes/money-statistic/index'
@@ -59,6 +60,11 @@ const UsersIndexRoute = UsersIndexRouteImport.update({
 const TransportCardsIndexRoute = TransportCardsIndexRouteImport.update({
   id: '/transport-cards/',
   path: '/transport-cards/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SystemInfoIndexRoute = SystemInfoIndexRouteImport.update({
+  id: '/system-info/',
+  path: '/system-info/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RolesIndexRoute = RolesIndexRouteImport.update({
@@ -192,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/money-statistic/': typeof MoneyStatisticIndexRoute
   '/orders/': typeof OrdersIndexRoute
   '/roles/': typeof RolesIndexRoute
+  '/system-info/': typeof SystemInfoIndexRoute
   '/transport-cards/': typeof TransportCardsIndexRoute
   '/users/': typeof UsersIndexRoute
 }
@@ -219,6 +226,7 @@ export interface FileRoutesByTo {
   '/money-statistic': typeof MoneyStatisticIndexRoute
   '/orders': typeof OrdersIndexRoute
   '/roles': typeof RolesIndexRoute
+  '/system-info': typeof SystemInfoIndexRoute
   '/transport-cards': typeof TransportCardsIndexRoute
   '/users': typeof UsersIndexRoute
 }
@@ -248,6 +256,7 @@ export interface FileRoutesById {
   '/money-statistic/': typeof MoneyStatisticIndexRoute
   '/orders/': typeof OrdersIndexRoute
   '/roles/': typeof RolesIndexRoute
+  '/system-info/': typeof SystemInfoIndexRoute
   '/transport-cards/': typeof TransportCardsIndexRoute
   '/users/': typeof UsersIndexRoute
 }
@@ -278,6 +287,7 @@ export interface FileRouteTypes {
     | '/money-statistic/'
     | '/orders/'
     | '/roles/'
+    | '/system-info/'
     | '/transport-cards/'
     | '/users/'
   fileRoutesByTo: FileRoutesByTo
@@ -305,6 +315,7 @@ export interface FileRouteTypes {
     | '/money-statistic'
     | '/orders'
     | '/roles'
+    | '/system-info'
     | '/transport-cards'
     | '/users'
   id:
@@ -333,6 +344,7 @@ export interface FileRouteTypes {
     | '/money-statistic/'
     | '/orders/'
     | '/roles/'
+    | '/system-info/'
     | '/transport-cards/'
     | '/users/'
   fileRoutesById: FileRoutesById
@@ -360,6 +372,7 @@ export interface RootRouteChildren {
   MoneyStatisticIndexRoute: typeof MoneyStatisticIndexRoute
   OrdersIndexRoute: typeof OrdersIndexRoute
   RolesIndexRoute: typeof RolesIndexRoute
+  SystemInfoIndexRoute: typeof SystemInfoIndexRoute
   TransportCardsIndexRoute: typeof TransportCardsIndexRoute
 }
 
@@ -398,6 +411,13 @@ declare module '@tanstack/react-router' {
       path: '/transport-cards'
       fullPath: '/transport-cards/'
       preLoaderRoute: typeof TransportCardsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/system-info/': {
+      id: '/system-info/'
+      path: '/system-info'
+      fullPath: '/system-info/'
+      preLoaderRoute: typeof SystemInfoIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roles/': {
@@ -587,6 +607,7 @@ const rootRouteChildren: RootRouteChildren = {
   MoneyStatisticIndexRoute: MoneyStatisticIndexRoute,
   OrdersIndexRoute: OrdersIndexRoute,
   RolesIndexRoute: RolesIndexRoute,
+  SystemInfoIndexRoute: SystemInfoIndexRoute,
   TransportCardsIndexRoute: TransportCardsIndexRoute,
 }
 export const routeTree = rootRouteImport

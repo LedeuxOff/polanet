@@ -18,6 +18,7 @@ import deliveryRoutes from "./routes/deliveries.js";
 import incomeRoutes from "./routes/incomes.js";
 import expenseRoutes from "./routes/expenses.js";
 import backupRoutes from "./routes/backups.js";
+import systemInfoRoutes from "./routes/systemInfo.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -43,6 +44,7 @@ app.use("/api/deliveries", deliveryRoutes);
 app.use("/api/incomes", incomeRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/backups", backupRoutes);
+app.use("/api/system-info", systemInfoRoutes);
 
 // Запуск автоматического резервного копирования
 startAutoBackup();
