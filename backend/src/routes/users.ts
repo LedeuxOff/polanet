@@ -103,7 +103,7 @@ router.post('/', authenticate, async (req: AuthRequest, res) => {
     const newUser = db
       .select()
       .from(users)
-      .where(eq(users.id, result.lastInsertRowid))
+      .where(eq(users.id, Number(result.lastInsertRowid)))
       .get()
 
     res.status(201).json(newUser)
