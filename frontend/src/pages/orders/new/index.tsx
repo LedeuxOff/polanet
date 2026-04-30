@@ -13,7 +13,7 @@ export const NewOrderDetailPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
-  const { form, onSubmit, isSubmitting, error } = useNewOrderPage();
+  const { form, onSubmit, isSubmitting } = useNewOrderPage();
 
   return (
     <div className="flex flex-col gap-4 pb-32">

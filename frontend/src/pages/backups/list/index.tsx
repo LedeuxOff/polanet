@@ -15,7 +15,6 @@ export const BackupsPage = () => {
   const {
     backups,
     isLoading,
-    isCreating,
     isRestoring,
     isDeleting,
     handleCreate,

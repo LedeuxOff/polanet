@@ -14,7 +14,7 @@ import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const UsersPage = () => {
   const navigate = useNavigate();
-  const { users, isLoading, handleDelete } = useUsersList();
+  const { users, isLoading } = useUsersList();
   const { hasPermission } = usePermissions();
   const { showToast } = useToast();
   const isMobile = useIsMobile();

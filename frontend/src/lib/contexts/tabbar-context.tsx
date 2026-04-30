@@ -1,14 +1,4 @@
-import { authApi } from "../api";
-import type { User } from "../types";
-import {
-  createContext,
-  Dispatch,
-  SetStateAction,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, Dispatch, SetStateAction, useContext, useState } from "react";
 
 interface TabbarContextType {
   open: boolean;

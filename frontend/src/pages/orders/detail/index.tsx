@@ -25,7 +25,6 @@ export const OrderDetailPage = () => {
     originalStatus,
     isSubmitting,
     isLoading,
-    error,
     isDeleting,
     orderId,
     setOrder,

@@ -24,7 +24,7 @@ export const NewUserPage = () => {
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
 
-  const { form, onSubmit, error, isSubmitting, roles } = useNewUserPage();
+  const { form, onSubmit, isSubmitting, roles } = useNewUserPage();
 
   // Показываем лоадер пока загружаются permissions
   if (isPermissionsLoading) {

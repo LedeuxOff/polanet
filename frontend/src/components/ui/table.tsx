@@ -10,7 +10,6 @@ import {
   type SortingState,
 } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -46,7 +45,7 @@ export function DataTable<TData, TValue>({
             <thead className="bg-muted">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id} className="border-b">
-                  {headerGroup.headers.map((header, index) => (
+                  {headerGroup.headers.map((header) => (
                     <th
                       key={header.id}
                       className="h-10 px-4 text-left align-middle font-medium text-muted-foreground whitespace-nowrap min-w-[100px] text-sm border-r last:border-r-0"
@@ -67,7 +66,7 @@ export function DataTable<TData, TValue>({
                     className="border-b transition-colors hover:bg-muted/50 cursor-pointer"
                     onClick={() => onRowClick?.(row.original)}
                   >
-                    {row.getVisibleCells().map((cell, index) => (
+                    {row.getVisibleCells().map((cell) => (
                       <td
                         key={cell.id}
                         className="p-3 align-middle whitespace-nowrap text-sm border-r last:border-r-0"

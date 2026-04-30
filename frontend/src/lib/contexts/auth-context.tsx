@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userData = await authApi.me();
       setUser(userData);
       setToken(storedToken);
-    } catch (error) {
+    } catch {
       localStorage.removeItem("token");
       setToken(null);
       setUser(null);

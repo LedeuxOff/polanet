@@ -16,7 +16,7 @@ export const EditCarPage = () => {
   const { showToast } = useToast();
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
-  const { isLoading, car, handleDelete, isDeleting, form, onSubmit, error, isSubmitting } =
+  const { isLoading, car, handleDelete, isDeleting, form, onSubmit, isSubmitting } =
     useCarDetailPage();
 
   if (isLoading || isPermissionsLoading) {

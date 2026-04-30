@@ -3,12 +3,11 @@ import { rolesApi } from "@/lib/api/roles-api";
 import { User, UserForm, userSchema } from "@/lib/types";
 import { Role } from "@/lib/types/role-types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export const useUserDetailPage = () => {
-  const navigate = useNavigate();
   const { userId } = useParams({ from: "/users/$userId" });
 
   const [user, setUser] = useState<User | null>(null);

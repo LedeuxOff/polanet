@@ -16,7 +16,7 @@ export const NewDriverPage = () => {
   const { showToast } = useToast();
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
-  const { form, isSubmitting, error, onSubmit } = useNewDriverPage();
+  const { form, isSubmitting, onSubmit } = useNewDriverPage();
 
   if (isPermissionsLoading) {
     return (

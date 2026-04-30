@@ -1,7 +1,5 @@
-import { Button } from "@/components/ui/button";
 import { CardTitle } from "@/components/ui/card";
 import { Order } from "@/lib/types";
-import { typeLabels } from "../../consts";
 import { Link } from "@tanstack/react-router";
 
 interface Props {
@@ -10,7 +8,7 @@ interface Props {
   order: Order | null;
 }
 
-export const OrderHeader = ({ isNewOrder, orderId, order }: Props) => {
+export const OrderHeader = ({ isNewOrder, orderId }: Props) => {
   return (
     <div className="flex flex-col gap-2">
       <CardTitle>Заявки</CardTitle>

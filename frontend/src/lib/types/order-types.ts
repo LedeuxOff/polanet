@@ -1,5 +1,4 @@
 import z from "zod";
-import { Payment } from "./payment-types";
 
 export interface Order {
   id: number;

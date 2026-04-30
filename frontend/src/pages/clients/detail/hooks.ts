@@ -1,7 +1,7 @@
 import { clientsApi } from "@/lib/api";
 import { Client, ClientForm, clientSchema } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 

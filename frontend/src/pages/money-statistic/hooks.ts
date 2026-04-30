@@ -1,6 +1,6 @@
 import { expensesApi } from "@/lib/api/expenses-api";
 import { incomesApi } from "@/lib/api/incomes-api";
-import { Expense, ExpenseType } from "@/lib/types/expense-types";
+import { Expense } from "@/lib/types/expense-types";
 import { Income } from "@/lib/types/delivery-types";
 import { useEffect, useState, useMemo } from "react";
 

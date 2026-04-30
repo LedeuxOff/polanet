@@ -8,22 +8,6 @@ import {
 import { ExpensePaymentType, TransportCard } from "@/lib/types";
 import { useState, useMemo, Dispatch, SetStateAction } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks";
 import { AddExpenseDesktopModal } from "./add-expense-desktop-modal";
 import { AddExpenseMobileModal } from "./add-expense-mobile-modal";

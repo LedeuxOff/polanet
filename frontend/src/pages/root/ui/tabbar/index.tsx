@@ -1,4 +1,4 @@
-import { Drawer, DrawerContent, DrawerHeader } from "@/components/ui/drawer";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
 import { menuItems } from "../../consts";
 import { usePermissions } from "@/lib/contexts/permission-context";

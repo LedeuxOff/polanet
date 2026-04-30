@@ -19,7 +19,7 @@ export const NewClientPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
-  const { form, onSubmit, error, clientType, setClientType, isSubmitting } = useNewClientPage();
+  const { form, onSubmit, clientType, setClientType, isSubmitting } = useNewClientPage();
 
   return (
     <div className="flex flex-col gap-4">

@@ -1,5 +1,4 @@
-import { createFileRoute, Outlet } from "@tanstack/react-router";
-import { PermissionGuard } from "@/lib/components/permission-guard";
+import { createFileRoute } from "@tanstack/react-router";
 import { SystemInfoPage } from "@/pages/system-info";
 
 export const Route = createFileRoute("/system-info/")({

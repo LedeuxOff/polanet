@@ -17,8 +17,6 @@ export const PermissionProvider = ({ children }: { children: ReactNode }) => {
   const { user, isLoading: isAuthLoading } = useAuth();
   const [rolePermissions, setRolePermissions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [initialized, setInitialized] = useState(false);
-
   const loadPermissions = useCallback(async (roleId: number) => {
     try {
       const data = await permissionsApi.getRolePermissions(roleId);
@@ -28,7 +26,6 @@ export const PermissionProvider = ({ children }: { children: ReactNode }) => {
       setRolePermissions([]);
     } finally {
       setIsLoading(false);
-      setInitialized(true);
     }
   }, []);
 
@@ -43,7 +40,6 @@ export const PermissionProvider = ({ children }: { children: ReactNode }) => {
       // Пользователь не авторизован
       setRolePermissions([]);
       setIsLoading(false);
-      setInitialized(true);
     }
   }, [user, isAuthLoading, loadPermissions, hasLoadedPermissions]);
 
