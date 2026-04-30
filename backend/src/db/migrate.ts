@@ -1,32 +1,65 @@
-import { drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import path from "path";
-import { fileURLToPath } from "url";
 import fs from "fs";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 // Создаем папку data если не существует
-const dataDir = path.join(__dirname, "../../data");
+const dataDir = path.join(__dirname, "../data");
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
   console.log("Создана папка: data");
 }
 
-const sqlite = new Database(path.join(dataDir, "polanet.db"));
-sqlite.pragma("journal_mode = wal");
-const db = drizzle(sqlite);
+const dbPath = path.join(dataDir, "polanet.db");
 
-console.log("Запуск миграций...");
-
-try {
-  migrate(db, { migrationsFolder: path.join(__dirname, "../../drizzle") });
-  console.log("✅ Миграции успешно применены!");
-} catch (error) {
-  console.error("❌ Ошибка при применении миграций:", error);
-  process.exit(1);
-} finally {
-  sqlite.close();
+// Удаляем старую базу если есть
+if (fs.existsSync(dbPath)) {
+  fs.unlinkSync(dbPath);
+  console.log("Удалена старая база данных");
 }
+
+const db = new Database(dbPath);
+db.pragma("journal_mode = WAL");
+db.pragma("foreign_keys = ON");
+
+console.log("Применение миграций...\n");
+
+// Читаем все SQL файлы миграций
+const migrationsFolder = path.join(__dirname, "../drizzle");
+const files = fs
+  .readdirSync(migrationsFolder)
+  .filter((f) => f.endsWith(".sql"))
+  .sort();
+
+for (const file of files) {
+  console.log(`Применение: ${file}`);
+  const sql = fs.readFileSync(path.join(migrationsFolder, file), "utf-8");
+  try {
+    db.exec(sql);
+    console.log(`  ✅ Успешно`);
+  } catch (error) {
+    console.error(`  ❌ Ошибка: ${error}`);
+    db.close();
+    process.exit(1);
+  }
+}
+
+// Создаем таблицу миграций
+db.exec(`
+  CREATE TABLE IF NOT EXISTS _migrations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    applied_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
+  )
+`);
+
+// Записываем примененные миграции
+for (const file of files) {
+  try {
+    db.prepare("INSERT OR IGNORE INTO _migrations (name) VALUES (?)").run(file);
+  } catch {}
+}
+
+db.close();
+console.log("\n✅ Все миграции успешно применены!");
