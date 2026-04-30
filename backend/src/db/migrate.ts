@@ -1,8 +1,10 @@
 import Database from "better-sqlite3";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
 
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Создаем папку data если не существует
 const dataDir = path.join(__dirname, "../data");
@@ -25,41 +27,43 @@ db.pragma("foreign_keys = ON");
 
 console.log("Применение миграций...\n");
 
-// Читаем все SQL файлы миграций
+// Путь к папке миграций
 const migrationsFolder = path.join(__dirname, "../drizzle");
+console.log(`Папка миграций: ${migrationsFolder}`);
+
+// Проверяем существование папки
+if (!fs.existsSync(migrationsFolder)) {
+  console.error(`Ошибка: папка не найдена: ${migrationsFolder}`);
+  db.close();
+  process.exit(1);
+}
+
+// Читаем все SQL файлы миграций
 const files = fs
   .readdirSync(migrationsFolder)
   .filter((f) => f.endsWith(".sql"))
   .sort();
+
+if (files.length === 0) {
+  console.error("Ошибка: не найдены SQL файлы в папке drizzle");
+  db.close();
+  process.exit(1);
+}
+
+console.log(`Найдено миграций: ${files.length}\n`);
 
 for (const file of files) {
   console.log(`Применение: ${file}`);
   const sql = fs.readFileSync(path.join(migrationsFolder, file), "utf-8");
   try {
     db.exec(sql);
-    console.log(`  ✅ Успешно`);
+    console.log("  OK");
   } catch (error) {
-    console.error(`  ❌ Ошибка: ${error}`);
+    console.error(`  ERROR: ${error}`);
     db.close();
     process.exit(1);
   }
 }
 
-// Создаем таблицу миграций
-db.exec(`
-  CREATE TABLE IF NOT EXISTS _migrations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE,
-    applied_at TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP)
-  )
-`);
-
-// Записываем примененные миграции
-for (const file of files) {
-  try {
-    db.prepare("INSERT OR IGNORE INTO _migrations (name) VALUES (?)").run(file);
-  } catch {}
-}
-
 db.close();
-console.log("\n✅ Все миграции успешно применены!");
+console.log("\nВсе миграции успешно применены!");
