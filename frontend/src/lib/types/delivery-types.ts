@@ -12,6 +12,8 @@ export interface Delivery {
   comment: string | null;
   paymentMethod: "cash" | "bank_transfer";
   isPaymentBeforeUnloading: boolean;
+  notifyClient: boolean;
+  notifyDriver: boolean;
   status: DeliveryStatus;
   incomeId: number | null;
   createdAt: string;
@@ -67,6 +69,8 @@ export interface CreateDeliveryInput {
   paymentMethod: "cash" | "bank_transfer";
   isPaid: boolean;
   isPaymentBeforeUnloading?: boolean;
+  notifyClient?: boolean;
+  notifyDriver?: boolean;
 }
 
 export interface UpdateDeliveryInput {
@@ -79,6 +83,8 @@ export interface UpdateDeliveryInput {
   paymentMethod?: "cash" | "bank_transfer";
   isPaid?: boolean;
   isPaymentBeforeUnloading?: boolean;
+  notifyClient?: boolean;
+  notifyDriver?: boolean;
 }
 
 export const deliverySchema = z.object({
@@ -91,6 +97,8 @@ export const deliverySchema = z.object({
   paymentMethod: z.enum(["cash", "bank_transfer"]).default("cash"),
   isPaid: z.boolean().default(false),
   isPaymentBeforeUnloading: z.boolean().default(false),
+  notifyClient: z.boolean().default(false),
+  notifyDriver: z.boolean().default(false),
 });
 
 export type DeliveryForm = z.infer<typeof deliverySchema>;

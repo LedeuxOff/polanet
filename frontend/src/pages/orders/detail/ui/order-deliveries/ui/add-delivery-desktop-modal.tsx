@@ -174,6 +174,28 @@ export const AddDeliveryDesktopModal = ({
             </Label>
           </div>
 
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Checkbox
+                  checked={form.watch("notifyClient")}
+                  onCheckedChange={(checked: boolean) => form.setValue("notifyClient", checked)}
+                />
+                Отправить уведомление клиенту
+              </Label>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Checkbox
+                  checked={form.watch("notifyDriver")}
+                  onCheckedChange={(checked: boolean) => form.setValue("notifyDriver", checked)}
+                />
+                Отправить уведомление водителю
+              </Label>
+            </div>
+          </div>
+
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleCancelDelivery}>
               Отмена

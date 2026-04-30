@@ -95,3 +95,64 @@ export async function sendSms(phone: string, text: string): Promise<SmsResult> {
     };
   }
 }
+
+/**
+ * Форматирует дату и время в читаемый вид
+ */
+function formatDateTime(dateTime: string): string {
+  try {
+    const date = new Date(dateTime);
+    return date.toLocaleString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return dateTime;
+  }
+}
+
+/**
+ * Формирует ФИО из частей
+ */
+function formatFio(lastName: string, firstName: string, middleName?: string | null): string {
+  if (middleName) {
+    return `${lastName} ${firstName} ${middleName}`;
+  }
+  return `${lastName} ${firstName}`;
+}
+
+/**
+ * Отправляет уведомление клиенту о назначении доставки
+ */
+export async function sendClientNotification(
+  clientPhone: string,
+  dateTime: string,
+  driverFio: string,
+  driverPhone: string,
+): Promise<SmsResult> {
+  const formattedDateTime = formatDateTime(dateTime);
+  const text = `PolaNet. Вам назначена доставка на ${formattedDateTime}. Водитель ${driverFio}. Телефон для связи ${driverPhone}`;
+  return await sendSms(clientPhone, text);
+}
+
+/**
+ * Отправляет уведомление водителю о назначении доставки
+ */
+export async function sendDriverNotification(
+  driverPhone: string,
+  dateTime: string,
+  address: string,
+  contactPersonFio: string,
+  contactPersonPhone: string,
+  carBrand: string,
+  carLicensePlate: string,
+): Promise<SmsResult> {
+  const formattedDateTime = formatDateTime(dateTime);
+  const addressWithHyphens = address.replace(/\s/g, "-");
+  const carBrandNoSpaces = carBrand.replace(/\s/g, "");
+  const text = `PolaNet. Вы назначены на доставку. Дата - ${formattedDateTime}. Адрес - ${addressWithHyphens}. Контактное лицо - ${contactPersonFio} ${contactPersonPhone}. Автомобиль - ${carBrandNoSpaces} (${carLicensePlate})`;
+  return await sendSms(driverPhone, text);
+}

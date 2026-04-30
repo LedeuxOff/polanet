@@ -41,6 +41,8 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
       paymentMethod: "cash",
       isPaid: false,
       isPaymentBeforeUnloading: false,
+      notifyClient: false,
+      notifyDriver: false,
     },
   });
 
@@ -60,6 +62,8 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
       paymentMethod: delivery.paymentMethod,
       isPaid: income?.isPaid || false,
       isPaymentBeforeUnloading: delivery.isPaymentBeforeUnloading,
+      notifyClient: delivery.notifyClient,
+      notifyDriver: delivery.notifyDriver,
     });
   };
 
@@ -117,6 +121,8 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
           paymentMethod: data.paymentMethod,
           isPaid: data.isPaid,
           isPaymentBeforeUnloading: data.isPaymentBeforeUnloading,
+          notifyClient: data.notifyClient,
+          notifyDriver: data.notifyDriver,
         };
         await deliveriesApi.update(editingDelivery.id, updateData);
       } else {
@@ -131,6 +137,8 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
           paymentMethod: data.paymentMethod,
           isPaid: data.isPaid,
           isPaymentBeforeUnloading: data.isPaymentBeforeUnloading,
+          notifyClient: data.notifyClient,
+          notifyDriver: data.notifyDriver,
         };
         await deliveriesApi.create(createData);
       }

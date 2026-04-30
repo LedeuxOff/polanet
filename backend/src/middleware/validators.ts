@@ -121,6 +121,10 @@ export const updateClientSchema = z
     organizationName: z.string().max(200).optional().nullable(),
     phone: z.string().max(20).optional().nullable(),
     email: z.string().email("Неверный формат email").optional().nullable(),
+    // Плательщик
+    payer: contactInfoSchema.optional().nullable(),
+    // Приемщик
+    receiver: contactInfoSchema.optional().nullable(),
   })
   .superRefine((data, ctx) => {
     // Если тип указан и это физическое лицо - проверяем обязательные поля
@@ -293,6 +297,8 @@ export const createDeliverySchema = z.object({
   }),
   isPaid: z.boolean().default(false),
   isPaymentBeforeUnloading: z.boolean().default(false),
+  notifyClient: z.boolean().default(false),
+  notifyDriver: z.boolean().default(false),
 });
 
 export const updateDeliverySchema = z.object({
@@ -305,6 +311,8 @@ export const updateDeliverySchema = z.object({
   paymentMethod: z.enum(["cash", "bank_transfer"]).optional(),
   isPaid: z.boolean().optional(),
   isPaymentBeforeUnloading: z.boolean().optional(),
+  notifyClient: z.boolean().optional(),
+  notifyDriver: z.boolean().optional(),
 });
 
 // === Incomes (Доходы) Validators ===

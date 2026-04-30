@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "../db/index.js";
-import { deliveries, drivers, cars, orders, orderHistory, incomes } from "../db/schema.js";
+import { deliveries, drivers, cars, orders, orderHistory, incomes, clients } from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { requirePermission } from "../middleware/permissions.js";
 import {
@@ -10,6 +10,7 @@ import {
   orderStatusTransitions,
 } from "../middleware/validators.js";
 import { eq, desc, and } from "drizzle-orm";
+import { sendClientNotification, sendDriverNotification } from "../services/sms-service.js";
 
 const router = Router();
 
@@ -54,6 +55,8 @@ router.get(
           comment: deliveries.comment,
           paymentMethod: deliveries.paymentMethod,
           isPaymentBeforeUnloading: deliveries.isPaymentBeforeUnloading,
+          notifyClient: deliveries.notifyClient,
+          notifyDriver: deliveries.notifyDriver,
           status: deliveries.status,
           incomeId: deliveries.incomeId,
           createdAt: deliveries.createdAt,
@@ -110,6 +113,8 @@ router.get(
           comment: deliveries.comment,
           paymentMethod: deliveries.paymentMethod,
           isPaymentBeforeUnloading: deliveries.isPaymentBeforeUnloading,
+          notifyClient: deliveries.notifyClient,
+          notifyDriver: deliveries.notifyDriver,
           status: deliveries.status,
           incomeId: deliveries.incomeId,
           createdAt: deliveries.createdAt,
@@ -165,11 +170,24 @@ router.post(
         return res.status(404).json({ error: "Заявка не найдена" });
       }
 
+      // Получаем информацию о клиенте для уведомлений
+      const client = order.clientId
+        ? db.select().from(clients).where(eq(clients.id, order.clientId)).get()
+        : null;
+
+      // Получаем информацию о водителе
+      const driverData = db.select().from(drivers).where(eq(drivers.id, data.driverId)).get();
+
+      // Получаем информацию об автомобиле
+      const carData = db.select().from(cars).where(eq(cars.id, data.carId)).get();
+
       // Создаем доставку со статусом "в процессе"
       const result = db
         .insert(deliveries)
         .values({
           ...data,
+          notifyClient: data.notifyClient || false,
+          notifyDriver: data.notifyDriver || false,
           status: "in_progress",
           incomeId: null,
           createdAt: now,
@@ -245,37 +263,87 @@ router.post(
         `Доставка создана (статус: в процессе)`,
       );
 
-      // Получаем водителя, автомобиль и доход для ответа
-      const driver = db
-        .select()
-        .from(drivers)
-        .where(eq(drivers.id, Number(result.lastInsertRowid)))
-        .get();
+      // Отправляем уведомления если включено
+      const driverFio = driverData
+        ? `${driverData.lastName} ${driverData.firstName} ${driverData.middleName || ""}`.trim()
+        : "Не указан";
+      const driverPhone = driverData?.phone || "";
 
-      // Получаем доставку заново для получения driverId
+      // Уведомление клиенту
+      if (data.notifyClient && client) {
+        const clientPhone = client.phone;
+        if (clientPhone) {
+          try {
+            await sendClientNotification(clientPhone, data.dateTime, driverFio, driverPhone);
+            console.log(`[Уведомление] Клиенту отправлено уведомление о доставке`);
+          } catch (error) {
+            console.error(`[Уведомление] Ошибка отправки клиенту:`, error);
+          }
+        }
+      }
+
+      // Уведомление водителю
+      if (data.notifyDriver && driverData) {
+        // Формируем ФИО и телефон контактного лица
+        let contactPersonFio: string;
+        let contactPersonPhone: string;
+
+        // Проверяем, указан ли приемщик
+        const receiverFio =
+          `${order.receiverLastName || ""} ${order.receiverFirstName || ""} ${order.receiverMiddleName || ""}`.trim();
+        if (receiverFio && order.receiverPhone) {
+          // Если указан приемщик с телефоном - используем его
+          contactPersonFio = receiverFio;
+          contactPersonPhone = order.receiverPhone;
+        } else if (receiverFio) {
+          // Если указан приемщик без телефона - только ФИО
+          contactPersonFio = receiverFio;
+          contactPersonPhone = "";
+        } else {
+          // Если приемщик не указан, используем данные плательщика (клиента)
+          const payerName =
+            `${order.payerLastName || ""} ${order.payerFirstName || ""} ${order.payerMiddleName || ""}`.trim();
+          if (payerName && order.payerPhone) {
+            contactPersonFio = payerName;
+            contactPersonPhone = order.payerPhone;
+          } else if (payerName) {
+            contactPersonFio = payerName;
+            contactPersonPhone = "";
+          } else {
+            // Только номер телефона клиента
+            contactPersonFio = "";
+            contactPersonPhone = order.payerPhone || "";
+          }
+        }
+
+        try {
+          await sendDriverNotification(
+            driverPhone,
+            data.dateTime,
+            order.address,
+            contactPersonFio,
+            contactPersonPhone,
+            carData?.brand || "Не указан",
+            carData?.licensePlate || "Не указан",
+          );
+          console.log(`[Уведомление] Водителю отправлено уведомление о доставке`);
+        } catch (error) {
+          console.error(`[Уведомление] Ошибка отправки водителю:`, error);
+        }
+      }
+
+      // Получаем доставку заново для ответа
       const createdDelivery = db
         .select()
         .from(deliveries)
         .where(eq(deliveries.id, Number(result.lastInsertRowid)))
         .get();
 
-      const driverData = db
-        .select()
-        .from(drivers)
-        .where(eq(drivers.id, createdDelivery!.driverId))
-        .get();
-      const carData = db.select().from(cars).where(eq(cars.id, createdDelivery!.carId)).get();
-      const incomeData = db
-        .select()
-        .from(incomes)
-        .where(eq(incomes.id, Number(incomeResult.lastInsertRowid)))
-        .get();
-
       res.status(201).json({
         ...createdDelivery,
         driver: driverData,
         car: carData,
-        income: incomeData,
+        income: incomeResult,
       });
     } catch (error) {
       console.error("Error creating delivery:", error);
