@@ -1,7 +1,7 @@
 import { db } from "./index.js";
-import { roles, users } from "./schema.js";
+import { roles, users, permissions, rolePermissions } from "./schema.js";
 import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 // Создаем роли по умолчанию
 const defaultRoles = [
@@ -18,10 +18,61 @@ for (const role of defaultRoles) {
   }
 }
 
-// Создаем пользователей по умолчанию
+// Получаем созданные роли
 const adminRole = db.select().from(roles).where(eq(roles.code, "ADMIN")).get();
 const developerRole = db.select().from(roles).where(eq(roles.code, "DEVELOPER")).get();
 
+// Назначаем все права доступа ролям ADMIN и DEVELOPER
+console.log("Назначение прав доступа...");
+
+// Получаем все права
+const allPermissions = db.select().from(permissions).all();
+
+// Назначаем все права ADMIN
+if (adminRole) {
+  for (const permission of allPermissions) {
+    const existing = db
+      .select()
+      .from(rolePermissions)
+      .where(
+        and(
+          eq(rolePermissions.roleId, adminRole.id),
+          eq(rolePermissions.permissionId, permission.id),
+        ),
+      )
+      .get();
+    if (!existing) {
+      db.insert(rolePermissions)
+        .values({ roleId: adminRole.id, permissionId: permission.id })
+        .run();
+    }
+  }
+  console.log(`Роль "Администратор" получены все права`);
+}
+
+// Назначаем все права DEVELOPER
+if (developerRole) {
+  for (const permission of allPermissions) {
+    const existing = db
+      .select()
+      .from(rolePermissions)
+      .where(
+        and(
+          eq(rolePermissions.roleId, developerRole.id),
+          eq(rolePermissions.permissionId, permission.id),
+        ),
+      )
+      .get();
+    if (!existing) {
+      db.insert(rolePermissions)
+        .values({ roleId: developerRole.id, permissionId: permission.id })
+        .run();
+    }
+  }
+  console.log(`Роль "Разработчик" получены все права`);
+}
+
+// Создаем пользователей по умолчанию
 const defaultUsers = [
   {
     email: "admin@test.com",
