@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useIsMobile } from "@/hooks";
 import { ClientForm } from "@/lib/types";
 import { UseFormReturn } from "react-hook-form";
 
@@ -10,14 +11,16 @@ interface Props {
 }
 
 export const ClientReceiverInfo = ({ form, isSubmitting }: Props) => {
+  const isMobile = useIsMobile();
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Приемщик</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4 pt-4 border-t">
-          <div className="grid grid-cols-3 gap-4">
+        <div className="space-y-4">
+          <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-3"} gap-4`}>
             <div className="space-y-2">
               <Label htmlFor="receiverLastName">Фамилия</Label>
               <Input

@@ -8,6 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useIsMobile } from "@/hooks";
 import { OrderForm, getAvailableStatusTransitions, statusLabels } from "@/lib/types";
 import { UseFormReturn } from "react-hook-form";
 
@@ -19,6 +20,7 @@ interface Props {
 }
 
 export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledByStatus }: Props) => {
+  const isMobile = useIsMobile();
   const currentStatus = form.watch("status");
   const statusToUse = originalStatus || currentStatus;
   const availableTransitions = getAvailableStatusTransitions(statusToUse);
@@ -29,7 +31,7 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
   return (
     <div className="flex flex-col gap-4">
       {/* Тип, статус и дата и время */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-3"} gap-4`}>
         <div className="space-y-2">
           <Label htmlFor="type">Тип заявки *</Label>
           <Select
@@ -116,7 +118,7 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
       </div>
 
       {/* Пропуск */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <div className="space-y-2">
           <Label className="flex items-center gap-2">
             <input

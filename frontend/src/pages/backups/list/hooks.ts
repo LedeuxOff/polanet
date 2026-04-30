@@ -1,6 +1,7 @@
 import { backupsApi } from "@/lib/api/backups-api";
 import { Backup } from "@/lib/api/backups-api";
 import { useEffect, useState } from "react";
+import { usePermissions } from "@/lib/contexts/permission-context";
 
 export const useBackupsListPage = () => {
   const [backups, setBackups] = useState<Backup[]>([]);
@@ -8,6 +9,7 @@ export const useBackupsListPage = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [isRestoring, setIsRestoring] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const { hasPermission } = usePermissions();
 
   const loadBackups = async () => {
     try {
@@ -83,6 +85,10 @@ export const useBackupsListPage = () => {
     return new Date(dateString).toLocaleString("ru-RU");
   };
 
+  const canCreate = hasPermission("backups:create");
+  const canRestore = hasPermission("backups:restore");
+  const canDelete = hasPermission("backups:delete");
+
   return {
     backups,
     isLoading,
@@ -94,5 +100,8 @@ export const useBackupsListPage = () => {
     handleDelete,
     formatFileSize,
     formatDate,
+    canCreate,
+    canRestore,
+    canDelete,
   };
 };

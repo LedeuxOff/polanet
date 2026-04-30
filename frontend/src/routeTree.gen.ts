@@ -10,12 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsersRouteImport } from './routes/users'
+import { Route as TransportCardsRouteImport } from './routes/transport-cards'
+import { Route as SystemLogsRouteImport } from './routes/system-logs'
+import { Route as SystemInfoRouteImport } from './routes/system-info'
+import { Route as RolesRouteImport } from './routes/roles'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DriversRouteImport } from './routes/drivers'
+import { Route as CarsRouteImport } from './routes/cars'
+import { Route as BackupsRouteImport } from './routes/backups'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UsersIndexRouteImport } from './routes/users/index'
 import { Route as TransportCardsIndexRouteImport } from './routes/transport-cards/index'
+import { Route as SystemLogsIndexRouteImport } from './routes/system-logs/index'
+import { Route as SystemInfoIndexRouteImport } from './routes/system-info/index'
 import { Route as RolesIndexRouteImport } from './routes/roles/index'
 import { Route as OrdersIndexRouteImport } from './routes/orders/index'
+import { Route as MoneyStatisticIndexRouteImport } from './routes/money-statistic/index'
 import { Route as DriversIndexRouteImport } from './routes/drivers/index'
 import { Route as ClientsIndexRouteImport } from './routes/clients/index'
 import { Route as CarsIndexRouteImport } from './routes/cars/index'
@@ -40,9 +50,44 @@ const UsersRoute = UsersRouteImport.update({
   path: '/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TransportCardsRoute = TransportCardsRouteImport.update({
+  id: '/transport-cards',
+  path: '/transport-cards',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SystemLogsRoute = SystemLogsRouteImport.update({
+  id: '/system-logs',
+  path: '/system-logs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SystemInfoRoute = SystemInfoRouteImport.update({
+  id: '/system-info',
+  path: '/system-info',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RolesRoute = RolesRouteImport.update({
+  id: '/roles',
+  path: '/roles',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DriversRoute = DriversRouteImport.update({
+  id: '/drivers',
+  path: '/drivers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarsRoute = CarsRouteImport.update({
+  id: '/cars',
+  path: '/cars',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BackupsRoute = BackupsRouteImport.update({
+  id: '/backups',
+  path: '/backups',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -56,24 +101,39 @@ const UsersIndexRoute = UsersIndexRouteImport.update({
   getParentRoute: () => UsersRoute,
 } as any)
 const TransportCardsIndexRoute = TransportCardsIndexRouteImport.update({
-  id: '/transport-cards/',
-  path: '/transport-cards/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => TransportCardsRoute,
+} as any)
+const SystemLogsIndexRoute = SystemLogsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SystemLogsRoute,
+} as any)
+const SystemInfoIndexRoute = SystemInfoIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SystemInfoRoute,
 } as any)
 const RolesIndexRoute = RolesIndexRouteImport.update({
-  id: '/roles/',
-  path: '/roles/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => RolesRoute,
 } as any)
 const OrdersIndexRoute = OrdersIndexRouteImport.update({
   id: '/orders/',
   path: '/orders/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DriversIndexRoute = DriversIndexRouteImport.update({
-  id: '/drivers/',
-  path: '/drivers/',
+const MoneyStatisticIndexRoute = MoneyStatisticIndexRouteImport.update({
+  id: '/money-statistic/',
+  path: '/money-statistic/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const DriversIndexRoute = DriversIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DriversRoute,
 } as any)
 const ClientsIndexRoute = ClientsIndexRouteImport.update({
   id: '/clients/',
@@ -81,14 +141,14 @@ const ClientsIndexRoute = ClientsIndexRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarsIndexRoute = CarsIndexRouteImport.update({
-  id: '/cars/',
-  path: '/cars/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => CarsRoute,
 } as any)
 const BackupsIndexRoute = BackupsIndexRouteImport.update({
-  id: '/backups/',
-  path: '/backups/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => BackupsRoute,
 } as any)
 const UsersNewRoute = UsersNewRouteImport.update({
   id: '/new',
@@ -101,24 +161,24 @@ const UsersUserIdRoute = UsersUserIdRouteImport.update({
   getParentRoute: () => UsersRoute,
 } as any)
 const TransportCardsNewRoute = TransportCardsNewRouteImport.update({
-  id: '/transport-cards/new',
-  path: '/transport-cards/new',
-  getParentRoute: () => rootRouteImport,
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => TransportCardsRoute,
 } as any)
 const TransportCardsCardIdRoute = TransportCardsCardIdRouteImport.update({
-  id: '/transport-cards/$cardId',
-  path: '/transport-cards/$cardId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$cardId',
+  path: '/$cardId',
+  getParentRoute: () => TransportCardsRoute,
 } as any)
 const RolesNewRoute = RolesNewRouteImport.update({
-  id: '/roles/new',
-  path: '/roles/new',
-  getParentRoute: () => rootRouteImport,
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => RolesRoute,
 } as any)
 const RolesRoleIdRoute = RolesRoleIdRouteImport.update({
-  id: '/roles/$roleId',
-  path: '/roles/$roleId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$roleId',
+  path: '/$roleId',
+  getParentRoute: () => RolesRoute,
 } as any)
 const OrdersNewRoute = OrdersNewRouteImport.update({
   id: '/orders/new',
@@ -131,14 +191,14 @@ const OrdersOrderIdRoute = OrdersOrderIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const DriversNewRoute = DriversNewRouteImport.update({
-  id: '/drivers/new',
-  path: '/drivers/new',
-  getParentRoute: () => rootRouteImport,
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => DriversRoute,
 } as any)
 const DriversDriverIdRoute = DriversDriverIdRouteImport.update({
-  id: '/drivers/$driverId',
-  path: '/drivers/$driverId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$driverId',
+  path: '/$driverId',
+  getParentRoute: () => DriversRoute,
 } as any)
 const ClientsNewRoute = ClientsNewRouteImport.update({
   id: '/clients/new',
@@ -151,19 +211,26 @@ const ClientsClientIdRoute = ClientsClientIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarsNewRoute = CarsNewRouteImport.update({
-  id: '/cars/new',
-  path: '/cars/new',
-  getParentRoute: () => rootRouteImport,
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => CarsRoute,
 } as any)
 const CarsCarIdRoute = CarsCarIdRouteImport.update({
-  id: '/cars/$carId',
-  path: '/cars/$carId',
-  getParentRoute: () => rootRouteImport,
+  id: '/$carId',
+  path: '/$carId',
+  getParentRoute: () => CarsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/backups': typeof BackupsRouteWithChildren
+  '/cars': typeof CarsRouteWithChildren
+  '/drivers': typeof DriversRouteWithChildren
   '/login': typeof LoginRoute
+  '/roles': typeof RolesRouteWithChildren
+  '/system-info': typeof SystemInfoRouteWithChildren
+  '/system-logs': typeof SystemLogsRouteWithChildren
+  '/transport-cards': typeof TransportCardsRouteWithChildren
   '/users': typeof UsersRouteWithChildren
   '/cars/$carId': typeof CarsCarIdRoute
   '/cars/new': typeof CarsNewRoute
@@ -183,8 +250,11 @@ export interface FileRoutesByFullPath {
   '/cars/': typeof CarsIndexRoute
   '/clients/': typeof ClientsIndexRoute
   '/drivers/': typeof DriversIndexRoute
+  '/money-statistic/': typeof MoneyStatisticIndexRoute
   '/orders/': typeof OrdersIndexRoute
   '/roles/': typeof RolesIndexRoute
+  '/system-info/': typeof SystemInfoIndexRoute
+  '/system-logs/': typeof SystemLogsIndexRoute
   '/transport-cards/': typeof TransportCardsIndexRoute
   '/users/': typeof UsersIndexRoute
 }
@@ -209,15 +279,25 @@ export interface FileRoutesByTo {
   '/cars': typeof CarsIndexRoute
   '/clients': typeof ClientsIndexRoute
   '/drivers': typeof DriversIndexRoute
+  '/money-statistic': typeof MoneyStatisticIndexRoute
   '/orders': typeof OrdersIndexRoute
   '/roles': typeof RolesIndexRoute
+  '/system-info': typeof SystemInfoIndexRoute
+  '/system-logs': typeof SystemLogsIndexRoute
   '/transport-cards': typeof TransportCardsIndexRoute
   '/users': typeof UsersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/backups': typeof BackupsRouteWithChildren
+  '/cars': typeof CarsRouteWithChildren
+  '/drivers': typeof DriversRouteWithChildren
   '/login': typeof LoginRoute
+  '/roles': typeof RolesRouteWithChildren
+  '/system-info': typeof SystemInfoRouteWithChildren
+  '/system-logs': typeof SystemLogsRouteWithChildren
+  '/transport-cards': typeof TransportCardsRouteWithChildren
   '/users': typeof UsersRouteWithChildren
   '/cars/$carId': typeof CarsCarIdRoute
   '/cars/new': typeof CarsNewRoute
@@ -237,8 +317,11 @@ export interface FileRoutesById {
   '/cars/': typeof CarsIndexRoute
   '/clients/': typeof ClientsIndexRoute
   '/drivers/': typeof DriversIndexRoute
+  '/money-statistic/': typeof MoneyStatisticIndexRoute
   '/orders/': typeof OrdersIndexRoute
   '/roles/': typeof RolesIndexRoute
+  '/system-info/': typeof SystemInfoIndexRoute
+  '/system-logs/': typeof SystemLogsIndexRoute
   '/transport-cards/': typeof TransportCardsIndexRoute
   '/users/': typeof UsersIndexRoute
 }
@@ -246,7 +329,14 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/backups'
+    | '/cars'
+    | '/drivers'
     | '/login'
+    | '/roles'
+    | '/system-info'
+    | '/system-logs'
+    | '/transport-cards'
     | '/users'
     | '/cars/$carId'
     | '/cars/new'
@@ -266,8 +356,11 @@ export interface FileRouteTypes {
     | '/cars/'
     | '/clients/'
     | '/drivers/'
+    | '/money-statistic/'
     | '/orders/'
     | '/roles/'
+    | '/system-info/'
+    | '/system-logs/'
     | '/transport-cards/'
     | '/users/'
   fileRoutesByTo: FileRoutesByTo
@@ -292,14 +385,24 @@ export interface FileRouteTypes {
     | '/cars'
     | '/clients'
     | '/drivers'
+    | '/money-statistic'
     | '/orders'
     | '/roles'
+    | '/system-info'
+    | '/system-logs'
     | '/transport-cards'
     | '/users'
   id:
     | '__root__'
     | '/'
+    | '/backups'
+    | '/cars'
+    | '/drivers'
     | '/login'
+    | '/roles'
+    | '/system-info'
+    | '/system-logs'
+    | '/transport-cards'
     | '/users'
     | '/cars/$carId'
     | '/cars/new'
@@ -319,35 +422,33 @@ export interface FileRouteTypes {
     | '/cars/'
     | '/clients/'
     | '/drivers/'
+    | '/money-statistic/'
     | '/orders/'
     | '/roles/'
+    | '/system-info/'
+    | '/system-logs/'
     | '/transport-cards/'
     | '/users/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BackupsRoute: typeof BackupsRouteWithChildren
+  CarsRoute: typeof CarsRouteWithChildren
+  DriversRoute: typeof DriversRouteWithChildren
   LoginRoute: typeof LoginRoute
+  RolesRoute: typeof RolesRouteWithChildren
+  SystemInfoRoute: typeof SystemInfoRouteWithChildren
+  SystemLogsRoute: typeof SystemLogsRouteWithChildren
+  TransportCardsRoute: typeof TransportCardsRouteWithChildren
   UsersRoute: typeof UsersRouteWithChildren
-  CarsCarIdRoute: typeof CarsCarIdRoute
-  CarsNewRoute: typeof CarsNewRoute
   ClientsClientIdRoute: typeof ClientsClientIdRoute
   ClientsNewRoute: typeof ClientsNewRoute
-  DriversDriverIdRoute: typeof DriversDriverIdRoute
-  DriversNewRoute: typeof DriversNewRoute
   OrdersOrderIdRoute: typeof OrdersOrderIdRoute
   OrdersNewRoute: typeof OrdersNewRoute
-  RolesRoleIdRoute: typeof RolesRoleIdRoute
-  RolesNewRoute: typeof RolesNewRoute
-  TransportCardsCardIdRoute: typeof TransportCardsCardIdRoute
-  TransportCardsNewRoute: typeof TransportCardsNewRoute
-  BackupsIndexRoute: typeof BackupsIndexRoute
-  CarsIndexRoute: typeof CarsIndexRoute
   ClientsIndexRoute: typeof ClientsIndexRoute
-  DriversIndexRoute: typeof DriversIndexRoute
+  MoneyStatisticIndexRoute: typeof MoneyStatisticIndexRoute
   OrdersIndexRoute: typeof OrdersIndexRoute
-  RolesIndexRoute: typeof RolesIndexRoute
-  TransportCardsIndexRoute: typeof TransportCardsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -359,11 +460,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UsersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/transport-cards': {
+      id: '/transport-cards'
+      path: '/transport-cards'
+      fullPath: '/transport-cards'
+      preLoaderRoute: typeof TransportCardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/system-logs': {
+      id: '/system-logs'
+      path: '/system-logs'
+      fullPath: '/system-logs'
+      preLoaderRoute: typeof SystemLogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/system-info': {
+      id: '/system-info'
+      path: '/system-info'
+      fullPath: '/system-info'
+      preLoaderRoute: typeof SystemInfoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roles': {
+      id: '/roles'
+      path: '/roles'
+      fullPath: '/roles'
+      preLoaderRoute: typeof RolesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/drivers': {
+      id: '/drivers'
+      path: '/drivers'
+      fullPath: '/drivers'
+      preLoaderRoute: typeof DriversRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cars': {
+      id: '/cars'
+      path: '/cars'
+      fullPath: '/cars'
+      preLoaderRoute: typeof CarsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/backups': {
+      id: '/backups'
+      path: '/backups'
+      fullPath: '/backups'
+      preLoaderRoute: typeof BackupsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -382,17 +532,31 @@ declare module '@tanstack/react-router' {
     }
     '/transport-cards/': {
       id: '/transport-cards/'
-      path: '/transport-cards'
+      path: '/'
       fullPath: '/transport-cards/'
       preLoaderRoute: typeof TransportCardsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TransportCardsRoute
+    }
+    '/system-logs/': {
+      id: '/system-logs/'
+      path: '/'
+      fullPath: '/system-logs/'
+      preLoaderRoute: typeof SystemLogsIndexRouteImport
+      parentRoute: typeof SystemLogsRoute
+    }
+    '/system-info/': {
+      id: '/system-info/'
+      path: '/'
+      fullPath: '/system-info/'
+      preLoaderRoute: typeof SystemInfoIndexRouteImport
+      parentRoute: typeof SystemInfoRoute
     }
     '/roles/': {
       id: '/roles/'
-      path: '/roles'
+      path: '/'
       fullPath: '/roles/'
       preLoaderRoute: typeof RolesIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof RolesRoute
     }
     '/orders/': {
       id: '/orders/'
@@ -401,12 +565,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OrdersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/money-statistic/': {
+      id: '/money-statistic/'
+      path: '/money-statistic'
+      fullPath: '/money-statistic/'
+      preLoaderRoute: typeof MoneyStatisticIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/drivers/': {
       id: '/drivers/'
-      path: '/drivers'
+      path: '/'
       fullPath: '/drivers/'
       preLoaderRoute: typeof DriversIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DriversRoute
     }
     '/clients/': {
       id: '/clients/'
@@ -417,17 +588,17 @@ declare module '@tanstack/react-router' {
     }
     '/cars/': {
       id: '/cars/'
-      path: '/cars'
+      path: '/'
       fullPath: '/cars/'
       preLoaderRoute: typeof CarsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof CarsRoute
     }
     '/backups/': {
       id: '/backups/'
-      path: '/backups'
+      path: '/'
       fullPath: '/backups/'
       preLoaderRoute: typeof BackupsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof BackupsRoute
     }
     '/users/new': {
       id: '/users/new'
@@ -445,31 +616,31 @@ declare module '@tanstack/react-router' {
     }
     '/transport-cards/new': {
       id: '/transport-cards/new'
-      path: '/transport-cards/new'
+      path: '/new'
       fullPath: '/transport-cards/new'
       preLoaderRoute: typeof TransportCardsNewRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TransportCardsRoute
     }
     '/transport-cards/$cardId': {
       id: '/transport-cards/$cardId'
-      path: '/transport-cards/$cardId'
+      path: '/$cardId'
       fullPath: '/transport-cards/$cardId'
       preLoaderRoute: typeof TransportCardsCardIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof TransportCardsRoute
     }
     '/roles/new': {
       id: '/roles/new'
-      path: '/roles/new'
+      path: '/new'
       fullPath: '/roles/new'
       preLoaderRoute: typeof RolesNewRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof RolesRoute
     }
     '/roles/$roleId': {
       id: '/roles/$roleId'
-      path: '/roles/$roleId'
+      path: '/$roleId'
       fullPath: '/roles/$roleId'
       preLoaderRoute: typeof RolesRoleIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof RolesRoute
     }
     '/orders/new': {
       id: '/orders/new'
@@ -487,17 +658,17 @@ declare module '@tanstack/react-router' {
     }
     '/drivers/new': {
       id: '/drivers/new'
-      path: '/drivers/new'
+      path: '/new'
       fullPath: '/drivers/new'
       preLoaderRoute: typeof DriversNewRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DriversRoute
     }
     '/drivers/$driverId': {
       id: '/drivers/$driverId'
-      path: '/drivers/$driverId'
+      path: '/$driverId'
       fullPath: '/drivers/$driverId'
       preLoaderRoute: typeof DriversDriverIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof DriversRoute
     }
     '/clients/new': {
       id: '/clients/new'
@@ -515,20 +686,114 @@ declare module '@tanstack/react-router' {
     }
     '/cars/new': {
       id: '/cars/new'
-      path: '/cars/new'
+      path: '/new'
       fullPath: '/cars/new'
       preLoaderRoute: typeof CarsNewRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof CarsRoute
     }
     '/cars/$carId': {
       id: '/cars/$carId'
-      path: '/cars/$carId'
+      path: '/$carId'
       fullPath: '/cars/$carId'
       preLoaderRoute: typeof CarsCarIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof CarsRoute
     }
   }
 }
+
+interface BackupsRouteChildren {
+  BackupsIndexRoute: typeof BackupsIndexRoute
+}
+
+const BackupsRouteChildren: BackupsRouteChildren = {
+  BackupsIndexRoute: BackupsIndexRoute,
+}
+
+const BackupsRouteWithChildren =
+  BackupsRoute._addFileChildren(BackupsRouteChildren)
+
+interface CarsRouteChildren {
+  CarsCarIdRoute: typeof CarsCarIdRoute
+  CarsNewRoute: typeof CarsNewRoute
+  CarsIndexRoute: typeof CarsIndexRoute
+}
+
+const CarsRouteChildren: CarsRouteChildren = {
+  CarsCarIdRoute: CarsCarIdRoute,
+  CarsNewRoute: CarsNewRoute,
+  CarsIndexRoute: CarsIndexRoute,
+}
+
+const CarsRouteWithChildren = CarsRoute._addFileChildren(CarsRouteChildren)
+
+interface DriversRouteChildren {
+  DriversDriverIdRoute: typeof DriversDriverIdRoute
+  DriversNewRoute: typeof DriversNewRoute
+  DriversIndexRoute: typeof DriversIndexRoute
+}
+
+const DriversRouteChildren: DriversRouteChildren = {
+  DriversDriverIdRoute: DriversDriverIdRoute,
+  DriversNewRoute: DriversNewRoute,
+  DriversIndexRoute: DriversIndexRoute,
+}
+
+const DriversRouteWithChildren =
+  DriversRoute._addFileChildren(DriversRouteChildren)
+
+interface RolesRouteChildren {
+  RolesRoleIdRoute: typeof RolesRoleIdRoute
+  RolesNewRoute: typeof RolesNewRoute
+  RolesIndexRoute: typeof RolesIndexRoute
+}
+
+const RolesRouteChildren: RolesRouteChildren = {
+  RolesRoleIdRoute: RolesRoleIdRoute,
+  RolesNewRoute: RolesNewRoute,
+  RolesIndexRoute: RolesIndexRoute,
+}
+
+const RolesRouteWithChildren = RolesRoute._addFileChildren(RolesRouteChildren)
+
+interface SystemInfoRouteChildren {
+  SystemInfoIndexRoute: typeof SystemInfoIndexRoute
+}
+
+const SystemInfoRouteChildren: SystemInfoRouteChildren = {
+  SystemInfoIndexRoute: SystemInfoIndexRoute,
+}
+
+const SystemInfoRouteWithChildren = SystemInfoRoute._addFileChildren(
+  SystemInfoRouteChildren,
+)
+
+interface SystemLogsRouteChildren {
+  SystemLogsIndexRoute: typeof SystemLogsIndexRoute
+}
+
+const SystemLogsRouteChildren: SystemLogsRouteChildren = {
+  SystemLogsIndexRoute: SystemLogsIndexRoute,
+}
+
+const SystemLogsRouteWithChildren = SystemLogsRoute._addFileChildren(
+  SystemLogsRouteChildren,
+)
+
+interface TransportCardsRouteChildren {
+  TransportCardsCardIdRoute: typeof TransportCardsCardIdRoute
+  TransportCardsNewRoute: typeof TransportCardsNewRoute
+  TransportCardsIndexRoute: typeof TransportCardsIndexRoute
+}
+
+const TransportCardsRouteChildren: TransportCardsRouteChildren = {
+  TransportCardsCardIdRoute: TransportCardsCardIdRoute,
+  TransportCardsNewRoute: TransportCardsNewRoute,
+  TransportCardsIndexRoute: TransportCardsIndexRoute,
+}
+
+const TransportCardsRouteWithChildren = TransportCardsRoute._addFileChildren(
+  TransportCardsRouteChildren,
+)
 
 interface UsersRouteChildren {
   UsersUserIdRoute: typeof UsersUserIdRoute
@@ -546,27 +811,22 @@ const UsersRouteWithChildren = UsersRoute._addFileChildren(UsersRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BackupsRoute: BackupsRouteWithChildren,
+  CarsRoute: CarsRouteWithChildren,
+  DriversRoute: DriversRouteWithChildren,
   LoginRoute: LoginRoute,
+  RolesRoute: RolesRouteWithChildren,
+  SystemInfoRoute: SystemInfoRouteWithChildren,
+  SystemLogsRoute: SystemLogsRouteWithChildren,
+  TransportCardsRoute: TransportCardsRouteWithChildren,
   UsersRoute: UsersRouteWithChildren,
-  CarsCarIdRoute: CarsCarIdRoute,
-  CarsNewRoute: CarsNewRoute,
   ClientsClientIdRoute: ClientsClientIdRoute,
   ClientsNewRoute: ClientsNewRoute,
-  DriversDriverIdRoute: DriversDriverIdRoute,
-  DriversNewRoute: DriversNewRoute,
   OrdersOrderIdRoute: OrdersOrderIdRoute,
   OrdersNewRoute: OrdersNewRoute,
-  RolesRoleIdRoute: RolesRoleIdRoute,
-  RolesNewRoute: RolesNewRoute,
-  TransportCardsCardIdRoute: TransportCardsCardIdRoute,
-  TransportCardsNewRoute: TransportCardsNewRoute,
-  BackupsIndexRoute: BackupsIndexRoute,
-  CarsIndexRoute: CarsIndexRoute,
   ClientsIndexRoute: ClientsIndexRoute,
-  DriversIndexRoute: DriversIndexRoute,
+  MoneyStatisticIndexRoute: MoneyStatisticIndexRoute,
   OrdersIndexRoute: OrdersIndexRoute,
-  RolesIndexRoute: RolesIndexRoute,
-  TransportCardsIndexRoute: TransportCardsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

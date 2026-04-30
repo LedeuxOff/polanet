@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const userData = await authApi.me();
       setUser(userData);
       setToken(storedToken);
-    } catch (error) {
+    } catch {
       localStorage.removeItem("token");
       setToken(null);
       setUser(null);
@@ -54,6 +54,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const userData = await authApi.me();
       setUser(userData);
+
+      // Сохраняем roleId для permission context
+      if (userData?.roleId) {
+        localStorage.setItem("roleId", userData.roleId.toString());
+      }
     } finally {
       setIsLoading(false);
     }
@@ -61,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("roleId");
     setToken(null);
     setUser(null);
   };

@@ -1,37 +1,40 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { useOrdersListPage } from "./hooks";
-import { typeLabels } from "../detail/consts";
 import { statusLabels } from "./consts";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { HomeIcon, TrashIcon, XIcon } from "lucide-react";
+import { HomeIcon, MenuIcon } from "lucide-react";
 import { QuickCreateOrderButton } from "./ui/quick-create-order-button";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
+import { OrdersListFilters } from "./ui/filters";
 
 export const OrdersPage = () => {
   const navigate = useNavigate();
   const { orders, isLoading, filters, updateFilter, clearFilters, hasActiveFilters } =
     useOrdersListPage();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
 
   const columns: ColumnDef<(typeof orders)[0]>[] = [
     {
       accessorKey: "id",
-      header: "№",
-      cell: ({ getValue }) => `#${getValue<number>()}`,
+      header: "№ заявки",
+      cell: ({ getValue }) => `№ ${getValue<number>()}`,
     },
     {
-      accessorKey: "type",
-      header: "Тип",
-      cell: ({ getValue }) => typeLabels[getValue<string>()] || getValue<string>(),
+      accessorKey: "clientName",
+      header: "Клиент",
+      cell: ({ getValue }) => {
+        const clientName = getValue<string | null>();
+        return clientName ? (
+          <span className="font-medium">{clientName}</span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        );
+      },
     },
     {
       accessorKey: "address",
@@ -113,7 +116,7 @@ export const OrdersPage = () => {
   ];
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 pb-32">
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-2">
@@ -128,112 +131,12 @@ export const OrdersPage = () => {
 
       <Card>
         <CardHeader>
-          <div className="flex gap-2 items-end">
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 flex-1">
-              {/* Поиск по номеру */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Поиск по №</label>
-                <Input
-                  type="number"
-                  placeholder="Введите номер"
-                  value={filters.id}
-                  onChange={(e) => updateFilter("id", e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      (e.target as HTMLInputElement).blur();
-                    }
-                  }}
-                />
-              </div>
-
-              {/* Фильтр по статусу */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Статус</label>
-                <Select
-                  value={filters.status}
-                  onValueChange={(value) => updateFilter("status", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Все статусы" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Все статусы</SelectItem>
-                    {Object.entries(statusLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Фильтр по долгу клиента */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Долг клиента</label>
-                <Select
-                  value={filters.customerDebt}
-                  onValueChange={(value) => updateFilter("customerDebt", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Все" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Все</SelectItem>
-                    <SelectItem value="has">Есть долг</SelectItem>
-                    <SelectItem value="none">Нет долга</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Фильтр по долгу компании */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Долг компании</label>
-                <Select
-                  value={filters.companyDebt}
-                  onValueChange={(value) => updateFilter("companyDebt", value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Все" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Все</SelectItem>
-                    <SelectItem value="has">Есть долг</SelectItem>
-                    <SelectItem value="none">Нет долга</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Фильтр по дате от */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Дата от</label>
-                <Input
-                  type="date"
-                  value={filters.dateFrom}
-                  onChange={(e) => updateFilter("dateFrom", e.target.value)}
-                />
-              </div>
-
-              {/* Фильтр по дату */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Дата до</label>
-                <Input
-                  type="date"
-                  value={filters.dateTo}
-                  onChange={(e) => updateFilter("dateTo", e.target.value)}
-                />
-              </div>
-            </div>
-            {hasActiveFilters && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearFilters}
-                className="flex justify-center items-center py-5 bg-red-100 text-red-500 hover:bg-red-200 hover:text-red-600 border-0"
-              >
-                <TrashIcon className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
+          <OrdersListFilters
+            filters={filters}
+            clearFilters={clearFilters}
+            hasActiveFilters={hasActiveFilters}
+            updateFilter={updateFilter}
+          />
         </CardHeader>
       </Card>
 
@@ -257,20 +160,36 @@ export const OrdersPage = () => {
         </CardContent>
       </Card>
 
-      <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
-        <Link to="/">
-          <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
-            <HomeIcon className="w-4 h-4" />
-          </Button>
-        </Link>
+      <div
+        className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+      >
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-2">
+            <Link to="/">
+              <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
+                <HomeIcon className="w-4 h-4" />
+              </Button>
+            </Link>
 
-        <Link to="/orders/new">
-          <Button type="button" className="px-8 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
-            Создать заявку
-          </Button>
-        </Link>
+            {isMobile && (
+              <Button
+                type="button"
+                className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+                onClick={() => setOpen(true)}
+              >
+                <MenuIcon className="w-4 h-4" />
+              </Button>
+            )}
 
-        <QuickCreateOrderButton />
+            <Link to="/orders/new">
+              <Button type="button" className="px-8 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
+                Создать заявку
+              </Button>
+            </Link>
+          </div>
+
+          <QuickCreateOrderButton />
+        </div>
       </div>
     </div>
   );
