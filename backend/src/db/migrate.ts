@@ -23,12 +23,13 @@ if (fs.existsSync(dbPath)) {
 
 const db = new Database(dbPath);
 db.pragma("journal_mode = WAL");
-db.pragma("foreign_keys = ON");
+// Отключаем проверку FK на время миграций
+db.pragma("foreign_keys = OFF");
 
 console.log("Применение миграций...\n");
 
-// Путь к папке миграций
-const migrationsFolder = path.join(__dirname, "../drizzle");
+// Путь к папке миграций (backend/drizzle)
+const migrationsFolder = path.join(__dirname, "../../drizzle");
 console.log(`Папка миграций: ${migrationsFolder}`);
 
 // Проверяем существование папки
@@ -65,5 +66,6 @@ for (const file of files) {
   }
 }
 
+db.pragma("foreign_keys = ON");
 db.close();
 console.log("\nВсе миграции успешно применены!");
