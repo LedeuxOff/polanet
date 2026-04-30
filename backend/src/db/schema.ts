@@ -165,6 +165,9 @@ export const deliveries = sqliteTable("deliveries", {
   })
     .notNull()
     .default(false),
+  // Уведомления
+  notifyClient: integer("notify_client", { mode: "boolean" }).notNull().default(false),
+  notifyDriver: integer("notify_driver", { mode: "boolean" }).notNull().default(false),
   // Статус доставки - in_progress | completed
   status: text("status", {
     enum: ["in_progress", "completed"],

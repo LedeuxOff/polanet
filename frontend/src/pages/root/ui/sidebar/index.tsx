@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { LogOut, UserIcon } from "lucide-react";
 import { APP_VERSION } from "@/lib/api";
 import { menuItems } from "../../consts";
@@ -17,6 +17,7 @@ export const Sidebar = () => {
   // Filter menu items based on permissions
   const { hasPermission } = usePermissions();
   const { navigate, logout, user } = useRootLayout();
+  const currentPath = useLocation();
 
   const filteredMenuItems = menuItems
     .map((menuItem) => ({
@@ -54,10 +55,17 @@ export const Sidebar = () => {
                 <div className="flex flex-col gap-2 border-l pl-2 ml-2 w-full">
                   {menuItem.links.map((link) => {
                     const isActive =
-                      location.pathname === link.url ||
-                      location.pathname.startsWith(`${link.url}/`);
+                      currentPath.pathname === link.url ||
+                      currentPath.pathname.startsWith(`${link.url}/`);
                     return (
-                      <Link key={link.url} to={link.url}>
+                      <Link
+                        key={link.url}
+                        to={link.url}
+                        activeProps={{
+                          className: `bg-blue-50 text-black`,
+                        }}
+                        activeOptions={{ exact: false }}
+                      >
                         <div
                           className={`hover:bg-blue-50 p-2 text-[14px] text-zinc-600 hover:text-black rounded-md relative ${isActive && "bg-blue-50 text-black"}`}
                         >

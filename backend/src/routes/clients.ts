@@ -119,13 +119,42 @@ router.post("/", authenticate, requirePermission("clients:create"), (req: AuthRe
 // Обновить клиента
 router.put("/:id", authenticate, requirePermission("clients:update"), (req: AuthRequest, res) => {
   try {
-    const data = updateClientSchema.parse(req.body);
+    const rawData = req.body;
     const clientId = Number(req.params.id);
 
+    // Поддерживаем оба формата: плоский (payerLastName) и вложенный (payer: { lastName })
     const updateData: Record<string, unknown> = {
-      ...data,
       updatedAt: new Date().toISOString(),
     };
+
+    // Базовые поля
+    if (rawData.type !== undefined) updateData.type = rawData.type;
+    if (rawData.lastName !== undefined) updateData.lastName = rawData.lastName || null;
+    if (rawData.firstName !== undefined) updateData.firstName = rawData.firstName || null;
+    if (rawData.middleName !== undefined) updateData.middleName = rawData.middleName || null;
+    if (rawData.organizationName !== undefined)
+      updateData.organizationName = rawData.organizationName || null;
+    if (rawData.phone !== undefined) updateData.phone = rawData.phone || null;
+    if (rawData.email !== undefined) updateData.email = rawData.email || null;
+
+    // Плательщик - плоский формат
+    if (rawData.payerLastName !== undefined)
+      updateData.payerLastName = rawData.payerLastName || null;
+    if (rawData.payerFirstName !== undefined)
+      updateData.payerFirstName = rawData.payerFirstName || null;
+    if (rawData.payerMiddleName !== undefined)
+      updateData.payerMiddleName = rawData.payerMiddleName || null;
+    if (rawData.payerPhone !== undefined) updateData.payerPhone = rawData.payerPhone || null;
+
+    // Приемщик - плоский формат
+    if (rawData.receiverLastName !== undefined)
+      updateData.receiverLastName = rawData.receiverLastName || null;
+    if (rawData.receiverFirstName !== undefined)
+      updateData.receiverFirstName = rawData.receiverFirstName || null;
+    if (rawData.receiverMiddleName !== undefined)
+      updateData.receiverMiddleName = rawData.receiverMiddleName || null;
+    if (rawData.receiverPhone !== undefined)
+      updateData.receiverPhone = rawData.receiverPhone || null;
 
     db.update(clients).set(updateData).where(eq(clients.id, clientId)).run();
 
@@ -134,9 +163,6 @@ router.put("/:id", authenticate, requirePermission("clients:update"), (req: Auth
     res.json(updatedClient);
   } catch (error) {
     console.error("Error updating client:", error);
-    if (error instanceof Error && error.name === "ZodError") {
-      return res.status(400).json({ error: "Ошибка валидации", details: error });
-    }
     res
       .status(500)
       .json({ error: "Ошибка сервера", details: error instanceof Error ? error.message : error });
