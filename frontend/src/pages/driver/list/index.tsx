@@ -5,28 +5,26 @@ import { Driver } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
+import { HomeIcon, MenuIcon } from "lucide-react";
+import { PermissionGuard } from "@/lib/components/permission-guard";
+import { usePermissions } from "@/lib/contexts/permission-context";
+import { useToast } from "@/lib/contexts/toast-context";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const DriversPage = () => {
   const navigate = useNavigate();
-  const { drivers, isLoading, handleDelete } = useDriversListPage();
+  const { drivers, isLoading } = useDriversListPage();
+  const { hasPermission } = usePermissions();
+  const { showToast } = useToast();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
 
   const columns: ColumnDef<Driver>[] = [
     {
       accessorKey: "lastName",
       header: "Фамилия",
-      cell: ({ row }) => (
-        <button
-          onClick={() =>
-            navigate({
-              to: "/drivers/$driverId",
-              params: { driverId: String(row.original.id) },
-            })
-          }
-          className="inline-flex items-center gap-2 px-2.5 py-1.5 rounded-md border bg-background hover:bg-muted/50 transition-colors shadow-sm text-sm"
-        >
-          <span className="font-medium">{row.getValue("lastName")}</span>
-        </button>
-      ),
+      cell: ({ row }) => row.getValue("lastName"),
     },
     {
       accessorKey: "firstName",
@@ -42,34 +40,73 @@ export const DriversPage = () => {
       header: "Телефон",
       cell: ({ getValue }) => getValue<string>() || "—",
     },
-    {
-      id: "actions",
-      header: "Действия",
-      cell: ({ row }) => (
-        <Button variant="destructive" size="sm" onClick={() => handleDelete(row.original.id)}>
-          Удалить
-        </Button>
-      ),
-    },
   ];
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle>Водители</CardTitle>
-          <Link to="/drivers/new">
-            <Button>Добавить водителя</Button>
+    <PermissionGuard permission="drivers:list">
+      <div className="flex flex-col gap-4">
+        <Card>
+          <CardHeader>
+            <div className="flex flex-col gap-2">
+              <CardTitle>Водители</CardTitle>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-black">Список</span>
+              </div>
+            </div>
+          </CardHeader>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-8">
+            {isLoading ? (
+              <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
+            ) : (
+              <DataTable
+                columns={columns}
+                data={drivers}
+                onRowClick={(row) =>
+                  navigate({ to: "/drivers/$driverId", params: { driverId: row.id.toString() } })
+                }
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        <div
+          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        >
+          <Link to="/">
+            <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
+              <HomeIcon className="w-4 h-4" />
+            </Button>
           </Link>
+
+          {isMobile && (
+            <Button
+              type="button"
+              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              onClick={() => setOpen(true)}
+            >
+              <MenuIcon className="w-4 h-4" />
+            </Button>
+          )}
+
+          <Button
+            type="button"
+            className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
+            onClick={() => {
+              if (!hasPermission("drivers:create")) {
+                showToast("У вас нет прав на создание водителя", "error");
+                return;
+              }
+              navigate({ to: "/drivers/new" });
+            }}
+          >
+            Создать
+          </Button>
         </div>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
-        ) : (
-          <DataTable columns={columns} data={drivers} />
-        )}
-      </CardContent>
-    </Card>
+      </div>
+    </PermissionGuard>
   );
 };

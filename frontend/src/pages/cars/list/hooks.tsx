@@ -21,22 +21,8 @@ export const useCarsListPage = () => {
     loadCars();
   }, []);
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Вы уверены, что хотите удалить этот автомобиль?")) {
-      return;
-    }
-
-    try {
-      await carsApi.delete(id);
-      setCars(cars.filter((c) => c.id !== id));
-    } catch (error) {
-      alert("Ошибка при удалении: " + (error as Error).message);
-    }
-  };
-
   return {
     cars,
-    handleDelete,
     isLoading,
   };
 };

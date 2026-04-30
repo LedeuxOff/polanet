@@ -3,13 +3,10 @@ import { rolesApi } from "@/lib/api/roles-api";
 import { UserForm, userSchema } from "@/lib/types";
 import { Role } from "@/lib/types/role-types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 export const useNewUserPage = () => {
-  const navigate = useNavigate();
-
   const [roles, setRoles] = useState<Role[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,14 +19,16 @@ export const useNewUserPage = () => {
     rolesApi.list().then(setRoles).catch(console.error);
   }, []);
 
-  const onSubmit = async (data: UserForm) => {
+  const onSubmit = async (data: UserForm): Promise<{ success: boolean; error?: string }> => {
     setError(null);
     setIsSubmitting(true);
     try {
       await usersApi.create(data);
-      navigate({ to: "/users" });
+      return { success: true };
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка при создании");
+      const message = err instanceof Error ? err.message : "Ошибка при создании";
+      setError(message);
+      return { success: false, error: message };
     } finally {
       setIsSubmitting(false);
     }

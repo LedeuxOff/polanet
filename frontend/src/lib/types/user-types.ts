@@ -9,8 +9,8 @@ export interface User {
   email: string;
   phone: string | null;
   roleId: number;
-  roleCode?: string;
-  roleName?: string;
+  roleCode: string;
+  roleName: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -39,7 +39,6 @@ export interface RegisterInput {
   birthDate?: string;
   email: string;
   phone?: string;
-  password: string;
   roleId: number;
 }
 
@@ -51,7 +50,6 @@ export const userSchema = z
     birthDate: z.string().optional(),
     email: z.string().email("Неверный формат email"),
     phone: z.string().optional(),
-    password: z.string().min(6, "Пароль должен быть не менее 6 символов"),
     roleId: z.coerce.number().int().positive("Роль обязательна"),
   })
   .transform((data) => ({
@@ -61,7 +59,6 @@ export const userSchema = z
     birthDate: data.birthDate || undefined,
     email: data.email || "",
     phone: data.phone || undefined,
-    password: data.password || "",
     roleId: data.roleId,
   }));
 

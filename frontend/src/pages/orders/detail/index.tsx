@@ -7,11 +7,15 @@ import { OrderPayments } from "./ui/order-payments";
 import { OrderDeliveries } from "./ui/order-deliveries";
 import { OrderHistory } from "./ui/order-history";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, TrashIcon } from "lucide-react";
+import { ChevronLeft, MenuIcon, TrashIcon } from "lucide-react";
 import { useOrderDetailPage } from "./hooks";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const OrderDetailPage = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
   const {
     form,
     handleDelete,
@@ -21,7 +25,6 @@ export const OrderDetailPage = () => {
     originalStatus,
     isSubmitting,
     isLoading,
-    error,
     isDeleting,
     orderId,
     setOrder,
@@ -39,7 +42,7 @@ export const OrderDetailPage = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 pb-32">
       {/* Шапка заявки */}
       <Card>
         <CardHeader>
@@ -48,7 +51,7 @@ export const OrderDetailPage = () => {
       </Card>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="flex gap-6">
+        <div className={`flex ${isMobile ? "flex-col" : "flex-row"} gap-6`}>
           <div className="flex flex-col gap-6 flex-1">
             {/* Основная информация */}
             <Card>
@@ -124,7 +127,9 @@ export const OrderDetailPage = () => {
           </div>
         </div>
 
-        <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
+        <div
+          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        >
           <Button
             type="button"
             disabled={isDeleting || isSubmitting}
@@ -133,6 +138,16 @@ export const OrderDetailPage = () => {
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
+
+          {isMobile && (
+            <Button
+              type="button"
+              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              onClick={() => setOpen(true)}
+            >
+              <MenuIcon className="w-4 h-4" />
+            </Button>
+          )}
 
           {!isNewOrder && order && (
             <Button

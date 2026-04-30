@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 
@@ -17,6 +18,12 @@ import deliveryRoutes from "./routes/deliveries.js";
 import incomeRoutes from "./routes/incomes.js";
 import expenseRoutes from "./routes/expenses.js";
 import backupRoutes from "./routes/backups.js";
+import systemInfoRoutes from "./routes/systemInfo.js";
+import systemLogsRoutes from "./routes/systemLogs.js";
+import permissionsRoutes from "./routes/permissions.js";
+
+// Импорт обработчика ошибок
+import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,6 +49,12 @@ app.use("/api/deliveries", deliveryRoutes);
 app.use("/api/incomes", incomeRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/backups", backupRoutes);
+app.use("/api/system-info", systemInfoRoutes);
+app.use("/api/system-logs", systemLogsRoutes);
+app.use("/api/permissions", permissionsRoutes);
+
+// Глобальный обработчик ошибок (4-argument middleware)
+app.use(errorHandler);
 
 // Запуск автоматического резервного копирования
 startAutoBackup();
@@ -49,4 +62,5 @@ startAutoBackup();
 app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
   console.log(`📍 API доступно на http://localhost:${PORT}/api`);
+  console.log(`📱 SMS_API_ID настроен: ${!!process.env.SMS_API_ID}`);
 });

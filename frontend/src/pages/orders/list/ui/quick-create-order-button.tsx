@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,9 +17,12 @@ import {
 import type { Client } from "@/lib/types";
 import { useNavigate } from "@tanstack/react-router";
 import { clientsApi, ordersApi } from "@/lib/api";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useIsMobile } from "@/hooks";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 
 export function QuickCreateOrderButton() {
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
@@ -38,7 +40,7 @@ export function QuickCreateOrderButton() {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (open) {
       loadClients();
     }
@@ -64,6 +66,55 @@ export function QuickCreateOrderButton() {
       setIsLoading(false);
     }
   };
+
+  if (isMobile) {
+    return (
+      <Drawer open={open} onOpenChange={(value) => setOpen(value)}>
+        <DrawerTrigger>
+          <Button
+            type="button"
+            className="w-full px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
+          >
+            Создать черновик
+          </Button>
+        </DrawerTrigger>
+        <DrawerContent className="">
+          <div className="px-2 flex-1 max-h-[90vh] pb-8">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="client">Клиент</Label>
+                <Select
+                  value={formData.clientId}
+                  onValueChange={(value) => setFormData({ ...formData, clientId: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите клиента" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.map((client) => (
+                      <SelectItem key={client.id} value={String(client.id)}>
+                        {client.type === "legal"
+                          ? client.organizationName
+                          : `${client.lastName} ${client.firstName} ${client.middleName || ""}`.trim()}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex flex-col gap-2 pt-4">
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                  Отмена
+                </Button>
+                <Button type="submit" disabled={isLoading || !formData.clientId}>
+                  {isLoading ? "Создание..." : "Создать"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </DrawerContent>
+      </Drawer>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>

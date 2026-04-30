@@ -15,4 +15,8 @@ export const usersApi = {
       body: JSON.stringify(data),
     }),
   delete: (id: number) => request(`/users/${id}`, { method: "DELETE" }),
+  sendPassword: (id: number) =>
+    request<{ success: boolean; message: string }>(`/users/${id}/send-password`, {
+      method: "POST",
+    }),
 };

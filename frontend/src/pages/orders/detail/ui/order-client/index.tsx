@@ -7,6 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useIsMobile } from "@/hooks";
 import { clientsApi } from "@/lib/api";
 import { Client, OrderForm } from "@/lib/types";
 import { useEffect, useState } from "react";
@@ -20,6 +21,7 @@ interface Props {
 
 export const OrderClient = ({ form, isSubmitting, disabledByStatus }: Props) => {
   const [clients, setClients] = useState<Client[]>([]);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     Promise.all([clientsApi.list().then(setClients).catch(console.error)]).catch(console.error);
@@ -80,7 +82,7 @@ export const OrderClient = ({ form, isSubmitting, disabledByStatus }: Props) => 
       {/* Плательщик */}
       <div>
         <h3 className="text-lg font-semibold mb-3">Плательщик</h3>
-        <div className="grid grid-cols-4 gap-4">
+        <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-4"} gap-4`}>
           <div className="space-y-2">
             <Label htmlFor="payerLastName">Фамилия *</Label>
             <Input
@@ -133,7 +135,7 @@ export const OrderClient = ({ form, isSubmitting, disabledByStatus }: Props) => 
       {/* Приемщик */}
       <div>
         <h3 className="text-lg font-semibold mb-3">Приемщик</h3>
-        <div className="grid grid-cols-4 gap-4">
+        <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-4"} gap-4`}>
           <div className="space-y-2">
             <Label htmlFor="receiverLastName">Фамилия *</Label>
             <Input

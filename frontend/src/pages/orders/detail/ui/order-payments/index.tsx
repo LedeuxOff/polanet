@@ -1,28 +1,19 @@
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Order } from "@/lib/types";
-import { incomeTypeLabels, paymentMethodLabels } from "../../consts";
-import { Dispatch, SetStateAction } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { useOrderPayments } from "./hooks";
-import { OrderPaymentsIncomeList } from "./order-payments-income-list";
+import { useIsMobile } from "@/hooks";
+import { PaymentAddMobileModal } from "./ui/payment-add-mobile-modal";
+import { PaymentAddDesktopModal } from "./ui/payment-add-desktop-modal";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { PaymentItemMobile } from "./ui/payment-item-mobile";
+import { PaymentItemDesktop } from "./ui/payment-item-desktop";
+import { PaymentsPagination } from "./ui/payments-pagination";
 
 interface Props {
   orderId: string;
@@ -30,7 +21,13 @@ interface Props {
   setOrder: Dispatch<SetStateAction<Order | null>>;
 }
 
+const ITEMS_PER_PAGE = 3;
+
 export const OrderPayments = ({ orderId, order, setOrder }: Props) => {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const isMobile = useIsMobile();
+
   const {
     receivedAmount,
     pendingAmount,
@@ -47,10 +44,19 @@ export const OrderPayments = ({ orderId, order, setOrder }: Props) => {
     isAddingIncome,
   } = useOrderPayments({ orderId, order, setOrder });
 
+  const paginatedIncomes = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return incomes.slice(start, start + ITEMS_PER_PAGE);
+  }, [incomes, currentPage]);
+
+  const totalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(incomes.length / ITEMS_PER_PAGE));
+  }, [incomes.length]);
+
   return (
     <>
       <div className="flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
           <div className="border rounded-md p-4">
             <p className="text-sm text-muted-foreground">Получено средств</p>
             <p className="text-2xl font-bold text-green-600">{receivedAmount} ₽</p>
@@ -61,7 +67,7 @@ export const OrderPayments = ({ orderId, order, setOrder }: Props) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
           <div className="border rounded-md p-4">
             <p className="text-sm text-muted-foreground">Долг клиента</p>
             <p className="text-2xl font-bold text-destructive">{customerDebt} ₽</p>
@@ -79,7 +85,32 @@ export const OrderPayments = ({ orderId, order, setOrder }: Props) => {
         </div>
 
         {/* Доходы */}
-        {incomes.length > 0 && <OrderPaymentsIncomeList incomes={incomes} />}
+        {incomes.length > 0 && (
+          <div>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="incomes">
+                <AccordionTrigger className="text-base">Доходы ({incomes.length})</AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-col gap-4">
+                    {paginatedIncomes.map((income) => {
+                      if (isMobile) return <PaymentItemMobile key={income.id} income={income} />;
+
+                      return <PaymentItemDesktop key={income.id} income={income} />;
+                    })}
+                  </div>
+
+                  {totalPages > 1 && (
+                    <PaymentsPagination
+                      currentPage={currentPage}
+                      setCurrentPage={setCurrentPage}
+                      totalPages={totalPages}
+                    />
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        )}
 
         <div className="w-full flex justify-end">
           <Button
@@ -98,56 +129,29 @@ export const OrderPayments = ({ orderId, order, setOrder }: Props) => {
       </div>
 
       {/* Модальное окно добавления дохода */}
-      <Dialog open={showIncomeDialog} onOpenChange={setShowIncomeDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Добавить доход</DialogTitle>
-            <DialogDescription>Заполните данные о доходе</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={incomeForm.handleSubmit(handleAddIncome)} className="space-y-4">
-            {error && (
-              <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
-                {error}
-              </div>
-            )}
+      {isMobile && (
+        <PaymentAddMobileModal
+          showIncomeDialog={showIncomeDialog}
+          setShowIncomeDialog={setShowIncomeDialog}
+          form={incomeForm}
+          handleAddIncome={handleAddIncome}
+          error={error}
+          handleCancelIncome={handleCancelIncome}
+          isAddingIncome={isAddingIncome}
+        />
+      )}
 
-            <div className="space-y-2">
-              <Label htmlFor="incomeType">Тип дохода</Label>
-              <Select disabled defaultValue="prepayment">
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="prepayment">Предоплата</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="incomeAmount">Сумма дохода *</Label>
-              <Input id="incomeAmount" type="number" {...incomeForm.register("amount")} />
-              {incomeForm.formState.errors.amount && (
-                <p className="text-sm text-destructive">
-                  {incomeForm.formState.errors.amount.message}
-                </p>
-              )}
-            </div>
-
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleCancelIncome}>
-                Отмена
-              </Button>
-              <Button
-                type="button"
-                disabled={isAddingIncome}
-                onClick={incomeForm.handleSubmit(handleAddIncome)}
-              >
-                {isAddingIncome ? "Добавление..." : "Добавить"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      {!isMobile && (
+        <PaymentAddDesktopModal
+          showIncomeDialog={showIncomeDialog}
+          setShowIncomeDialog={setShowIncomeDialog}
+          form={incomeForm}
+          handleAddIncome={handleAddIncome}
+          error={error}
+          handleCancelIncome={handleCancelIncome}
+          isAddingIncome={isAddingIncome}
+        />
+      )}
     </>
   );
 };

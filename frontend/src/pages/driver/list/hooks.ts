@@ -21,22 +21,8 @@ export const useDriversListPage = () => {
     loadDrivers();
   }, []);
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Вы уверены, что хотите удалить этого водителя?")) {
-      return;
-    }
-
-    try {
-      await driversApi.delete(id);
-      setDrivers(drivers.filter((d) => d.id !== id));
-    } catch (error) {
-      alert("Ошибка при удалении: " + (error as Error).message);
-    }
-  };
-
   return {
     drivers,
     isLoading,
-    handleDelete,
   };
 };
