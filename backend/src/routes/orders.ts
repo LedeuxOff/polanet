@@ -1,6 +1,14 @@
 import { Router } from "express";
 import { db } from "../db/index.js";
-import { orders, payments, orderHistory, users, deliveries, incomes } from "../db/schema.js";
+import {
+  orders,
+  payments,
+  orderHistory,
+  users,
+  deliveries,
+  incomes,
+  clients,
+} from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { requirePermission } from "../middleware/permissions.js";
 import {
@@ -91,8 +99,13 @@ router.get("/", authenticate, requirePermission("orders:list"), (req: AuthReques
       });
     }
 
-    // Для каждой заявки получаем доходы и вычисляем финансовые значения
+    // Для каждой заявки получаем доходы и вычисляем финансовые значения, а также данные клиента
     const ordersWithFinances = filteredOrders.map((order) => {
+      // Получаем данные клиента
+      const client = order.clientId
+        ? db.select().from(clients).where(eq(clients.id, order.clientId)).get()
+        : null;
+
       // Получаем доходы для заявки
       const orderIncomes = db.select().from(incomes).where(eq(incomes.orderId, order.id)).all();
 
@@ -125,12 +138,30 @@ router.get("/", authenticate, requirePermission("orders:list"), (req: AuthReques
       // Долг компании - сумма предоплат минус оплаченные доставки (компания должна оказать услуги)
       const companyDebt = Math.max(0, prepaymentTotal - deliveryPaymentTotal);
 
+      // Формируем имя клиента: для юрлица - название организации, для физлица - ФИО
+      let clientName: string | null = null;
+      if (client) {
+        if (client.type === "legal" && client.organizationName) {
+          clientName = client.organizationName;
+        } else if (
+          client.type === "individual" &&
+          client.lastName &&
+          client.firstName &&
+          client.middleName
+        ) {
+          clientName = `${client.lastName} ${client.firstName} ${client.middleName}`;
+        } else if (client.type === "individual" && client.lastName && client.firstName) {
+          clientName = `${client.lastName} ${client.firstName}`;
+        }
+      }
+
       return {
         ...order,
         receivedAmount,
         pendingAmount,
         customerDebt,
         companyDebt,
+        clientName,
       };
     });
 

@@ -5,14 +5,18 @@ import { DriverSection } from "./ui/driver-section";
 import { DriveRemoveTransportCardModal } from "./ui/driver-remove-transport-card-modal";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, TrashIcon } from "lucide-react";
+import { ChevronLeft, MenuIcon, TrashIcon } from "lucide-react";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const EditDriverPage = () => {
   const navigate = useNavigate();
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
   const { showToast } = useToast();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
   const {
     isLoading,
     driver,
@@ -72,7 +76,7 @@ export const EditDriverPage = () => {
 
             <div className="flex items-center gap-2">
               <Link to="/drivers" className="text-sm text-muted-foreground">
-                Список водителей
+                Список
               </Link>
 
               <span className="text-sm text-muted-foreground">/</span>
@@ -96,7 +100,7 @@ export const EditDriverPage = () => {
           navigate({ to: "/drivers" });
         })}
       >
-        <div className="flex gap-4">
+        <div className={`flex ${isMobile ? "flex-col" : "flex-row"} gap-4 pb-32`}>
           <div className="flex flex-col gap-4 flex-1">
             <Card>
               <CardHeader>
@@ -135,7 +139,9 @@ export const EditDriverPage = () => {
           </div>
         </div>
 
-        <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
+        <div
+          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        >
           <Button
             type="button"
             disabled={isDeleting || isSubmitting}
@@ -144,6 +150,16 @@ export const EditDriverPage = () => {
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
+
+          {isMobile && (
+            <Button
+              type="button"
+              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              onClick={() => setOpen(true)}
+            >
+              <MenuIcon className="w-4 h-4" />
+            </Button>
+          )}
 
           {driver && (
             <Button

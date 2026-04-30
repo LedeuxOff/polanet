@@ -5,16 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { HomeIcon } from "lucide-react";
+import { HomeIcon, MenuIcon } from "lucide-react";
 import { PermissionGuard } from "@/lib/components/permission-guard";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const TransportCardsPage = () => {
   const navigate = useNavigate();
   const { cards, isLoading } = useTransportCardsListPage();
   const { hasPermission } = usePermissions();
   const { showToast } = useToast();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
 
   const getStatusBadge = (status: string) => {
     if (status === "active") {
@@ -68,7 +72,7 @@ export const TransportCardsPage = () => {
               <CardTitle>Транспортные карты</CardTitle>
 
               <div className="flex items-center gap-2">
-                <span className="text-sm text-black">Список транспортных карт</span>
+                <span className="text-sm text-black">Список</span>
               </div>
             </div>
           </CardHeader>
@@ -94,12 +98,24 @@ export const TransportCardsPage = () => {
           </CardContent>
         </Card>
 
-        <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
+        <div
+          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        >
           <Link to="/">
             <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
               <HomeIcon className="w-4 h-4" />
             </Button>
           </Link>
+
+          {isMobile && (
+            <Button
+              type="button"
+              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              onClick={() => setOpen(true)}
+            >
+              <MenuIcon className="w-4 h-4" />
+            </Button>
+          )}
 
           <Button
             type="button"
@@ -112,7 +128,7 @@ export const TransportCardsPage = () => {
               navigate({ to: "/transport-cards/new" });
             }}
           >
-            Создать карту
+            Создать
           </Button>
         </div>
       </div>

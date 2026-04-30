@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useIsMobile } from "@/hooks";
 import { DriverForm } from "@/lib/types";
 import { UseFormReturn } from "react-hook-form";
 
@@ -9,9 +10,11 @@ interface Props {
 }
 
 export const DriverSection = ({ form, isSubmitting }: Props) => {
+  const isMobile = useIsMobile();
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-3 gap-4">
+      <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-3"} gap-4`}>
         <div className="space-y-2">
           <Label htmlFor="lastName">Фамилия</Label>
           <Input id="lastName" disabled={isSubmitting} {...form.register("lastName")} />

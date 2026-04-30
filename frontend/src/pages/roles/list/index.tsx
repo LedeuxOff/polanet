@@ -5,11 +5,16 @@ import { Role } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
-import { HomeIcon } from "lucide-react";
+import { HomeIcon, MenuIcon } from "lucide-react";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const RolesPage = () => {
   const navigate = useNavigate();
-  const { roles, isLoading, handleDelete, canCreate } = useRolesListPage();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
+
+  const { roles, isLoading, canCreate } = useRolesListPage();
 
   const columns: ColumnDef<Role>[] = [
     {
@@ -54,12 +59,24 @@ export const RolesPage = () => {
         </CardContent>
       </Card>
 
-      <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
+      <div
+        className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+      >
         <Link to="/">
           <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
             <HomeIcon className="w-4 h-4" />
           </Button>
         </Link>
+
+        {isMobile && (
+          <Button
+            type="button"
+            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+            onClick={() => setOpen(true)}
+          >
+            <MenuIcon className="w-4 h-4" />
+          </Button>
+        )}
 
         {canCreate && (
           <Link to="/roles/new">

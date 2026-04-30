@@ -3,10 +3,15 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
-import { HomeIcon, RefreshCw, RotateCcw, Trash2 } from "lucide-react";
+import { HomeIcon, MenuIcon, RotateCcw, Trash2 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const BackupsPage = () => {
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
+
   const {
     backups,
     isLoading,
@@ -103,12 +108,24 @@ export const BackupsPage = () => {
         </CardContent>
       </Card>
 
-      <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
+      <div
+        className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+      >
         <Link to="/">
           <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
             <HomeIcon className="w-4 h-4" />
           </Button>
         </Link>
+
+        {isMobile && (
+          <Button
+            type="button"
+            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+            onClick={() => setOpen(true)}
+          >
+            <MenuIcon className="w-4 h-4" />
+          </Button>
+        )}
 
         {canCreate && (
           <Button

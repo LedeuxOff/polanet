@@ -1,16 +1,17 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { HomeIcon } from "lucide-react";
+import { HomeIcon, MenuIcon } from "lucide-react";
 import { useMoneyStatistic } from "./hooks";
 import { MoneyChart } from "./ui/money-chart";
 import { usePermissions } from "@/lib/contexts/permission-context";
-import { useToast } from "@/lib/contexts/toast-context";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const MoneyStatisticPage = () => {
-  const navigate = useNavigate();
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
-  const { showToast } = useToast();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
   const { isLoading, error, candleData } = useMoneyStatistic();
 
   if (isPermissionsLoading) {
@@ -37,7 +38,7 @@ export const MoneyStatisticPage = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 pb-24">
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-2">
@@ -54,9 +55,13 @@ export const MoneyStatisticPage = () => {
         <CardHeader>
           <CardTitle>Динамика доходов и расходов по месяцам</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-x-auto">
           {error && <div className="text-center text-destructive py-4">{error}</div>}
-          <MoneyChart data={candleData} isLoading={isLoading} />
+
+          <div className="min-w-[900px]">
+            <MoneyChart data={candleData} isLoading={isLoading} />
+          </div>
+
           <div className="flex items-center justify-center gap-6 mt-4 text-sm">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-red-500 rounded"></div>
@@ -70,12 +75,24 @@ export const MoneyStatisticPage = () => {
         </CardContent>
       </Card>
 
-      <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
+      <div
+        className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+      >
         <Link to="/">
           <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
             <HomeIcon className="w-4 h-4" />
           </Button>
         </Link>
+
+        {isMobile && (
+          <Button
+            type="button"
+            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+            onClick={() => setOpen(true)}
+          >
+            <MenuIcon className="w-4 h-4" />
+          </Button>
+        )}
       </div>
     </div>
   );

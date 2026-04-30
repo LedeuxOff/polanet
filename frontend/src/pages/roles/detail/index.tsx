@@ -5,13 +5,17 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
-import { ChevronLeft, TrashIcon, SaveIcon } from "lucide-react";
+import { ChevronLeft, TrashIcon, SaveIcon, MenuIcon } from "lucide-react";
 import { useState } from "react";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const EditRolePage = () => {
   const { roleId: roleIdStr } = useParams({ from: "/roles/$roleId" });
   const roleId = parseInt(roleIdStr);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
   const [showPermissions, setShowPermissions] = useState(false);
   const {
     isLoading,
@@ -167,44 +171,59 @@ export const EditRolePage = () => {
           </div>
         </div>
 
-        <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
-          <Button
-            type="button"
-            disabled={isSubmitting}
-            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
-            onClick={() => navigate({ to: "/roles" })}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
+        <div
+          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        >
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                disabled={isSubmitting}
+                className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+                onClick={() => navigate({ to: "/roles" })}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
 
-          {role && canDelete && (
+              {isMobile && (
+                <Button
+                  type="button"
+                  className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+                  onClick={() => setOpen(true)}
+                >
+                  <MenuIcon className="w-4 h-4" />
+                </Button>
+              )}
+
+              {role && canDelete && (
+                <Button
+                  type="button"
+                  className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+                  onClick={handleDelete}
+                  disabled={isDeleting || isSubmitting}
+                >
+                  <TrashIcon className="w-4 h-4" />
+                </Button>
+              )}
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
+              >
+                {isSubmitting ? "Сохранение..." : "Сохранить"}
+              </Button>
+            </div>
+
             <Button
               type="button"
-              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
-              onClick={handleDelete}
-              disabled={isDeleting || isSubmitting}
+              onClick={handleSavePermissions}
+              disabled={isSavingPermissions || isSubmitting}
+              className="px-6 py-4 bg-green-600 rounded-md hover:bg-green-700"
             >
-              <TrashIcon className="w-4 h-4" />
+              <SaveIcon className="w-4 h-4 mr-2" />
+              {isSavingPermissions ? "Сохранение..." : "Сохранить права"}
             </Button>
-          )}
-
-          <Button
-            type="button"
-            onClick={handleSavePermissions}
-            disabled={isSavingPermissions || isSubmitting}
-            className="px-6 py-4 bg-green-600 rounded-md hover:bg-green-700"
-          >
-            <SaveIcon className="w-4 h-4 mr-2" />
-            {isSavingPermissions ? "Сохранение..." : "Сохранить права"}
-          </Button>
-
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
-          >
-            {isSubmitting ? "Сохранение..." : "Сохранить"}
-          </Button>
+          </div>
         </div>
       </form>
     </div>

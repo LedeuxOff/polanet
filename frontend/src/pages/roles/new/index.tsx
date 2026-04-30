@@ -4,10 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, MenuIcon } from "lucide-react";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const NewRolePage = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
   const { form, isSubmitting, onSubmit } = useNewRolePage();
 
   return (
@@ -68,7 +72,9 @@ export const NewRolePage = () => {
           </div>
         </div>
 
-        <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
+        <div
+          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        >
           <Button
             type="button"
             disabled={isSubmitting}
@@ -77,6 +83,16 @@ export const NewRolePage = () => {
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
+
+          {isMobile && (
+            <Button
+              type="button"
+              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              onClick={() => setOpen(true)}
+            >
+              <MenuIcon className="w-4 h-4" />
+            </Button>
+          )}
 
           <Button
             type="submit"

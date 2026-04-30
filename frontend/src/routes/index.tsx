@@ -3,6 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
+import { MenuIcon } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -10,6 +13,8 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -46,6 +51,20 @@ function Index() {
           <p className="text-muted-foreground">В разработке...</p>
         </CardContent>
       </Card>
+
+      {isMobile && (
+        <div
+          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        >
+          <Button
+            type="button"
+            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900 flex gap-2"
+            onClick={() => setOpen(true)}
+          >
+            <MenuIcon className="w-4 h-4" /> Меню
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

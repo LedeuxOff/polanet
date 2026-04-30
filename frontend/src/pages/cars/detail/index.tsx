@@ -4,14 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { ChevronLeft, TrashIcon } from "lucide-react";
+import { ChevronLeft, MenuIcon, TrashIcon } from "lucide-react";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const EditCarPage = () => {
   const navigate = useNavigate();
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
   const { showToast } = useToast();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
   const { isLoading, car, handleDelete, isDeleting, form, onSubmit, error, isSubmitting } =
     useCarDetailPage();
 
@@ -57,7 +61,7 @@ export const EditCarPage = () => {
 
             <div className="flex items-center gap-2">
               <Link to="/cars" className="text-sm text-muted-foreground">
-                Список автомобилей
+                Список
               </Link>
 
               <span className="text-sm text-muted-foreground">/</span>
@@ -85,7 +89,7 @@ export const EditCarPage = () => {
               <CardHeader>
                 <CardTitle>Основная информация</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col gap-2">
                 <div className="space-y-2">
                   <Label htmlFor="brand">Марка</Label>
                   <Input id="brand" disabled={isSubmitting} {...form.register("brand")} />
@@ -114,7 +118,9 @@ export const EditCarPage = () => {
           </div>
         </div>
 
-        <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
+        <div
+          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        >
           <Button
             type="button"
             disabled={isDeleting || isSubmitting}
@@ -123,6 +129,16 @@ export const EditCarPage = () => {
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
+
+          {isMobile && (
+            <Button
+              type="button"
+              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              onClick={() => setOpen(true)}
+            >
+              <MenuIcon className="w-4 h-4" />
+            </Button>
+          )}
 
           {car && (
             <Button

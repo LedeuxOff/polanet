@@ -26,6 +26,7 @@ export interface Order {
   pendingAmount?: number;
   customerDebt?: number;
   companyDebt?: number;
+  clientName?: string | null;
   history?: OrderHistory[];
 }
 
@@ -102,6 +103,31 @@ export const statusLabels: Record<string, string> = {
 };
 
 // Получить доступные следующие статусы для данного статуса
-export function getAvailableStatusTransitions(currentStatus: string): string[] {
+export function getAvailableStatusTransitions(currentStatus: string | undefined): string[] {
+  if (!currentStatus) {
+    return ["draft", "new"];
+  }
   return orderStatusTransitions[currentStatus] || [];
 }
+
+export const newOrderSchema = z.object({
+  type: z.enum(["delivery", "pickup"]),
+  address: z.string().min(1, "Адрес обязателен"),
+  payerLastName: z.string().min(1, "Фамилия плательщика обязательна"),
+  payerFirstName: z.string().min(1, "Имя плательщика обязательно"),
+  payerMiddleName: z.string().optional(),
+  payerPhone: z.string().optional(),
+  receiverLastName: z.string().min(1, "Фамилия приемщика обязательна"),
+  receiverFirstName: z.string().min(1, "Имя приемщика обязательно"),
+  receiverMiddleName: z.string().optional(),
+  receiverPhone: z.string().optional(),
+  dateTime: z.string().min(1, "Дата и время обязательны"),
+  hasPass: z.boolean().default(false),
+  addressComment: z.string().optional(),
+  status: z.enum(["new", "in_progress", "completed", "cancelled", "archived", "draft"]),
+  clientId: z.coerce.number().optional().nullable(),
+  driverId: z.coerce.number().optional().nullable(),
+  carId: z.coerce.number().optional().nullable(),
+});
+
+export type NewOrderForm = z.infer<typeof newOrderSchema>;

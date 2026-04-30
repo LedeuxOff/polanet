@@ -5,16 +5,20 @@ import { Button } from "@/components/ui/button";
 import { TransportCardMainInfo } from "./ui/transport-card-main-info";
 import { TransportCardExpenses } from "./ui/transport-card-expenses";
 import { TransportCardHistory } from "./ui/transport-card-history";
-import { ChevronLeft, TrashIcon } from "lucide-react";
+import { ChevronLeft, MenuIcon, TrashIcon } from "lucide-react";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const TransportCardDetailPage = () => {
   const navigate = useNavigate();
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
   const { showToast } = useToast();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
 
   // Проверяем, является ли пользователь администратором или разработчиком
   const isRoleAdminOrDeveloper = user?.roleCode === "ADMIN" || user?.roleCode === "DEVELOPER";
@@ -86,12 +90,12 @@ export const TransportCardDetailPage = () => {
 
             <div className="flex items-center gap-2">
               <Link to="/transport-cards" className="text-sm text-muted-foreground">
-                Список транспортных карт
+                Список
               </Link>
 
               <span className="text-sm text-muted-foreground">/</span>
 
-              <span className="text-sm text-black">Транспортная карта №{card?.cardNumber}</span>
+              <span className="text-sm text-black">Карта №{card?.cardNumber}</span>
             </div>
           </div>
         </CardHeader>
@@ -107,8 +111,9 @@ export const TransportCardDetailPage = () => {
           showToast("Транспортная карта успешно сохранена", "success");
           navigate({ to: "/transport-cards" });
         })}
+        className="pb-24"
       >
-        <div className="flex gap-4">
+        <div className={`flex ${isMobile ? "flex-col" : "flex-row"} gap-4`}>
           <div className="flex flex-col gap-4 flex-1">
             <Card>
               <CardHeader>
@@ -167,7 +172,9 @@ export const TransportCardDetailPage = () => {
           </div>
         </div>
 
-        <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
+        <div
+          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        >
           <Button
             type="button"
             disabled={isDeleting || isSubmitting}
@@ -177,10 +184,20 @@ export const TransportCardDetailPage = () => {
             <ChevronLeft className="w-4 h-4" />
           </Button>
 
+          {isMobile && (
+            <Button
+              type="button"
+              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              onClick={() => setOpen(true)}
+            >
+              <MenuIcon className="w-4 h-4" />
+            </Button>
+          )}
+
           {card && (
             <Button
               type="button"
-              className="px-3 py-4 bg-red-600 rounded-md hover:bg-red-700"
+              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
               onClick={() => {
                 if (!hasPermission("transport-cards:delete")) {
                   showToast("У вас нет прав на удаление карты", "error");

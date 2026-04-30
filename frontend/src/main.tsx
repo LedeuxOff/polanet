@@ -5,6 +5,7 @@ import { AuthProvider } from "./lib/contexts/auth-context";
 import { PermissionProvider } from "./lib/contexts/permission-context";
 import { ToastProvider } from "./lib/contexts/toast-context";
 import "./styles/globals.css";
+import { TabbarProvider } from "./lib/contexts/tabbar-context";
 
 const router = createRouter({
   routeTree,
@@ -20,7 +21,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <AuthProvider>
     <PermissionProvider>
       <ToastProvider>
-        <RouterProvider router={router} />
+        <TabbarProvider>
+          <RouterProvider router={router} />
+        </TabbarProvider>
       </ToastProvider>
     </PermissionProvider>
   </AuthProvider>,

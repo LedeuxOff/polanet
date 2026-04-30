@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useIsMobile } from "@/hooks";
 import { ClientForm } from "@/lib/types";
 import { Dispatch, SetStateAction } from "react";
 import { UseFormReturn } from "react-hook-form";
@@ -20,6 +21,8 @@ interface Props {
 }
 
 export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }: Props) => {
+  const isMobile = useIsMobile();
+
   return (
     <Card>
       <CardHeader>
@@ -51,7 +54,7 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
 
         {clientType === "individual" ? (
           <>
-            <div className="grid grid-cols-3 gap-4">
+            <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-3"} gap-4`}>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Фамилия</Label>
                 <Input id="lastName" disabled={isSubmitting} {...form.register("lastName")} />
@@ -79,7 +82,7 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
             </div>
           </>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2 mt-2">
             <Label htmlFor="organizationName">Название организации</Label>
             <Input
               id="organizationName"
@@ -94,7 +97,7 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} gap-4 mt-2`}>
           <div className="space-y-2">
             <Label htmlFor="phone">Телефон</Label>
             <Input id="phone" disabled={isSubmitting} {...form.register("phone")} />

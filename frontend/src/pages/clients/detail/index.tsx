@@ -5,17 +5,20 @@ import { Button } from "@/components/ui/button";
 import { ClientMainInfo } from "./ui/client-main-info";
 import { ClientPayerInfo } from "./ui/client-payer-info";
 import { ClientReceiverInfo } from "./ui/client-receiver-info";
-import { ChevronLeft, TrashIcon } from "lucide-react";
+import { ChevronLeft, MenuIcon, TrashIcon } from "lucide-react";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
 import { ClientForm } from "@/lib/types";
-import { useState } from "react";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 const ClientDetailContent = () => {
   const navigate = useNavigate();
   const { clientId } = useParams({ from: "/clients/$clientId" });
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
   const { showToast } = useToast();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
   const {
     isLoading,
     client,
@@ -73,7 +76,7 @@ const ClientDetailContent = () => {
 
             <div className="flex items-center gap-2">
               <Link to="/clients" className="text-sm text-muted-foreground">
-                Список клиентов
+                Список
               </Link>
 
               <span className="text-sm text-muted-foreground">/</span>
@@ -88,9 +91,9 @@ const ClientDetailContent = () => {
         </CardHeader>
       </Card>
 
-      <form onSubmit={form.handleSubmit(handleSubmit)}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="pb-24">
         {error && <div className="p-3 bg-red-600 text-white rounded-md text-sm">{error}</div>}
-        <div className="flex gap-4">
+        <div className={`flex ${isMobile ? "flex-col" : "flex-row"} gap-4`}>
           <div className="flex flex-col gap-4 flex-1">
             <ClientMainInfo
               form={form}
@@ -107,7 +110,9 @@ const ClientDetailContent = () => {
           </div>
         </div>
 
-        <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
+        <div
+          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        >
           <Button
             type="button"
             disabled={isDeleting || isSubmitting}
@@ -116,6 +121,16 @@ const ClientDetailContent = () => {
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
+
+          {isMobile && (
+            <Button
+              type="button"
+              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              onClick={() => setOpen(true)}
+            >
+              <MenuIcon className="w-4 h-4" />
+            </Button>
+          )}
 
           {client && (
             <Button

@@ -11,14 +11,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronLeft, Send } from "lucide-react";
+import { ChevronLeft, MenuIcon, Send } from "lucide-react";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const EditUserPage = () => {
   const navigate = useNavigate();
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
   const { showToast } = useToast();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
+
   const {
     isLoading,
     user,
@@ -72,17 +77,19 @@ export const EditUserPage = () => {
           <div className="flex flex-col gap-2">
             <CardTitle>Пользователи</CardTitle>
 
-            <div className="flex items-center gap-2">
-              <Link to="/users" className="text-sm text-muted-foreground">
-                Список пользователей
-              </Link>
+            {!isMobile && (
+              <div className="flex items-center gap-2">
+                <Link to="/users" className="text-sm text-muted-foreground">
+                  Список пользователей
+                </Link>
 
-              <span className="text-sm text-muted-foreground">/</span>
+                <span className="text-sm text-muted-foreground">/</span>
 
-              <span className="text-sm text-black">
-                {user.firstName} {user.lastName}
-              </span>
-            </div>
+                <span className="text-sm text-black">
+                  {user.firstName} {user.lastName}
+                </span>
+              </div>
+            )}
           </div>
         </CardHeader>
       </Card>
@@ -102,14 +109,14 @@ export const EditUserPage = () => {
           }
         })}
       >
-        <div className="flex gap-4">
+        <div className="flex gap-4 pb-32">
           <div className="flex flex-col gap-4 flex-1">
             <Card>
               <CardHeader>
                 <CardTitle>Основная информация</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-3 gap-4">
+                <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-3"} gap-4`}>
                   <div className="space-y-2">
                     <Label htmlFor="lastName">Фамилия *</Label>
                     <Input id="lastName" disabled={isSubmitting} {...form.register("lastName")} />
@@ -140,7 +147,7 @@ export const EditUserPage = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-3"} gap-4`}>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email *</Label>
                     <Input
@@ -202,41 +209,54 @@ export const EditUserPage = () => {
           </div>
         </div>
 
-        <div className="fixed bottom-8 left-1/2 flex flex-col gap-2 p-2 bg-zinc-800/80 rounded-md">
-          <div className="flex gap-2">
+        <div
+          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        >
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                disabled={isSubmitting}
+                className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+                onClick={() => navigate({ to: "/users" })}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+
+              {isMobile && (
+                <Button
+                  type="button"
+                  className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+                  onClick={() => setOpen(true)}
+                >
+                  <MenuIcon className="w-4 h-4" />
+                </Button>
+              )}
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700 flex-1"
+              >
+                {isSubmitting ? "Сохранение..." : "Сохранить"}
+              </Button>
+            </div>
             <Button
               type="button"
-              disabled={isSubmitting}
-              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
-              onClick={() => navigate({ to: "/users" })}
+              disabled={isSendingPassword}
+              onClick={() => {
+                if (!hasPermission("users:sendPassword")) {
+                  showToast("У вас нет прав на отправку пароля", "error");
+                  return;
+                }
+                handleSendPassword();
+              }}
+              className="bg-zinc-800 hover:bg-zinc-900"
             >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700 flex-1"
-            >
-              {isSubmitting ? "Сохранение..." : "Сохранить"}
+              <Send className="w-4 h-4 mr-2" />
+              {isSendingPassword ? "Отправка..." : "Выслать новый пароль"}
             </Button>
           </div>
-
-          <Button
-            type="button"
-            disabled={isSendingPassword}
-            onClick={() => {
-              if (!hasPermission("users:sendPassword")) {
-                showToast("У вас нет прав на отправку пароля", "error");
-                return;
-              }
-              handleSendPassword();
-            }}
-            className="bg-zinc-800 hover:bg-zinc-900"
-          >
-            <Send className="w-4 h-4 mr-2" />
-            {isSendingPassword ? "Отправка..." : "Выслать новый пароль"}
-          </Button>
         </div>
       </form>
     </div>

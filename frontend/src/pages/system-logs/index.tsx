@@ -1,11 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { HomeIcon, RefreshCw, Trash2, AlertTriangle } from "lucide-react";
+import { HomeIcon, RefreshCw, Trash2, AlertTriangle, MenuIcon } from "lucide-react";
 import { useSystemLogs } from "./hooks";
 import { Badge } from "@/components/ui/badge";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const SystemLogsPage = () => {
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
+
   const {
     errors,
     isLoading,
@@ -70,7 +75,9 @@ export const SystemLogsPage = () => {
       {/* Header with refresh */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div
+            className={`flex ${isMobile ? "flex-col gap-2" : "flex-row items-center"} justify-between`}
+          >
             <div className="flex items-center gap-4">
               <CardTitle>Серверные логи</CardTitle>
               {errors.length > 0 && (
@@ -145,13 +152,26 @@ export const SystemLogsPage = () => {
       )}
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-8 left-1/2 flex flex-col gap-2 p-2 bg-zinc-800/80 rounded-md">
+      <div
+        className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+      >
         <div className="flex gap-2">
           <Link to="/">
             <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
               <HomeIcon className="w-4 h-4" />
             </Button>
           </Link>
+
+          {isMobile && (
+            <Button
+              type="button"
+              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              onClick={() => setOpen(true)}
+            >
+              <MenuIcon className="w-4 h-4" />
+            </Button>
+          )}
+
           <Button
             onClick={refresh}
             disabled={isLoading}

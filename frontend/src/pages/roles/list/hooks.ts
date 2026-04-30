@@ -23,27 +23,11 @@ export const useRolesListPage = () => {
     loadRoles();
   }, []);
 
-  const handleDelete = async (id: number) => {
-    if (!confirm("Вы уверены, что хотите удалить эту роль?")) {
-      return;
-    }
-
-    try {
-      await rolesApi.delete(id);
-      setRoles(roles.filter((r) => r.id !== id));
-    } catch (error) {
-      alert("Ошибка при удалении: " + (error as Error).message);
-    }
-  };
-
   const canCreate = hasPermission("roles:create");
-  const canDelete = hasPermission("roles:delete");
 
   return {
     roles,
     isLoading,
-    handleDelete,
     canCreate,
-    canDelete,
   };
 };

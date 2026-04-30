@@ -11,15 +11,20 @@ import {
   CpuIcon,
   DatabaseIcon,
   ServerIcon,
+  MenuIcon,
 } from "lucide-react";
 import { useSystemInfo } from "./hooks";
 import { DonutChart } from "./ui/donut-chart";
 import { DiskChart } from "./ui/disk-chart";
 import { NetworkChart } from "./ui/network-chart";
 import { usePermissions } from "@/lib/contexts/permission-context";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const SystemInfoPage = () => {
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
 
   const {
     cpuUsage,
@@ -106,11 +111,13 @@ export const SystemInfoPage = () => {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 pb-24">
       {/* Header with refresh */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div
+            className={`flex ${isMobile ? "flex-col gap-2" : "flex-row items-center"} justify-between`}
+          >
             <div className="flex items-center gap-2">
               <CardTitle>Информация о системе</CardTitle>
             </div>
@@ -133,7 +140,7 @@ export const SystemInfoPage = () => {
         </CardHeader>
         <CardContent>
           {osInfo ? (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
                 <ServerIcon className="w-5 h-5 text-blue-600" />
                 <div>
@@ -266,12 +273,24 @@ export const SystemInfoPage = () => {
       </div>
 
       {/* Bottom Navigation */}
-      <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
+      <div
+        className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+      >
         <Link to="/">
           <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
             <HomeIcon className="w-4 h-4" />
           </Button>
         </Link>
+
+        {isMobile && (
+          <Button
+            type="button"
+            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+            onClick={() => setOpen(true)}
+          >
+            <MenuIcon className="w-4 h-4" />
+          </Button>
+        )}
 
         <Button
           onClick={refresh}

@@ -4,14 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, MenuIcon } from "lucide-react";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
+import { useIsMobile } from "@/hooks";
+import { useTabbar } from "@/lib/contexts/tabbar-context";
 
 export const NewCarPage = () => {
   const navigate = useNavigate();
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
   const { showToast } = useToast();
+  const isMobile = useIsMobile();
+  const { setOpen } = useTabbar();
   const { form, isSubmitting, onSubmit } = useNewCarPage();
 
   if (isPermissionsLoading) {
@@ -48,12 +52,12 @@ export const NewCarPage = () => {
 
             <div className="flex items-center gap-2">
               <Link to="/cars" className="text-sm text-muted-foreground">
-                Список автомобилей
+                Список
               </Link>
 
               <span className="text-sm text-muted-foreground">/</span>
 
-              <span className="text-sm text-black">Создание автомобиля</span>
+              <span className="text-sm text-black">Создание</span>
             </div>
           </div>
         </CardHeader>
@@ -76,7 +80,7 @@ export const NewCarPage = () => {
               <CardHeader>
                 <CardTitle>Основная информация</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col gap-2">
                 <div className="space-y-2">
                   <Label htmlFor="brand">Марка</Label>
                   <Input id="brand" disabled={isSubmitting} {...form.register("brand")} />
@@ -105,7 +109,9 @@ export const NewCarPage = () => {
           </div>
         </div>
 
-        <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
+        <div
+          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        >
           <Button
             type="button"
             disabled={isSubmitting}
@@ -114,6 +120,16 @@ export const NewCarPage = () => {
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
+
+          {isMobile && (
+            <Button
+              type="button"
+              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              onClick={() => setOpen(true)}
+            >
+              <MenuIcon className="w-4 h-4" />
+            </Button>
+          )}
 
           <Button
             type="submit"
