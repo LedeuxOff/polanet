@@ -41,7 +41,7 @@ export const Sidebar = () => {
 
       <Separator />
 
-      <div className="px-4 flex-1">
+      <div className="px-4 flex-1 overflow-y-auto">
         <Accordion type="multiple" className="w-full" defaultValue={["1"]}>
           {filteredMenuItems.map((menuItem) => (
             <AccordionItem value={menuItem.id} className="border-0">
