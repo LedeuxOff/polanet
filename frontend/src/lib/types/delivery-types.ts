@@ -25,6 +25,47 @@ export interface DeliveryWithIncome extends Delivery {
   income?: Income;
 }
 
+// Расширенный тип для календаря с вложенными объектами
+export interface CalendarDelivery extends Delivery {
+  driver?: {
+    id: number;
+    lastName: string;
+    firstName: string;
+    middleName?: string | null;
+    phone?: string | null;
+  };
+  car?: {
+    id: number;
+    brand: string;
+    licensePlate: string;
+  };
+  order?: {
+    id: number;
+    type: string;
+    address: string;
+    payerLastName: string;
+    payerFirstName: string;
+    payerMiddleName?: string | null;
+    payerPhone?: string | null;
+    receiverLastName: string;
+    receiverFirstName: string;
+    receiverMiddleName?: string | null;
+    receiverPhone?: string | null;
+    clientId?: number | null;
+  };
+  client?: {
+    id: number;
+    type: "individual" | "legal";
+    lastName?: string | null;
+    firstName?: string | null;
+    middleName?: string | null;
+    organizationName?: string | null;
+    phone?: string | null;
+    email?: string | null;
+  };
+  income?: Income;
+}
+
 export interface Income {
   id: number;
   incomeType: "prepayment" | "delivery_payment";
@@ -100,5 +141,3 @@ export const deliverySchema = z.object({
   notifyClient: z.boolean().default(false),
   notifyDriver: z.boolean().default(false),
 });
-
-export type DeliveryForm = z.infer<typeof deliverySchema>;

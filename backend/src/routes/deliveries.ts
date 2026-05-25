@@ -9,7 +9,7 @@ import {
   validateOrderStatusTransition,
   orderStatusTransitions,
 } from "../middleware/validators.js";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { sendClientNotification, sendDriverNotification } from "../services/sms-service.js";
 
 const router = Router();
@@ -35,6 +35,101 @@ async function logOrderHistory(
     })
     .run();
 }
+
+// Получить все доставки с фильтрацией по дате (для календаря)
+router.get(
+  "/calendar",
+  authenticate,
+  requirePermission("deliveries:list"),
+  (req: AuthRequest, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+
+      // Если даты не переданы, используем текущую неделю
+      let startDt: string;
+      let endDt: string;
+
+      if (startDate && endDate) {
+        startDt = startDate as string;
+        endDt = endDate as string;
+      } else {
+        // Текущая неделя (понедельник - воскресенье)
+        const now = new Date();
+        const dayOfWeek = now.getDay();
+        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        const monday = new Date(now);
+        monday.setDate(now.getDate() + mondayOffset);
+        monday.setHours(0, 0, 0, 0);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        sunday.setHours(23, 59, 59, 999);
+
+        startDt = monday.toISOString().split("T")[0];
+        endDt = sunday.toISOString().split("T")[0];
+      }
+
+      // Получаем все доставки с фильтрацией по дате
+      const allDeliveries = db
+        .select({
+          id: deliveries.id,
+          orderId: deliveries.orderId,
+          driverId: deliveries.driverId,
+          carId: deliveries.carId,
+          dateTime: deliveries.dateTime,
+          volume: deliveries.volume,
+          comment: deliveries.comment,
+          paymentMethod: deliveries.paymentMethod,
+          isPaymentBeforeUnloading: deliveries.isPaymentBeforeUnloading,
+          notifyClient: deliveries.notifyClient,
+          notifyDriver: deliveries.notifyDriver,
+          status: deliveries.status,
+          incomeId: deliveries.incomeId,
+          createdAt: deliveries.createdAt,
+          updatedAt: deliveries.updatedAt,
+        })
+        .from(deliveries)
+        .where(
+          and(gte(deliveries.dateTime, startDt), lte(deliveries.dateTime, endDt + " 23:59:59")),
+        )
+        .orderBy(deliveries.dateTime)
+        .all();
+
+      // Для каждой доставки получаем водителя, автомобиль, заказ и клиента
+      const deliveriesWithDetails = allDeliveries.map((delivery: any) => {
+        const driver = db.select().from(drivers).where(eq(drivers.id, delivery.driverId)).get();
+        const car = db.select().from(cars).where(eq(cars.id, delivery.carId)).get();
+        const order = db.select().from(orders).where(eq(orders.id, delivery.orderId)).get();
+
+        let client = null;
+        if (order?.clientId) {
+          client = db.select().from(clients).where(eq(clients.id, order.clientId)).get();
+        }
+
+        let income = null;
+        if (delivery.incomeId) {
+          income = db.select().from(incomes).where(eq(incomes.id, delivery.incomeId)).get();
+        }
+
+        return {
+          ...delivery,
+          driver,
+          car,
+          order,
+          client,
+          income,
+        };
+      });
+
+      res.json(deliveriesWithDetails);
+    } catch (error) {
+      console.error("Error getting calendar deliveries:", error);
+      res.status(500).json({
+        error: "Ошибка сервера",
+        details: error instanceof Error ? error.message : error,
+      });
+    }
+  },
+);
 
 // Получить все доставки для заявки
 router.get(

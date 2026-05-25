@@ -1,4 +1,4 @@
-import { BarChartIcon, Home, MonitorIcon, SettingsIcon } from "lucide-react";
+import { BarChartIcon, CalendarIcon, Home, MonitorIcon, SettingsIcon } from "lucide-react";
 
 export interface MenuItem {
   title: string;
@@ -52,6 +52,11 @@ export const menuItems: MenuItem[] = [
         title: "Транспортные карты",
         url: "/transport-cards",
         permission: "transport-cards:list",
+      },
+      {
+        title: "Календарь",
+        url: "/calendar",
+        permission: "deliveries:list",
       },
     ],
   },

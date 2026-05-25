@@ -27,9 +27,32 @@ import { errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const isProduction = process.env.NODE_ENV === "production";
+const corsOrigin = process.env.CORS_ORIGIN || "*";
 
-app.use(cors());
+// CORS configuration
+app.use(
+  cors({
+    origin: corsOrigin,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-App-Version"],
+  }),
+);
+
 app.use(express.json());
+
+// Serve built frontend in production
+if (isProduction) {
+  const path = await import("path");
+  const frontendDist = path.join(__dirname, "../../frontend/dist");
+  app.use(express.static(frontendDist));
+
+  // Serve index.html for all other routes (SPA fallback)
+  app.get("*", (_req, res) => {
+    res.sendFile(path.join(frontendDist, "index.html"));
+  });
+}
 
 // Health check
 app.get("/api/health", (req, res) => {

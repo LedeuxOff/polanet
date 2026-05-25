@@ -17,6 +17,7 @@ import { Route as RolesRouteImport } from './routes/roles'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DriversRouteImport } from './routes/drivers'
 import { Route as CarsRouteImport } from './routes/cars'
+import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as BackupsRouteImport } from './routes/backups'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UsersIndexRouteImport } from './routes/users/index'
@@ -83,6 +84,11 @@ const DriversRoute = DriversRouteImport.update({
 const CarsRoute = CarsRouteImport.update({
   id: '/cars',
   path: '/cars',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CalendarRoute = CalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BackupsRoute = BackupsRouteImport.update({
@@ -224,6 +230,7 @@ const CarsCarIdRoute = CarsCarIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/backups': typeof BackupsRouteWithChildren
+  '/calendar': typeof CalendarRoute
   '/cars': typeof CarsRouteWithChildren
   '/drivers': typeof DriversRouteWithChildren
   '/login': typeof LoginRoute
@@ -260,6 +267,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/calendar': typeof CalendarRoute
   '/login': typeof LoginRoute
   '/cars/$carId': typeof CarsCarIdRoute
   '/cars/new': typeof CarsNewRoute
@@ -291,6 +299,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/backups': typeof BackupsRouteWithChildren
+  '/calendar': typeof CalendarRoute
   '/cars': typeof CarsRouteWithChildren
   '/drivers': typeof DriversRouteWithChildren
   '/login': typeof LoginRoute
@@ -330,6 +339,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/backups'
+    | '/calendar'
     | '/cars'
     | '/drivers'
     | '/login'
@@ -366,6 +376,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/calendar'
     | '/login'
     | '/cars/$carId'
     | '/cars/new'
@@ -396,6 +407,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/backups'
+    | '/calendar'
     | '/cars'
     | '/drivers'
     | '/login'
@@ -434,6 +446,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BackupsRoute: typeof BackupsRouteWithChildren
+  CalendarRoute: typeof CalendarRoute
   CarsRoute: typeof CarsRouteWithChildren
   DriversRoute: typeof DriversRouteWithChildren
   LoginRoute: typeof LoginRoute
@@ -507,6 +520,13 @@ declare module '@tanstack/react-router' {
       path: '/cars'
       fullPath: '/cars'
       preLoaderRoute: typeof CarsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/calendar': {
+      id: '/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof CalendarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/backups': {
@@ -812,6 +832,7 @@ const UsersRouteWithChildren = UsersRoute._addFileChildren(UsersRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BackupsRoute: BackupsRouteWithChildren,
+  CalendarRoute: CalendarRoute,
   CarsRoute: CarsRouteWithChildren,
   DriversRoute: DriversRouteWithChildren,
   LoginRoute: LoginRoute,

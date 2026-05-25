@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { db } from "../db";
-import { permissions, rolePermissions } from "../db/schema";
+import { db } from "../db/index.js";
+import { permissions, rolePermissions } from "../db/schema.js";
 import { eq, and, or } from "drizzle-orm";
 
 export interface AuthRequest extends Request {
