@@ -1,7 +1,7 @@
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
 import { useEffect, useState } from "react";
-import { useCalendar } from "../../hooks";
+import { HOURS, useCalendar } from "../../hooks";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Drawer,
@@ -15,6 +15,36 @@ import { CalendarIcon, HomeIcon, MenuIcon } from "lucide-react";
 import { DatePicker } from "./date-picker";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
+import type { CalendarDelivery } from "@/lib/types";
+
+// Компонент блока доставки для мобильной версии
+interface DeliveryBlockProps {
+  delivery: CalendarDelivery;
+  time: string;
+}
+
+function DeliveryBlock({ delivery, time }: DeliveryBlockProps) {
+  const driverName = delivery.driver
+    ? `${delivery.driver.lastName} ${delivery.driver.firstName}`.trim()
+    : "Не указан";
+
+  const carInfo = delivery.car ? `${delivery.car.brand} (${delivery.car.licensePlate})` : "";
+
+  const clientName = delivery.client
+    ? `${delivery.client.firstName || ""} ${delivery.client.lastName || ""} ${delivery.client.organizationName || ""}`.trim()
+    : delivery.order?.payerLastName
+      ? `${delivery.order.payerLastName} ${delivery.order.payerFirstName}`
+      : "Клиент не указан";
+
+  return (
+    <div className="bg-blue-100 border-l-4 border-blue-500 rounded p-2 mb-1 text-xs cursor-pointer hover:bg-blue-200 transition-colors">
+      <div className="font-medium text-blue-900">{time}</div>
+      <div className="text-blue-800 truncate">{driverName}</div>
+      {carInfo && <div className="text-blue-700 truncate">{carInfo}</div>}
+      <div className="text-blue-700 truncate">{clientName}</div>
+    </div>
+  );
+}
 
 // Mobile версия календаря
 export const CalendarMobile = () => {
@@ -46,6 +76,12 @@ export const CalendarMobile = () => {
     })
     .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
 
+  // Группируем доставки по часам
+  const deliveriesByHour: Record<number, CalendarDelivery[]> = {};
+  HOURS.forEach((hour) => {
+    deliveriesByHour[hour] = dayDeliveries.filter((d) => new Date(d.dateTime).getHours() === hour);
+  });
+
   const formatDate = (date: Date) => {
     const options: Intl.DateTimeFormatOptions = {
       day: "numeric",
@@ -55,24 +91,22 @@ export const CalendarMobile = () => {
     return date.toLocaleDateString("ru-RU", options);
   };
 
+  const isToday = (date: Date) => {
+    const today = new Date();
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
+  };
+
   return (
     <div className="space-y-4">
       {/* Заголовок */}
       <Card>
         <CardHeader>
-          {/* Заголовок с навигацией */}
           <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle>Календарь доставок</CardTitle>
-          </div>
-        </CardHeader>
-      </Card>
-
-      {/* Дата */}
-      <Card>
-        <CardHeader>
-          {/* Заголовок с навигацией */}
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <CardTitle>{formatDate(selectedDate)}</CardTitle>
             <Drawer open={isOpen} onOpenChange={setIsOpen}>
               <DrawerTrigger asChild>
                 <Button variant="outline" size="sm">
@@ -96,61 +130,52 @@ export const CalendarMobile = () => {
         </CardHeader>
       </Card>
 
-      {/* Список доставок */}
+      {/* Календарь с колонками времени и даты */}
       {isLoading && <div className="text-center py-8">Загрузка...</div>}
       {error && <div className="text-center py-8 text-red-500">{error}</div>}
 
       {!isLoading && !error && (
-        <div className="space-y-3">
-          {dayDeliveries.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">На эту дату нет доставок</div>
-          ) : (
-            dayDeliveries.map((delivery) => {
-              const driverName = delivery.driver
-                ? `${delivery.driver.lastName} ${delivery.driver.firstName}`.trim()
-                : "Не указан";
+        <div className="border rounded-lg overflow-hidden bg-white">
+          {/* Шапка с датой */}
+          <div className="grid grid-cols-[70px_1fr] border-b bg-zinc-50">
+            <div className="py-2 px-1 text-center text-xs font-medium text-muted-foreground border-r">
+              Время
+            </div>
+            <div
+              className={cn(
+                "p-3 text-center text-sm font-medium border-r",
+                isToday(selectedDate) && "bg-blue-50 text-blue-600",
+              )}
+            >
+              <div>{selectedDate.toLocaleDateString("ru-RU", { weekday: "short" })}</div>
+              <div className={cn("text-lg", isToday(selectedDate) && "font-bold")}>
+                {selectedDate.getDate()}
+              </div>
+            </div>
+          </div>
 
-              const carInfo = delivery.car
-                ? `${delivery.car.brand} (${delivery.car.licensePlate})`
-                : "";
-
-              const clientName = delivery.client
-                ? `${delivery.client.firstName || ""} ${delivery.client.lastName || ""} ${delivery.client.organizationName || ""}`.trim()
-                : delivery.order?.payerLastName
-                  ? `${delivery.order.payerLastName} ${delivery.order.payerFirstName}`
-                  : "Клиент не указан";
-
-              return (
-                <div
-                  key={delivery.id}
-                  className="bg-white rounded-lg p-4 border hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="bg-blue-100 text-blue-800 rounded-lg px-3 py-2 text-center min-w-[60px]">
-                      <div className="text-lg font-bold">{formatTime(delivery.dateTime)}</div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium">{driverName}</div>
-                      {carInfo && <div className="text-sm text-muted-foreground">{carInfo}</div>}
-                      <div className="text-sm text-muted-foreground truncate">{clientName}</div>
-                      <div className="flex gap-2 mt-2">
-                        <span
-                          className={cn(
-                            "text-xs px-2 py-0.5 rounded-full",
-                            delivery.status === "in_progress"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-green-100 text-green-800",
-                          )}
-                        >
-                          {delivery.status === "in_progress" ? "В процессе" : "Завершена"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
+          {/* Часы с доставками */}
+          {HOURS.map((hour) => (
+            <div
+              key={hour}
+              className="grid grid-cols-[70px_1fr] border-b hover:bg-zinc-50 transition-colors"
+            >
+              {/* Ячейка времени */}
+              <div className="p-2 text-center text-xs text-muted-foreground border-r bg-zinc-50 whitespace-nowrap">
+                {hour.toString().padStart(2, "0")}:00
+              </div>
+              {/* Ячейка с доставками */}
+              <div className="p-1 min-h-[60px]">
+                {deliveriesByHour[hour]?.map((delivery) => (
+                  <DeliveryBlock
+                    key={delivery.id}
+                    delivery={delivery}
+                    time={formatTime(delivery.dateTime)}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

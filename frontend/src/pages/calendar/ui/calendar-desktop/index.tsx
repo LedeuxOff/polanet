@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { DAYS_WEEK, HOURS, useCalendar } from "../../hooks";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, HomeIcon, MenuIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, HomeIcon, MenuIcon, PlusIcon, BanIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DeliveryBlock } from "./delivery-block";
 import { Link } from "@tanstack/react-router";
@@ -67,14 +67,19 @@ export const CalendarDesktop = () => {
           <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle>Календарь доставок</CardTitle>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleCurrent}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCurrent}
+                className="bg-blue-500 text-white shadow-none hover:bg-blue-600 hover:text-white"
+              >
                 Сегодня
               </Button>
               <div className="flex items-center gap-1">
                 <Button variant="outline" size="icon" onClick={handlePrevWeek}>
                   <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <span className="text-sm font-medium w-48 text-center">{formatWeekRange}</span>
+                <Button variant="outline">{formatWeekRange}</Button>
                 <Button variant="outline" size="icon" onClick={handleNextWeek}>
                   <ChevronRight className="h-4 w-4" />
                 </Button>
@@ -94,7 +99,7 @@ export const CalendarDesktop = () => {
             <div className="py-2 text-center text-xs font-medium text-muted-foreground border-r whitespace-nowrap">
               Время
             </div>
-            {DAYS_WEEK.map((day) => {
+            {DAYS_WEEK.map((day, dayIndex) => {
               // Вычисляем дату для этого дня
               const date = new Date(selectedDate);
               const currentDay = date.getDay() === 0 ? 6 : date.getDay() - 1;
@@ -108,6 +113,7 @@ export const CalendarDesktop = () => {
                 dayDate.getDate() === today.getDate() &&
                 dayDate.getMonth() === today.getMonth() &&
                 dayDate.getFullYear() === today.getFullYear();
+              const isWeekend = dayIndex === 5 || dayIndex === 6; // Сб, Вс
 
               return (
                 <div
@@ -115,6 +121,7 @@ export const CalendarDesktop = () => {
                   className={cn(
                     "p-3 text-center text-sm font-medium border-r",
                     isToday && "bg-blue-50 text-blue-600",
+                    !isToday && isWeekend && "bg-red-100",
                   )}
                 >
                   <div>{day}</div>
@@ -142,8 +149,40 @@ export const CalendarDesktop = () => {
                   return h === hour;
                 });
 
+                // Вычисляем дату для этой ячейки
+                const date = new Date(selectedDate);
+                const currentDay = date.getDay() === 0 ? 6 : date.getDay() - 1;
+                const targetDay = DAYS_WEEK.indexOf(DAYS_WEEK[dayIndex]);
+                const diff = targetDay - currentDay;
+                const cellDate = new Date(date);
+                cellDate.setDate(date.getDate() + diff);
+                cellDate.setHours(hour, 0, 0, 0);
+
+                const now = new Date();
+                const isPast = cellDate <= now;
+                const hasDelivery = hourDeliveries.length > 0;
+
                 return (
-                  <div key={dayIndex} className="p-1 border-r min-h-[60px] relative">
+                  <div
+                    key={dayIndex}
+                    className={cn(
+                      "p-1 border-r min-h-[60px] relative group",
+                      !hasDelivery &&
+                        !isPast &&
+                        "hover:bg-blue-50 transition-colors cursor-pointer",
+                      !hasDelivery && isPast && "hover:bg-zinc-50 transition-colors",
+                    )}
+                  >
+                    {/* Иконки по центру ячейки (только если нет доставки) */}
+                    {!hasDelivery && (
+                      <div className="absolute inset-0 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {isPast ? (
+                          <BanIcon className="h-12 w-12 text-gray-400/40" />
+                        ) : (
+                          <PlusIcon className="h-12 w-12 text-gray-400/40" />
+                        )}
+                      </div>
+                    )}
                     {hourDeliveries.map((delivery) => (
                       <DeliveryBlock
                         key={delivery.id}
