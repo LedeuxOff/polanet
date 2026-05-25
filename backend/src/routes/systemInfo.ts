@@ -1,7 +1,7 @@
 import { Router } from "express";
 import os from "os";
-import { authenticate } from "../middleware/auth";
-import { requirePermission } from "../middleware/permissions";
+import { authenticate } from "../middleware/auth.js";
+import { requirePermission } from "../middleware/permissions.js";
 import { exec, execSync } from "child_process";
 import { promisify } from "util";
 

@@ -1,13 +1,13 @@
 import { Router, Request, Response } from "express";
-import { authenticate } from "../middleware/auth";
-import { requirePermission } from "../middleware/permissions";
+import { authenticate } from "../middleware/auth.js";
+import { requirePermission } from "../middleware/permissions.js";
 import {
   logError,
   getErrors,
   getErrorsByAppVersion,
   clearErrors,
   type ServerError,
-} from "../services/error-logger";
+} from "../services/error-logger.js";
 
 const router = Router();
 
