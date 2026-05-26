@@ -1,3 +1,2 @@
--- Добавление полей для уведомлений клиентов и водителей
-ALTER TABLE deliveries ADD COLUMN notify_client INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE deliveries ADD COLUMN notify_driver INTEGER NOT NULL DEFAULT 0;
+-- Columns notify_client and notify_driver already exist from 0000_rich_young_avengers.sql
+-- This migration is kept for reference but is now a no-op
