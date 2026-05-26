@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { logError } from "../services/error-logger";
+import { logError } from "../services/error-logger.js";
 
 // Wrapper to catch synchronous errors in route handlers
 export const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => void) => {

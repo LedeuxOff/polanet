@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS users (
   birth_date TEXT,
   email TEXT NOT NULL UNIQUE,
   phone TEXT,
+  telegram_chat_id TEXT,
   password_hash TEXT NOT NULL,
   role_id INTEGER NOT NULL REFERENCES roles(id),
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,

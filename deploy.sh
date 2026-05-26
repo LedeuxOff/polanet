@@ -17,12 +17,19 @@ echo -e "${GREEN}=== Polanet Deployment Script ===${NC}"
 echo -e "Environment: ${YELLOW}${ENVIRONMENT}${NC}"
 
 # Configuration
-PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-BACKEND_DIR="${PROJECT_DIR}/backend"
-FRONTEND_DIR="${PROJECT_DIR}/frontend"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BACKEND_DIR="${SCRIPT_DIR}/backend"
+FRONTEND_DIR="${SCRIPT_DIR}/frontend"
 DEPLOY_USER="deploy"
 DEPLOY_HOST="admin-polanet.ru"
 DEPLOY_PATH="/home/${DEPLOY_USER}/polanet"
+
+# Check required environment files
+if [[ ! -f "${BACKEND_DIR}/.env.production" ]]; then
+    echo -e "${RED}Error: ${BACKEND_DIR}/.env.production not found!${NC}"
+    echo -e "${YELLOW}Please create .env.production from .env.example${NC}"
+    exit 1
+fi
 
 # Check if running on remote server or deploying via SSH
 if [[ "${ENVIRONMENT}" == "local" ]]; then
@@ -59,15 +66,6 @@ if [[ "${ENVIRONMENT}" == "local" ]]; then
     exit 0
 fi
 
-# Remote deployment
-echo -e "${GREEN}Starting remote deployment to ${DEPLOY_HOST}...${NC}"
-
-# Step 1: Ensure .env.production exists
-if [[ ! -f "${BACKEND_DIR}/.env.production" ]]; then
-    echo -e "${RED}Error: ${BACKEND_DIR}/.env.production not found!${NC}"
-    exit 1
-fi
-
 # Step 2: Build frontend
 echo -e "${YELLOW}Building frontend...${NC}"
 cd "${FRONTEND_DIR}"
@@ -92,6 +90,8 @@ scp -r "${FRONTEND_DIR}/dist" ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/front
 scp "${BACKEND_DIR}/package*.json" ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/backend/
 scp "${FRONTEND_DIR}/package*.json" ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/frontend/
 scp "${BACKEND_DIR}/.env.production" ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/backend/.env
+scp "${SCRIPT_DIR}/docker-compose.yml" ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/docker-compose.yml
+scp -r "${SCRIPT_DIR}/nginx" ${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/nginx/
 
 # Step 5: Run remote deployment
 ssh ${DEPLOY_USER}@${DEPLOY_HOST} "cd ${DEPLOY_PATH}/backend && npm ci --production && npm run db:migrate && npm run db:seed"
@@ -99,3 +99,4 @@ ssh ${DEPLOY_USER}@${DEPLOY_HOST} "cd ${DEPLOY_PATH}/backend && npm ci --product
 echo -e "${GREEN}=== Deployment completed! ===${NC}"
 echo -e "Frontend: https://admin-polanet.ru"
 echo -e "Backend API: https://admin-polanet.ru/api"
+echo -e "Telegram Bot: Configure via TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in .env"

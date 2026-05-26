@@ -2,6 +2,51 @@
 
 This guide explains how to deploy the Polanet application to Selectel infrastructure.
 
+## Quick Start
+
+For a fast deployment, follow these steps:
+
+1. **Prepare the server**
+
+   ```bash
+   # Update system and install dependencies
+   sudo apt update && sudo apt upgrade -y
+   sudo apt install -y nodejs docker docker-compose nginx git certbot python3-certbot-nginx
+   ```
+
+2. **Clone and configure**
+
+   ```bash
+   mkdir -p /home/deploy/polanet && cd /home/deploy/polanet
+   git clone https://your-repo-url.git .
+   cp backend/.env.example backend/.env.production
+   # Edit backend/.env.production with your secrets
+   ```
+
+3. **Get Telegram Bot Token (optional)**
+   - Message @BotFather on Telegram
+   - Use `/newbot` to create a bot
+   - Save the token
+
+4. **Deploy**
+
+   ```bash
+   # Get your chat ID from @userinfobot
+   sudo certbot --nginx -d admin-polanet.ru
+   docker compose up -d
+   ```
+
+5. **Verify**
+   ```bash
+   curl http://localhost:3000/api/health
+   ```
+
+For detailed instructions, continue reading this guide.
+
+---
+
+This guide explains how to deploy the Polanet application to Selectel infrastructure.
+
 ## Architecture
 
 ```
@@ -82,6 +127,10 @@ sudo apt install -y curl
    cat > .env << EOF
    JWT_SECRET=your-super-secret-jwt-key-change-this
    SMS_API_KEY=zAmaZKSynfOXAhA7X6WuUZkN14SIe4SxHE1GQ1Gl6EF3MEoshS6MGhY9VooI
+   TELEGRAM_BOT_TOKEN=your-telegram-bot-token
+   TELEGRAM_CHAT_ID=your-telegram-chat-id
+   TELEGRAM_BOT_USERNAME=your-bot-username
+   TELEGRAM_WEBHOOK_URL=https://admin-polanet.ru/api/telegram/webhook
    EOF
    ```
 
@@ -191,16 +240,47 @@ sudo apt install -y curl
 
 ### Backend (.env.production)
 
-| Variable                | Description               | Example                                 |
-| ----------------------- | ------------------------- | --------------------------------------- |
-| `PORT`                  | Backend server port       | `3000`                                  |
-| `JWT_SECRET`            | Secret key for JWT tokens | Generate with `openssl rand -base64 32` |
-| `AUTO_BACKUP`           | Enable auto backup        | `true`                                  |
-| `AUTO_BACKUP_INTERVAL`  | Backup interval in ms     | `3600000` (1 hour)                      |
-| `AUTO_BACKUP_MAX_COUNT` | Max backups to keep       | `24`                                    |
-| `SMS_API_KEY`           | SMS service API key       | From smsgorod.ru                        |
-| `CORS_ORIGIN`           | Allowed origin            | `https://admin-polanet.ru`              |
-| `LOG_LEVEL`             | Logging level             | `error`                                 |
+| Variable                | Description                        | Example                                         |
+| ----------------------- | ---------------------------------- | ----------------------------------------------- |
+| `PORT`                  | Backend server port                | `3000`                                          |
+| `JWT_SECRET`            | Secret key for JWT tokens          | Generate with `openssl rand -base64 32`         |
+| `AUTO_BACKUP`           | Enable auto backup                 | `true`                                          |
+| `AUTO_BACKUP_INTERVAL`  | Backup interval in ms              | `3600000` (1 hour)                              |
+| `AUTO_BACKUP_MAX_COUNT` | Max backups to keep                | `24`                                            |
+| `SMS_API_KEY`           | SMS service API key                | From smsgorod.ru                                |
+| `TELEGRAM_BOT_TOKEN`    | Telegram Bot API token             | From @BotFather                                 |
+| `TELEGRAM_CHAT_ID`      | Telegram chat ID for notifications | From @userinfobot                               |
+| `TELEGRAM_BOT_USERNAME` | Telegram bot username              | From @BotFather                                 |
+| `TELEGRAM_WEBHOOK_URL`  | Telegram webhook URL               | `https://admin-polanet.ru/api/telegram/webhook` |
+| `CORS_ORIGIN`           | Allowed origin                     | `https://admin-polanet.ru`                      |
+| `LOG_LEVEL`             | Logging level                      | `error`                                         |
+
+## Telegram Bot Setup
+
+To enable Telegram notifications for deliveries, orders, and system events:
+
+1. **Create a Telegram Bot**
+   - Open Telegram and search for @BotFather
+   - Use `/newbot` command and follow instructions
+   - Save the bot token (e.g., `123456789:ABCdefGHIjklMNOpqrsTUVwxyz`)
+
+2. **Get Your Chat ID**
+   - Search for @userinfobot in Telegram
+   - Start the bot and get your chat ID (e.g., `123456789`)
+
+3. **Configure Environment Variables**
+   - Add the following to `.env` or `docker-compose.yml`:
+
+   ```bash
+   TELEGRAM_BOT_TOKEN=your-bot-token
+   TELEGRAM_CHAT_ID=your-chat-id
+   TELEGRAM_BOT_USERNAME=your-bot-username
+   TELEGRAM_WEBHOOK_URL=https://admin-polanet.ru/api/telegram/webhook
+   ```
+
+4. **Set Webhook**
+   - The application will automatically set the webhook on startup
+   - Verify webhook is set: `curl https://admin-polanet.ru/api/telegram/webhook`
 
 ## SSL Certificate Setup
 
