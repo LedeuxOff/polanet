@@ -15,9 +15,8 @@ RUN npm ci
 # Copy backend source code
 COPY . .
 
-# Copy frontend dist (from sibling directory - need to copy from build context)
-# First, let's create the frontend directory structure
-RUN mkdir -p frontend/dist
+# Build TypeScript
+RUN npm run build
 
 # Production stage
 FROM node:20-alpine
@@ -37,11 +36,8 @@ RUN npm ci --omit=dev --ignore-scripts && \
 # Copy built backend
 COPY --from=builder /app/dist ./dist
 
-# Create frontend directory (will be populated by docker build or runtime)
-RUN mkdir -p frontend/dist
-
-# Create data directory for SQLite
-RUN mkdir -p data && chmod 777 data
+# Create frontend and data directories (will be populated at runtime if needed)
+RUN mkdir -p frontend/dist data && chmod 777 data frontend/dist
 
 # Expose port
 EXPOSE 3000
