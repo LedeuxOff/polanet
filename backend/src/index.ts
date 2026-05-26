@@ -43,31 +43,12 @@ app.use(
 
 app.use(express.json());
 
-// Serve built frontend in production
-if (isProduction) {
-  const path = await import("path");
-  const fs = await import("fs");
-  const url = await import("url");
-  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-  const frontendDist = path.join(__dirname, "../frontend/dist");
-
-  // Only serve frontend if it exists
-  if (fs.existsSync(frontendDist)) {
-    app.use(express.static(frontendDist));
-
-    // Serve index.html for all other routes (SPA fallback)
-    app.get("*", (_req, res) => {
-      res.sendFile(path.join(frontendDist, "index.html"));
-    });
-  }
-}
-
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// API роуты
+// API роуты (должны быть перед статическими файлами!)
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/roles", roleRoutes);
@@ -96,6 +77,25 @@ app.post("/api/telegram/webhook", async (req, res) => {
     res.status(500).json({ error: "Ошибка обработки webhook" });
   }
 });
+
+// Serve built frontend in production (после API роутов!)
+if (isProduction) {
+  const path = await import("path");
+  const fs = await import("fs");
+  const url = await import("url");
+  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+  const frontendDist = path.join(__dirname, "../frontend/dist");
+
+  // Only serve frontend if it exists
+  if (fs.existsSync(frontendDist)) {
+    app.use(express.static(frontendDist));
+
+    // Serve index.html for all other routes (SPA fallback)
+    app.get("*", (_req, res) => {
+      res.sendFile(path.join(frontendDist, "index.html"));
+    });
+  }
+}
 
 // Глобальный обработчик ошибок (4-argument middleware)
 app.use(errorHandler);
