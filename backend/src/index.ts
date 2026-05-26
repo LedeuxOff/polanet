@@ -46,6 +46,8 @@ app.use(express.json());
 // Serve built frontend in production
 if (isProduction) {
   const path = await import("path");
+  const url = await import("url");
+  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
   const frontendDist = path.join(__dirname, "../../frontend/dist");
   app.use(express.static(frontendDist));
 
