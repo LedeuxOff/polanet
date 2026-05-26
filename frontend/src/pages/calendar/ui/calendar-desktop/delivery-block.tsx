@@ -1,10 +1,13 @@
 import { CalendarDelivery } from "@/lib/types";
+import { GripVertical } from "lucide-react";
 
 // Компонент блока доставки
 interface DeliveryBlockProps {
   delivery: CalendarDelivery;
   time: string;
   onEdit?: (delivery: CalendarDelivery) => void;
+  onDragStart?: (delivery: CalendarDelivery) => void;
+  isDragDisabled?: boolean;
 }
 
 const getStatusLabel = (status: string): string => {
@@ -46,7 +49,13 @@ const getStatusColors = (
   }
 };
 
-export const DeliveryBlock = ({ delivery, time, onEdit }: DeliveryBlockProps) => {
+export const DeliveryBlock = ({
+  delivery,
+  time,
+  onEdit,
+  onDragStart,
+  isDragDisabled = false,
+}: DeliveryBlockProps) => {
   const driverName = delivery.driver
     ? `${delivery.driver.lastName} ${delivery.driver.firstName}`.trim()
     : "Не указан";
@@ -68,12 +77,37 @@ export const DeliveryBlock = ({ delivery, time, onEdit }: DeliveryBlockProps) =>
     }
   };
 
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
+    if (isDragDisabled) {
+      e.preventDefault();
+      return;
+    }
+    e.dataTransfer.setData("deliveryId", String(delivery.id));
+    e.dataTransfer.effectAllowed = "move";
+    // Используем offset от текущей позиции мыши относительно элемента
+    e.dataTransfer.setDragImage(
+      e.currentTarget as HTMLElement,
+      e.nativeEvent.offsetX,
+      e.nativeEvent.offsetY,
+    );
+    if (onDragStart) {
+      onDragStart(delivery);
+    }
+  };
+
   return (
     <div
-      className={`${colors.bg} border-l-4 ${colors.border} rounded p-2 mb-1 text-xs cursor-pointer hover:opacity-80 transition-opacity`}
+      className={`${colors.bg} border-l-4 ${colors.border} rounded p-2 mb-1 text-xs cursor-pointer hover:opacity-80 transition-opacity ${
+        isDragDisabled ? "opacity-70" : "cursor-grab active:cursor-grabbing"
+      } ${isDragDisabled ? "cursor-pointer" : ""}`}
       onClick={handleClick}
+      draggable={!isDragDisabled}
+      onDragStart={handleDragStart}
     >
-      <div className="font-medium text-blue-900">{time}</div>
+      <div className="flex items-center gap-1 mb-1">
+        {!isDragDisabled && <GripVertical className="w-3 h-3 text-gray-400 flex-shrink-0" />}
+        <div className="font-medium text-blue-900 truncate">{time}</div>
+      </div>
       <div className={`${colors.text} truncate`}>{driverName}</div>
       {carInfo && <div className={colors.textDark + " truncate"}>{carInfo}</div>}
       <div className={colors.textDark + " truncate"}>{clientName}</div>

@@ -99,6 +99,11 @@ export function useCalendar(selectedDate: Date) {
     return new Date();
   }, []);
 
+  // Обновить доставку в локальном состоянии
+  const updateDeliveryInList = useCallback((updatedDelivery: CalendarDelivery) => {
+    setDeliveries((prev) => prev.map((d) => (d.id === updatedDelivery.id ? updatedDelivery : d)));
+  }, []);
+
   return {
     deliveries,
     isLoading,
@@ -107,6 +112,7 @@ export function useCalendar(selectedDate: Date) {
     formatWeekRange,
     formatTime,
     loadDeliveries,
+    updateDeliveryInList,
     prevWeek,
     nextWeek,
     currentWeek,

@@ -1,11 +1,13 @@
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DAYS_WEEK, HOURS, useCalendar } from "../../hooks";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, HomeIcon, MenuIcon, PlusIcon, BanIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { CalendarDelivery } from "@/lib/types";
+import { deliveriesApi } from "@/lib/api";
 import { DeliveryBlock } from "./delivery-block";
 import { Link } from "@tanstack/react-router";
 import { useAddDelivery } from "./use-add-delivery";
@@ -18,7 +20,16 @@ export const CalendarDesktop = () => {
   const [deliveryData, setDeliveryData] = useState<{
     selectedDate: Date;
     selectedHour: number;
+    draggedDelivery?: CalendarDelivery;
   } | null>(null);
+  const [draggedDelivery, setDraggedDelivery] = useState<CalendarDelivery | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOverCell, setDragOverCell] = useState<{ dayIndex: number; hour: number } | null>(null);
+  // Ref to always have access to the latest dragged delivery in closures
+  const draggedDeliveryRef = useRef<CalendarDelivery | null>(null);
+  useEffect(() => {
+    draggedDeliveryRef.current = draggedDelivery;
+  }, [draggedDelivery]);
 
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
@@ -30,6 +41,7 @@ export const CalendarDesktop = () => {
     formatWeekRange,
     formatTime,
     loadDeliveries,
+    updateDeliveryInList,
     prevWeek,
     nextWeek,
     currentWeek,
@@ -42,6 +54,99 @@ export const CalendarDesktop = () => {
   const handleDeliveryCreated = useCallback(() => {
     loadDeliveries();
   }, [loadDeliveries]);
+
+  // Проверка: можно ли создавать доставку в прошедшую ячейку
+  const canCreateInCell = (cellDate: Date): boolean => {
+    const now = new Date();
+    return cellDate > now;
+  };
+
+  // Обработчик начала перетаскивания
+  const handleDragStart = useCallback((delivery: CalendarDelivery) => {
+    setDraggedDelivery(delivery);
+    setIsDragging(true);
+    setDragOverCell(null);
+  }, []);
+
+  // Обработчик перетаскивания над ячейкой
+  const handleDragOver = useCallback(
+    (dayIndex: number, hour: number) => (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      setDragOverCell({ dayIndex, hour });
+    },
+    [],
+  );
+
+  // Вычисляем понедельник текущей недели
+  const getMonday = useCallback((date: Date): Date => {
+    const d = new Date(date);
+    const dayOfWeek = d.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    d.setDate(d.getDate() + mondayOffset);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  // Обработчик drop на ячейку
+  const handleDrop = useCallback(
+    async (dayIndex: number, hour: number) => {
+      // Используем ref чтобы избежать stale closure
+      const delivery = draggedDeliveryRef.current;
+      if (!delivery) return;
+
+      // Вычисляем дату для этой ячейки: начинаем с понедельника текущей недели и добавляем dayIndex
+      const monday = getMonday(selectedDate);
+      const cellDate = new Date(monday);
+      cellDate.setDate(monday.getDate() + dayIndex);
+      cellDate.setHours(hour, 0, 0, 0);
+
+      // Проверяем, можно ли создавать доставку в эту ячейку (не прошедшая)
+      if (!canCreateInCell(cellDate)) {
+        console.error("Нельзя переместить в прошедшее время");
+        setDraggedDelivery(null);
+        setIsDragging(false);
+        setDragOverCell(null);
+        return;
+      }
+
+      // Создаем новую дату/время для доставки
+      // cellDate уже содержит правильную дату и час из целевой ячейки
+      const existingDateTime = new Date(delivery.dateTime);
+      const newDateTime = new Date(cellDate);
+      newDateTime.setMinutes(existingDateTime.getMinutes()); // Сохраняем минуты из оригинальной доставки
+
+      const newDateTimeStr = `${newDateTime.getFullYear()}-${String(newDateTime.getMonth() + 1).padStart(2, "0")}-${String(newDateTime.getDate()).padStart(2, "0")}T${String(newDateTime.getHours()).padStart(2, "0")}:${String(newDateTime.getMinutes()).padStart(2, "0")}`;
+
+      // Оптимистичное обновление: сразу обновляем локальное состояние
+      const updatedDelivery: CalendarDelivery = {
+        ...delivery,
+        dateTime: newDateTimeStr,
+      };
+
+      try {
+        // Фактически перемещаем доставку через API
+        await deliveriesApi.update(delivery.id, {
+          dateTime: newDateTimeStr,
+        });
+
+        // Обновляем локальное состояние
+        updateDeliveryInList(updatedDelivery);
+      } catch (err) {
+        console.error("Ошибка при перемещении доставки:", err);
+        // В случае ошибки отменяем оптимистичное обновление
+        setDraggedDelivery(null);
+        setIsDragging(false);
+        setDragOverCell(null);
+        return;
+      }
+
+      setDraggedDelivery(null);
+      setIsDragging(false);
+      setDragOverCell(null);
+    },
+    [selectedDate, getMonday, canCreateInCell, updateDeliveryInList],
+  );
 
   const {
     showDeliveryDialog,
@@ -76,6 +181,7 @@ export const CalendarDesktop = () => {
   useEffect(() => {
     if (showDeliveryDialog && deliveryData) {
       setDeliveryData(null);
+      setDraggedDelivery(null);
     }
   }, [showDeliveryDialog, deliveryData]);
 
@@ -217,28 +323,51 @@ export const CalendarDesktop = () => {
 
                 const now = new Date();
                 const isPast = cellDate <= now;
+                const canDrop = !isPast;
                 const hasDelivery = hourDeliveries.length > 0;
+
+                const isDragOver =
+                  isDragging && dragOverCell?.dayIndex === dayIndex && dragOverCell?.hour === hour;
 
                 return (
                   <div
                     key={dayIndex}
                     className={cn(
                       "p-1 border-r min-h-[60px] relative group",
+                      isDragOver && canDrop && "bg-blue-200 transition-colors",
                       !hasDelivery &&
                         !isPast &&
+                        !isDragging &&
                         "hover:bg-blue-50 transition-colors cursor-pointer",
-                      !hasDelivery && isPast && "hover:bg-zinc-50 transition-colors",
+                      !hasDelivery && isPast && !isDragging && "hover:bg-zinc-50 transition-colors",
                     )}
                     onClick={() => {
-                      if (!hasDelivery && !isPast) {
+                      if (!hasDelivery && !isPast && !isDragging) {
                         handleCellClick(dayIndex, hour);
+                      }
+                    }}
+                    onDragOver={
+                      canDrop
+                        ? (e) => {
+                            handleDragOver(dayIndex, hour)(e);
+                          }
+                        : undefined
+                    }
+                    onDragLeave={() => {
+                      if (dragOverCell?.dayIndex === dayIndex && dragOverCell?.hour === hour) {
+                        setDragOverCell(null);
+                      }
+                    }}
+                    onDrop={() => {
+                      if (canDrop) {
+                        handleDrop(dayIndex, hour);
                       }
                     }}
                   >
                     {/* Иконки по центру ячейки (только если нет доставки) */}
                     {!hasDelivery && (
                       <div
-                        className="absolute inset-0 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute inset-0 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
                         onClick={(e) => {
                           e.stopPropagation();
                           if (!hasDelivery && !isPast) {
@@ -253,14 +382,21 @@ export const CalendarDesktop = () => {
                         )}
                       </div>
                     )}
-                    {hourDeliveries.map((delivery) => (
-                      <DeliveryBlock
-                        key={delivery.id}
-                        delivery={delivery}
-                        time={formatTime(delivery.dateTime)}
-                        onEdit={handleEditDelivery}
-                      />
-                    ))}
+                    {hourDeliveries.map((delivery) => {
+                      const isCompleted = delivery.status === "completed";
+                      const isDragDisabled = isCompleted;
+
+                      return (
+                        <DeliveryBlock
+                          key={delivery.id}
+                          delivery={delivery}
+                          time={formatTime(delivery.dateTime)}
+                          onEdit={handleEditDelivery}
+                          onDragStart={handleDragStart}
+                          isDragDisabled={isDragDisabled}
+                        />
+                      );
+                    })}
                   </div>
                 );
               })}

@@ -27,6 +27,7 @@ export type DeliveryCompleteForm = z.infer<typeof completeDeliverySchema>;
 export interface AddDeliveryData {
   selectedDate: Date;
   selectedHour: number;
+  draggedDelivery?: CalendarDelivery;
 }
 
 interface Props {
@@ -59,9 +60,15 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
 
   useEffect(() => {
     if (initialData) {
-      // Очищаем editingDelivery при создании новой доставки
-      setEditingDelivery(null);
-      setCompletingDelivery(false);
+      // Если перетаскиваем доставку, устанавливаем её как редактируемую
+      if (initialData.draggedDelivery) {
+        setEditingDelivery(initialData.draggedDelivery);
+        setCompletingDelivery(false);
+      } else {
+        // Очищаем editingDelivery при создании новой доставки
+        setEditingDelivery(null);
+        setCompletingDelivery(false);
+      }
       setShowDeliveryDialog(true);
       const dt = new Date(initialData.selectedDate);
       dt.setHours(initialData.selectedHour, 0, 0, 0);
@@ -127,12 +134,22 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
   // Set form values when editing a delivery
   useEffect(() => {
     if (editingDelivery) {
-      const dt = new Date(editingDelivery.dateTime);
-      const year = dt.getFullYear();
-      const month = String(dt.getMonth() + 1).padStart(2, "0");
-      const day = String(dt.getDate()).padStart(2, "0");
-      const hours = String(dt.getHours()).padStart(2, "0");
-      const minutes = String(dt.getMinutes()).padStart(2, "0");
+      // Если перетаскиваем доставку, используем новую дату из initialData
+      let displayDate: Date;
+      if (initialData?.draggedDelivery && initialData.selectedDate) {
+        // Сохраняем оригинальное время доставки, но меняем дату
+        const origTime = new Date(editingDelivery.dateTime);
+        displayDate = new Date(initialData.selectedDate);
+        displayDate.setHours(origTime.getHours(), origTime.getMinutes(), origTime.getSeconds());
+      } else {
+        displayDate = new Date(editingDelivery.dateTime);
+      }
+
+      const year = displayDate.getFullYear();
+      const month = String(displayDate.getMonth() + 1).padStart(2, "0");
+      const day = String(displayDate.getDate()).padStart(2, "0");
+      const hours = String(displayDate.getHours()).padStart(2, "0");
+      const minutes = String(displayDate.getMinutes()).padStart(2, "0");
 
       // Get isPaid and amount from the related income if available
       const isPaid = editingDelivery.income?.isPaid ?? false;
@@ -155,7 +172,7 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
         recipientId: editingDelivery.recipientId ?? undefined,
       });
     }
-  }, [editingDelivery, form]);
+  }, [editingDelivery, form, initialData]);
 
   useEffect(() => {
     if (initialDateTime && showDeliveryDialog && !editingDelivery) {
