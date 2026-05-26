@@ -33,9 +33,6 @@ RUN npm ci --omit=dev --ignore-scripts
 # Copy built backend
 COPY --from=builder /app/dist ./dist
 
-# Copy frontend built files
-COPY --from=builder /app/../frontend/dist ./frontend/dist
-
 # Create data directory for SQLite
 RUN mkdir -p data && chmod 777 data
 
