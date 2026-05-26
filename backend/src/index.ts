@@ -48,7 +48,7 @@ if (isProduction) {
   const path = await import("path");
   const url = await import("url");
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-  const frontendDist = path.join(__dirname, "../../frontend/dist");
+  const frontendDist = path.join(__dirname, "../frontend/dist");
   app.use(express.static(frontendDist));
 
   // Serve index.html for all other routes (SPA fallback)
