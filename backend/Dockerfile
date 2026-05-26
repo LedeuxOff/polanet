@@ -23,7 +23,8 @@ RUN npm ci --omit=dev --ignore-scripts && \
 
 COPY --from=builder /app/dist ./dist
 
-# Copy pre-built frontend
+# Copy migrations and frontend
+COPY --from=builder /app/drizzle ./drizzle
 COPY frontend/dist ./frontend/dist
 
 RUN mkdir -p data && chmod 777 data
