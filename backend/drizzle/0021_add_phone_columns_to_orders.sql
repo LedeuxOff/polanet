@@ -1,2 +1,2 @@
-ALTER TABLE `orders` ADD COLUMN `payer_phone` text;
-ALTER TABLE `orders` ADD COLUMN `receiver_phone` text;
+-- Columns payer_phone and receiver_phone already exist from 0000_rich_young_avengers.sql
+-- This migration is kept for reference but is now a no-op
