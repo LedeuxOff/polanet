@@ -40,6 +40,7 @@ export const users = sqliteTable("users", {
   birthDate: text("birth_date"),
   email: text("email").notNull().unique(),
   phone: text("phone"),
+  telegramChatId: text("telegram_chat_id"),
   passwordHash: text("password_hash").notNull(),
   roleId: integer("role_id")
     .references(() => roles.id)

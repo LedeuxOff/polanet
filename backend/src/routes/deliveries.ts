@@ -57,7 +57,7 @@ import {
   orderStatusTransitions,
 } from "../middleware/validators.js";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
-import { sendClientNotification, sendDriverNotification } from "../services/sms-service.js";
+import { sendClientNotification, sendDriverNotification } from "../services/telegram-service.js";
 
 const router = Router();
 
@@ -412,72 +412,58 @@ router.post(
         `Доставка создана (статус: в процессе)`,
       );
 
-      // Отправляем уведомления если включено
-      const driverFio = driverData
-        ? `${driverData.lastName} ${driverData.firstName} ${driverData.middleName || ""}`.trim()
-        : "Не указан";
-      const driverPhone = driverData?.phone || "";
-
-      // Уведомление клиенту
-      if (data.notifyClient && client) {
-        const clientPhone = client.phone;
-        if (clientPhone) {
-          try {
-            await sendClientNotification(clientPhone, data.dateTime, driverFio, driverPhone);
-            console.log(`[Уведомление] Клиенту отправлено уведомление о доставке`);
-          } catch (error) {
-            console.error(`[Уведомление] Ошибка отправки клиенту:`, error);
-          }
-        }
-      }
-
-      // Уведомление водителю
-      if (data.notifyDriver && driverData) {
-        // Формируем ФИО и телефон контактного лица
-        let contactPersonFio: string;
-        let contactPersonPhone: string;
-
-        // Проверяем, указан ли приемщик
-        const receiverFio =
-          `${order.receiverLastName || ""} ${order.receiverFirstName || ""} ${order.receiverMiddleName || ""}`.trim();
-        if (receiverFio && order.receiverPhone) {
-          // Если указан приемщик с телефоном - используем его
-          contactPersonFio = receiverFio;
-          contactPersonPhone = order.receiverPhone;
-        } else if (receiverFio) {
-          // Если указан приемщик без телефона - только ФИО
-          contactPersonFio = receiverFio;
-          contactPersonPhone = "";
-        } else {
-          // Если приемщик не указан, используем данные плательщика (клиента)
-          const payerName =
-            `${order.payerLastName || ""} ${order.payerFirstName || ""} ${order.payerMiddleName || ""}`.trim();
-          if (payerName && order.payerPhone) {
-            contactPersonFio = payerName;
-            contactPersonPhone = order.payerPhone;
-          } else if (payerName) {
-            contactPersonFio = payerName;
-            contactPersonPhone = "";
-          } else {
-            // Только номер телефона клиента
-            contactPersonFio = "";
-            contactPersonPhone = order.payerPhone || "";
-          }
-        }
-
+      // Отправляем Telegram уведомления если включено
+      if (process.env.TELEGRAM_CHAT_ID && driverData) {
         try {
-          await sendDriverNotification(
-            driverPhone,
-            data.dateTime,
-            order.address,
-            contactPersonFio,
-            contactPersonPhone,
-            carData?.brand || "Не указан",
-            carData?.licensePlate || "Не указан",
-          );
-          console.log(`[Уведомление] Водителю отправлено уведомление о доставке`);
+          if (data.notifyClient) {
+            const driverFio =
+              `${driverData.lastName} ${driverData.firstName} ${driverData.middleName || ""}`.trim();
+            // Пытаемся отправить клиенту по его telegramChatId, если нет - на общий чат
+            const clientUser = db
+              .select({ telegramChatId: users.telegramChatId })
+              .from(users)
+              .where(eq(users.email, client?.email || ""))
+              .get();
+
+            const targetChatId = clientUser?.telegramChatId || process.env.TELEGRAM_CHAT_ID!;
+            await sendClientNotification(
+              targetChatId,
+              data.dateTime,
+              driverFio,
+              driverData.phone || "",
+            );
+          }
+          if (data.notifyDriver) {
+            const driverFio =
+              `${driverData.lastName} ${driverData.firstName} ${driverData.middleName || ""}`.trim();
+            // Ищем водителя в таблице users
+            const driverUser = db
+              .select({ telegramChatId: users.telegramChatId })
+              .from(users)
+              .where(eq(users.phone, driverData.phone || ""))
+              .get();
+
+            // Пытаемся отправить водителю по его telegramChatId, если нет - на общий чат
+            const targetChatId = driverUser?.telegramChatId || process.env.TELEGRAM_CHAT_ID!;
+
+            // Получаем адрес и контактные данные из заявки
+            const orderAddress = order.address || "";
+            const orderReceiverLastName = (order as any).receiverLastName || "";
+            const orderReceiverFirstName = (order as any).receiverFirstName || "";
+            const contactPersonFio = `${orderReceiverLastName} ${orderReceiverFirstName}`.trim();
+            const orderReceiverPhone = (order as any).receiverPhone || "";
+            await sendDriverNotification(
+              targetChatId,
+              data.dateTime,
+              orderAddress,
+              contactPersonFio,
+              orderReceiverPhone,
+              carData?.brand || "",
+              carData?.licensePlate || "",
+            );
+          }
         } catch (error) {
-          console.error(`[Уведомление] Ошибка отправки водителю:`, error);
+          console.error("Ошибка отправки Telegram уведомления о доставке:", error);
         }
       }
 

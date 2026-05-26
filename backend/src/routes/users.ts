@@ -7,7 +7,7 @@ import { requirePermission } from "../middleware/permissions.js";
 import { registerSchema, updateUserSchema } from "../middleware/validators.js";
 import { eq, and } from "drizzle-orm";
 import { generatePassword } from "../utils/password-generator.js";
-import { sendSms } from "../services/sms-service.js";
+import { sendPasswordNotification } from "../services/telegram-service.js";
 
 const router = Router();
 
@@ -107,12 +107,13 @@ router.post("/", authenticate, requirePermission("users:create"), async (req: Au
       .where(eq(users.id, Number(result.lastInsertRowid)))
       .get();
 
-    // Отправляем SMS с паролем
-    if (data.phone) {
-      const message = `Вы получили доступ к административной панели polanet. Ваша почта: ${data.email}, ваш пароль: ${password}`;
-      sendSms(data.phone, message).catch((error) => {
-        console.error("Ошибка отправки SMS при создании пользователя:", error);
-      });
+    // Отправляем пароль через Telegram
+    if (process.env.TELEGRAM_CHAT_ID) {
+      try {
+        await sendPasswordNotification(process.env.TELEGRAM_CHAT_ID, data.email, password);
+      } catch (error) {
+        console.error("Ошибка отправки Telegram уведомления:", error);
+      }
     }
 
     res.status(201).json(newUser);
@@ -200,19 +201,16 @@ router.post(
         .where(eq(users.id, userId))
         .run();
 
-      // Отправляем SMS
-      if (user.phone) {
-        const message = `Ваш новый пароль для доступа к административной панели polanet: ${newPassword}`;
-        const smsResult = await sendSms(user.phone, message);
-
-        if (!smsResult.success) {
-          return res
-            .status(500)
-            .json({ error: "Ошибка отправки SMS", details: smsResult.errorMsg });
+      // Отправляем новый пароль через Telegram
+      if (process.env.TELEGRAM_CHAT_ID) {
+        try {
+          await sendPasswordNotification(process.env.TELEGRAM_CHAT_ID, user.email, newPassword);
+        } catch (error) {
+          console.error("Ошибка отправки Telegram уведомления:", error);
         }
       }
 
-      res.json({ success: true, message: "Новый пароль сгенерирован и отправлен" });
+      res.json({ success: true, message: "Новый пароль сгенерирован" });
     } catch (error) {
       if (error instanceof Error && error.name === "ZodError") {
         return res.status(400).json({ error: "Ошибка валидации", details: error });

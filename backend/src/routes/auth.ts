@@ -6,7 +6,7 @@ import { generateToken, authenticate, type AuthRequest } from "../middleware/aut
 import { loginSchema, registerSchema } from "../middleware/validators.js";
 import { eq } from "drizzle-orm";
 import { generatePassword } from "../utils/password-generator.js";
-import { sendSms } from "../services/sms-service.js";
+import { sendPasswordNotification } from "../services/telegram-service.js";
 
 const router = Router();
 
@@ -87,12 +87,13 @@ router.post("/register", async (req, res) => {
       .where(eq(users.id, Number(result.lastInsertRowid)))
       .get();
 
-    // Отправляем SMS с паролем
-    if (data.phone) {
-      const message = `Вы получили доступ к административной панели polanet. Ваша почта: ${data.email}, ваш пароль: ${password}`;
-      sendSms(data.phone, message).catch((error) => {
-        console.error("Ошибка отправки SMS при регистрации:", error);
-      });
+    // Отправляем пароль через Telegram
+    if (process.env.TELEGRAM_CHAT_ID) {
+      try {
+        await sendPasswordNotification(process.env.TELEGRAM_CHAT_ID, data.email, password);
+      } catch (error) {
+        console.error("Ошибка отправки Telegram уведомления:", error);
+      }
     }
 
     const token = generateToken({

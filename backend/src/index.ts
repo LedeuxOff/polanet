@@ -21,6 +21,7 @@ import backupRoutes from "./routes/backups.js";
 import systemInfoRoutes from "./routes/systemInfo.js";
 import systemLogsRoutes from "./routes/systemLogs.js";
 import permissionsRoutes from "./routes/permissions.js";
+import telegramRoutes from "./routes/telegram.js";
 
 // Импорт обработчика ошибок
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -75,6 +76,19 @@ app.use("/api/backups", backupRoutes);
 app.use("/api/system-info", systemInfoRoutes);
 app.use("/api/system-logs", systemLogsRoutes);
 app.use("/api/permissions", permissionsRoutes);
+app.use("/api/telegram", telegramRoutes);
+
+// Telegram webhook endpoint (должен быть перед другими маршрутами)
+app.post("/api/telegram/webhook", async (req, res) => {
+  try {
+    const { handleTelegramWebhook } = await import("./services/telegram-bot.js");
+    const result = await handleTelegramWebhook(req.body);
+    res.json(result);
+  } catch (error) {
+    console.error("[Telegram Webhook] Ошибка:", error);
+    res.status(500).json({ error: "Ошибка обработки webhook" });
+  }
+});
 
 // Глобальный обработчик ошибок (4-argument middleware)
 app.use(errorHandler);
@@ -82,8 +96,23 @@ app.use(errorHandler);
 // Запуск автоматического резервного копирования
 startAutoBackup();
 
+// Настройка Telegram webhook
+async function setupTelegram() {
+  const { setupTelegramWebhook } = await import("./services/telegram-bot.js");
+  const webhookUrl = process.env.TELEGRAM_WEBHOOK_URL;
+
+  if (webhookUrl) {
+    await setupTelegramWebhook(webhookUrl);
+  } else {
+    console.log(
+      "⚠️  TELEGRAM_WEBHOOK_URL не настроен. Для работы бота настройте webhook или используйте ngrok для локальной разработки.",
+    );
+  }
+}
+
+setupTelegram();
+
 app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
   console.log(`📍 API доступно на http://localhost:${PORT}/api`);
-  console.log(`📱 SMS_API_ID настроен: ${!!process.env.SMS_API_ID}`);
 });
