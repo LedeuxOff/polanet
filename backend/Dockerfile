@@ -3,9 +3,11 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Install build dependencies for better-sqlite3
+RUN apk add --no-cache python3 make g++
+
 # Copy package files
 COPY package*.json ./
-COPY drizzle ./drizzle/
 
 # Install dependencies
 RUN npm ci
@@ -21,14 +23,15 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install curl for healthcheck
-RUN apk add --no-cache curl
+# Install curl and build dependencies for better-sqlite3
+RUN apk add --no-cache curl python3 make g++
 
 # Copy package files
 COPY package*.json ./
 
-# Install production dependencies only
-RUN npm ci --omit=dev --ignore-scripts
+# Install production dependencies only (with rebuild for better-sqlite3)
+RUN npm ci --omit=dev --ignore-scripts && \
+    npm rebuild better-sqlite3
 
 # Copy built backend
 COPY --from=builder /app/dist ./dist
