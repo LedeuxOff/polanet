@@ -46,15 +46,20 @@ app.use(express.json());
 // Serve built frontend in production
 if (isProduction) {
   const path = await import("path");
+  const fs = await import("fs");
   const url = await import("url");
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
   const frontendDist = path.join(__dirname, "../frontend/dist");
-  app.use(express.static(frontendDist));
 
-  // Serve index.html for all other routes (SPA fallback)
-  app.get("*", (_req, res) => {
-    res.sendFile(path.join(frontendDist, "index.html"));
-  });
+  // Only serve frontend if it exists
+  if (fs.existsSync(frontendDist)) {
+    app.use(express.static(frontendDist));
+
+    // Serve index.html for all other routes (SPA fallback)
+    app.get("*", (_req, res) => {
+      res.sendFile(path.join(frontendDist, "index.html"));
+    });
+  }
 }
 
 // Health check

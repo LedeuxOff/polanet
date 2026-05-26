@@ -6,17 +6,18 @@ WORKDIR /app
 # Install build dependencies for better-sqlite3
 RUN apk add --no-cache python3 make g++
 
-# Copy package files
+# Copy backend package files
 COPY package*.json ./
 
 # Install dependencies
 RUN npm ci
 
-# Copy source code
+# Copy backend source code
 COPY . .
 
-# Build TypeScript
-RUN npm run build
+# Copy frontend dist (from sibling directory - need to copy from build context)
+# First, let's create the frontend directory structure
+RUN mkdir -p frontend/dist
 
 # Production stage
 FROM node:20-alpine
@@ -35,6 +36,9 @@ RUN npm ci --omit=dev --ignore-scripts && \
 
 # Copy built backend
 COPY --from=builder /app/dist ./dist
+
+# Create frontend directory (will be populated by docker build or runtime)
+RUN mkdir -p frontend/dist
 
 # Create data directory for SQLite
 RUN mkdir -p data && chmod 777 data
