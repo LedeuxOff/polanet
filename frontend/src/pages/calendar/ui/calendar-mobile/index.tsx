@@ -1,6 +1,6 @@
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { HOURS, useCalendar } from "../../hooks";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,19 +11,61 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, HomeIcon, MenuIcon } from "lucide-react";
+import { CalendarIcon, HomeIcon, MenuIcon, PlusIcon, BanIcon } from "lucide-react";
 import { DatePicker } from "./date-picker";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
 import type { CalendarDelivery } from "@/lib/types";
+import { useAddDelivery } from "../calendar-desktop/use-add-delivery";
+import { AddDeliveryDrawer } from "./add-delivery-drawer";
 
 // Компонент блока доставки для мобильной версии
 interface DeliveryBlockProps {
   delivery: CalendarDelivery;
   time: string;
+  onEdit?: (delivery: CalendarDelivery) => void;
 }
 
-function DeliveryBlock({ delivery, time }: DeliveryBlockProps) {
+const getStatusLabel = (status: string): string => {
+  switch (status) {
+    case "in_progress":
+      return "В процессе";
+    case "completed":
+      return "Завершена";
+    default:
+      return status;
+  }
+};
+
+const getStatusColors = (
+  status: string,
+): { bg: string; border: string; text: string; textDark: string } => {
+  switch (status) {
+    case "in_progress":
+      return {
+        bg: "bg-yellow-100",
+        border: "border-yellow-500",
+        text: "text-yellow-800",
+        textDark: "text-yellow-700",
+      };
+    case "completed":
+      return {
+        bg: "bg-green-100",
+        border: "border-green-500",
+        text: "text-green-800",
+        textDark: "text-green-700",
+      };
+    default:
+      return {
+        bg: "bg-blue-100",
+        border: "border-blue-500",
+        text: "text-blue-800",
+        textDark: "text-blue-700",
+      };
+  }
+};
+
+function DeliveryBlock({ delivery, time, onEdit }: DeliveryBlockProps) {
   const driverName = delivery.driver
     ? `${delivery.driver.lastName} ${delivery.driver.firstName}`.trim()
     : "Не указан";
@@ -36,12 +78,29 @@ function DeliveryBlock({ delivery, time }: DeliveryBlockProps) {
       ? `${delivery.order.payerLastName} ${delivery.order.payerFirstName}`
       : "Клиент не указан";
 
+  const statusLabel = getStatusLabel(delivery.status);
+  const colors = getStatusColors(delivery.status);
+
+  const handleClick = () => {
+    if (onEdit) {
+      onEdit(delivery);
+    }
+  };
+
   return (
-    <div className="bg-blue-100 border-l-4 border-blue-500 rounded p-2 mb-1 text-xs cursor-pointer hover:bg-blue-200 transition-colors">
+    <div
+      className={`${colors.bg} border-l-4 ${colors.border} rounded p-2 mb-1 text-xs cursor-pointer hover:opacity-80 transition-opacity`}
+      onClick={handleClick}
+    >
       <div className="font-medium text-blue-900">{time}</div>
-      <div className="text-blue-800 truncate">{driverName}</div>
-      {carInfo && <div className="text-blue-700 truncate">{carInfo}</div>}
-      <div className="text-blue-700 truncate">{clientName}</div>
+      <div className={`${colors.text} truncate`}>{driverName}</div>
+      {carInfo && <div className={colors.textDark + " truncate"}>{carInfo}</div>}
+      <div className={colors.textDark + " truncate"}>{clientName}</div>
+      <div className={`${colors.text} font-medium mt-1`}>
+        <span className="inline-block px-2 py-0.5 rounded-full bg-white/50 text-xs">
+          {statusLabel}
+        </span>
+      </div>
     </div>
   );
 }
@@ -50,6 +109,10 @@ function DeliveryBlock({ delivery, time }: DeliveryBlockProps) {
 export const CalendarMobile = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isOpen, setIsOpen] = useState(false);
+  const [deliveryData, setDeliveryData] = useState<{
+    selectedDate: Date;
+    selectedHour: number;
+  } | null>(null);
 
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
@@ -59,6 +122,39 @@ export const CalendarMobile = () => {
   useEffect(() => {
     loadDeliveries();
   }, [loadDeliveries]);
+
+  const handleDeliveryCreated = useCallback(() => {
+    loadDeliveries();
+  }, [loadDeliveries]);
+
+  const {
+    showDeliveryDialog,
+    setShowDeliveryDialog,
+    form,
+    error: formError,
+    editingDelivery,
+    handleCancelDelivery,
+    handleEditDelivery,
+    handleSaveDelivery,
+    handleCompleteDelivery,
+    handleChangeRecipient,
+    drivers,
+    cars,
+    availableOrders,
+    users,
+    completingDelivery,
+    isChangingRecipient,
+  } = useAddDelivery({
+    initialData: deliveryData || undefined,
+    onDeliveryCreated: handleDeliveryCreated,
+  });
+
+  // Reset initial data after dialog is shown
+  useEffect(() => {
+    if (showDeliveryDialog && deliveryData) {
+      setDeliveryData(null);
+    }
+  }, [showDeliveryDialog, deliveryData]);
 
   const handleSelectDate = (date: Date) => {
     setSelectedDate(date);
@@ -98,6 +194,12 @@ export const CalendarMobile = () => {
       date.getMonth() === today.getMonth() &&
       date.getFullYear() === today.getFullYear()
     );
+  };
+
+  const handleCellClick = (hour: number) => {
+    const dt = new Date(selectedDate);
+    dt.setHours(hour, 0, 0, 0);
+    setDeliveryData({ selectedDate: dt, selectedHour: hour });
   };
 
   return (
@@ -165,19 +267,71 @@ export const CalendarMobile = () => {
                 {hour.toString().padStart(2, "0")}:00
               </div>
               {/* Ячейка с доставками */}
-              <div className="p-1 min-h-[60px]">
+              <div className="relative p-1 min-h-[60px]">
                 {deliveriesByHour[hour]?.map((delivery) => (
                   <DeliveryBlock
                     key={delivery.id}
                     delivery={delivery}
                     time={formatTime(delivery.dateTime)}
+                    onEdit={handleEditDelivery}
                   />
                 ))}
+
+                {/* Иконки по центру ячейки (только если нет доставки) */}
+                {!deliveriesByHour[hour]?.length && (
+                  <>
+                    {(() => {
+                      const cellDate = new Date(selectedDate);
+                      cellDate.setHours(hour, 0, 0, 0);
+                      const isPast = cellDate <= new Date();
+
+                      return (
+                        <div
+                          className={cn(
+                            "absolute inset-0 flex items-center justify-center z-10",
+                            !isPast && "opacity-0 group-hover:opacity-100",
+                            !isPast && "hover:opacity-100",
+                          )}
+                          onClick={() => {
+                            if (!isPast) {
+                              handleCellClick(hour);
+                            }
+                          }}
+                        >
+                          {isPast ? (
+                            <BanIcon className="h-12 w-12 text-gray-400/40" />
+                          ) : (
+                            <PlusIcon className="h-12 w-12 text-gray-400/40" />
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </>
+                )}
               </div>
             </div>
           ))}
         </div>
       )}
+
+      {/* Drawer добавления доставки */}
+      <AddDeliveryDrawer
+        showDeliveryDrawer={showDeliveryDialog}
+        setShowDeliveryDrawer={setShowDeliveryDialog}
+        form={form}
+        error={formError}
+        editingDelivery={editingDelivery}
+        handleSaveDelivery={handleSaveDelivery}
+        handleCompleteDelivery={handleCompleteDelivery}
+        handleChangeRecipient={handleChangeRecipient}
+        drivers={drivers}
+        cars={cars}
+        availableOrders={availableOrders}
+        users={users}
+        handleCancelDelivery={handleCancelDelivery}
+        completingDelivery={completingDelivery}
+        isChangingRecipient={isChangingRecipient}
+      />
 
       <div
         className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}

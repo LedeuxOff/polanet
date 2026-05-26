@@ -236,6 +236,12 @@ export const incomes = sqliteTable("incomes", {
   paymentDate: text("payment_date").notNull(),
   // Айди доставки к которой привязан доход (опционально)
   deliveryId: integer("delivery_id"),
+  // Тип получателя - employee (сотрудник) | driver (водитель)
+  recipientType: text("recipient_type", {
+    enum: ["employee", "driver"],
+  }).$type<"employee" | "driver">(),
+  // Айди получателя (id сотрудника или водителя)
+  recipientId: integer("recipient_id"),
   // Аудит
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
@@ -417,6 +423,45 @@ export const expenses = sqliteTable("expenses", {
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
+
+// Recipient History table - tracks all recipient changes
+export const recipientHistory = sqliteTable("recipient_history", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  deliveryId: integer("delivery_id")
+    .notNull()
+    .references(() => deliveries.id, { onDelete: "cascade" }),
+  incomeId: integer("income_id").references(() => incomes.id, { onDelete: "set null" }),
+  userId: integer("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "restrict" }),
+  recipientType: text("recipient_type", { enum: ["employee", "driver"] }).$type<
+    "employee" | "driver"
+  >(),
+  recipientId: integer("recipient_id"),
+  oldRecipientType: text("old_recipient_type", { enum: ["employee", "driver"] }).$type<
+    "employee" | "driver"
+  >(),
+  oldRecipientId: integer("old_recipient_id"),
+  action: text("action").notNull(), // 'created', 'updated', 'deleted'
+  comment: text("comment"),
+  createdAt: text("created_at").notNull().default("CURRENT_TIMESTAMP"),
+});
+
+// Relations for recipient history
+export const recipientHistoryRelations = relations(recipientHistory, ({ one }) => ({
+  delivery: one(deliveries, {
+    fields: [recipientHistory.deliveryId],
+    references: [deliveries.id],
+  }),
+  income: one(incomes, {
+    fields: [recipientHistory.incomeId],
+    references: [incomes.id],
+  }),
+  user: one(users, {
+    fields: [recipientHistory.userId],
+    references: [users.id],
+  }),
+}));
 
 // Relations for expenses
 export const expensesRelations = relations(expenses, ({ one }) => ({

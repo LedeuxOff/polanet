@@ -1,4 +1,4 @@
-import { carsApi, deliveriesApi, driversApi, ordersApi } from "@/lib/api";
+import { carsApi, deliveriesApi, driversApi, ordersApi, usersApi } from "@/lib/api";
 import {
   Car,
   CreateDeliveryInput,
@@ -8,6 +8,7 @@ import {
   Driver,
   Order,
   UpdateDeliveryInput,
+  User,
 } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
@@ -22,15 +23,18 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [cars, setCars] = useState<Car[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showDeliveryDialog, setShowDeliveryDialog] = useState(false);
   const [editingDelivery, setEditingDelivery] = useState<Delivery | null>(null);
+  const [completingDelivery, setCompletingDelivery] = useState(false);
 
   useEffect(() => {
     Promise.all([
       deliveriesApi.list(Number(orderId)).then(setDeliveries).catch(console.error),
       driversApi.list().then(setDrivers).catch(console.error),
       carsApi.list().then(setCars).catch(console.error),
+      usersApi.list().then(setUsers).catch(console.error),
     ]).catch(console.error);
   }, []);
 
@@ -43,6 +47,8 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
       isPaymentBeforeUnloading: false,
       notifyClient: false,
       notifyDriver: false,
+      recipientType: undefined,
+      recipientId: undefined,
     },
   });
 
@@ -64,6 +70,8 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
       isPaymentBeforeUnloading: delivery.isPaymentBeforeUnloading,
       notifyClient: delivery.notifyClient,
       notifyDriver: delivery.notifyDriver,
+      recipientType: delivery.recipientType || undefined,
+      recipientId: delivery.recipientId || undefined,
     });
   };
 
@@ -73,21 +81,31 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
     form.reset();
   };
 
-  const handleCompleteDelivery = async (deliveryId: number) => {
-    if (!confirm("Завершить эту доставку?")) {
-      return;
-    }
+  const handleCompleteDelivery = async (delivery: Delivery) => {
+    // Всегда открываем модальное окно для выбора получателя при завершении доставки
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const income = (delivery as any).income;
+    const isPaid = income?.isPaid || false;
 
-    try {
-      await deliveriesApi.complete(deliveryId);
-      const updatedDeliveries = await deliveriesApi.list(Number(orderId));
-      setDeliveries(updatedDeliveries);
-      // Обновляем заявку
-      const updated = await ordersApi.get(Number(orderId));
-      setOrder(updated);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка при завершении доставки");
-    }
+    setEditingDelivery(delivery);
+    setCompletingDelivery(true);
+    setShowDeliveryDialog(true);
+    // Устанавливаем значения формы для редактирования
+    form.reset({
+      driverId: delivery.driverId,
+      carId: delivery.carId,
+      dateTime: delivery.dateTime,
+      amount: income?.amount || delivery.amount || 0,
+      volume: delivery.volume || undefined,
+      comment: delivery.comment || undefined,
+      paymentMethod: delivery.paymentMethod,
+      isPaid: isPaid,
+      isPaymentBeforeUnloading: delivery.isPaymentBeforeUnloading,
+      notifyClient: delivery.notifyClient,
+      notifyDriver: delivery.notifyDriver,
+      recipientType: delivery.recipientType || undefined,
+      recipientId: delivery.recipientId || undefined,
+    });
   };
 
   const handleDeleteDelivery = async (deliveryId: number) => {
@@ -123,8 +141,15 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
           isPaymentBeforeUnloading: data.isPaymentBeforeUnloading,
           notifyClient: data.notifyClient,
           notifyDriver: data.notifyDriver,
+          recipientType: data.recipientType,
+          recipientId: data.recipientId,
         };
         await deliveriesApi.update(editingDelivery.id, updateData);
+
+        // Если режим завершения доставки, автоматически завершаем её
+        if (completingDelivery) {
+          await deliveriesApi.complete(editingDelivery.id);
+        }
       } else {
         const createData: CreateDeliveryInput = {
           orderId: Number(orderId),
@@ -139,11 +164,14 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
           isPaymentBeforeUnloading: data.isPaymentBeforeUnloading,
           notifyClient: data.notifyClient,
           notifyDriver: data.notifyDriver,
+          recipientType: data.recipientType,
+          recipientId: data.recipientId,
         };
         await deliveriesApi.create(createData);
       }
       setShowDeliveryDialog(false);
       setEditingDelivery(null);
+      setCompletingDelivery(false);
       form.reset();
       // Обновляем список доставок
       const updatedDeliveries = await deliveriesApi.list(Number(orderId));
@@ -171,5 +199,8 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
     drivers,
     cars,
     setEditingDelivery,
+    users,
+    completingDelivery,
+    setCompletingDelivery,
   };
 };

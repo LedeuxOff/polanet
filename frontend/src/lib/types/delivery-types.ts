@@ -1,6 +1,7 @@
 import z from "zod";
 
 export type DeliveryStatus = "in_progress" | "completed";
+export type RecipientType = "employee" | "driver";
 
 export interface Delivery {
   id: number;
@@ -19,6 +20,8 @@ export interface Delivery {
   createdAt: string;
   updatedAt: string;
   amount: number;
+  recipientType?: RecipientType | null;
+  recipientId?: number | null;
 }
 
 export interface DeliveryWithIncome extends Delivery {
@@ -26,7 +29,27 @@ export interface DeliveryWithIncome extends Delivery {
 }
 
 // Расширенный тип для календаря с вложенными объектами
-export interface CalendarDelivery extends Delivery {
+// amount берется из income, поэтому переопределяем Delivery тип
+export interface CalendarDelivery {
+  id: number;
+  orderId: number;
+  driverId: number;
+  carId: number;
+  dateTime: string;
+  volume: number | null;
+  comment: string | null;
+  paymentMethod: "cash" | "bank_transfer";
+  isPaymentBeforeUnloading: boolean;
+  notifyClient: boolean;
+  notifyDriver: boolean;
+  status: DeliveryStatus;
+  incomeId: number | null;
+  createdAt: string;
+  updatedAt: string;
+  // amount хранится в income, но для удобства календаря возвращаем его на уровне delivery
+  amount?: number;
+  recipientType?: RecipientType | null;
+  recipientId?: number | null;
   driver?: {
     id: number;
     lastName: string;
@@ -77,6 +100,8 @@ export interface Income {
   paymentDate: string;
   createdAt: string;
   updatedAt: string;
+  recipientType?: RecipientType | null;
+  recipientId?: number | null;
 }
 
 export interface CreateIncomeInput {
@@ -112,6 +137,8 @@ export interface CreateDeliveryInput {
   isPaymentBeforeUnloading?: boolean;
   notifyClient?: boolean;
   notifyDriver?: boolean;
+  recipientType?: RecipientType | null;
+  recipientId?: number | null;
 }
 
 export interface UpdateDeliveryInput {
@@ -126,9 +153,29 @@ export interface UpdateDeliveryInput {
   isPaymentBeforeUnloading?: boolean;
   notifyClient?: boolean;
   notifyDriver?: boolean;
+  recipientType?: RecipientType | null;
+  recipientId?: number | null;
+}
+
+export interface RecipientHistory {
+  id: number;
+  deliveryId: number;
+  incomeId: number | null;
+  userId: number;
+  recipientType: RecipientType | null;
+  recipientId: number | null;
+  recipientName: string;
+  oldRecipientType: RecipientType | null;
+  oldRecipientId: number | null;
+  oldRecipientName: string;
+  action: "created" | "updated" | "deleted";
+  comment: string | null;
+  createdAt: string;
+  changedByName: string | null;
 }
 
 export const deliverySchema = z.object({
+  orderId: z.coerce.number().positive("Заячка обязательна").optional().nullable(),
   driverId: z.coerce.number().positive("Водитель обязателен"),
   carId: z.coerce.number().positive("Автомобиль обязателен"),
   dateTime: z.string().min(1, "Дата и время обязательны"),
@@ -140,4 +187,8 @@ export const deliverySchema = z.object({
   isPaymentBeforeUnloading: z.boolean().default(false),
   notifyClient: z.boolean().default(false),
   notifyDriver: z.boolean().default(false),
+  recipientType: z.enum(["employee", "driver"]).optional().nullable(),
+  recipientId: z.coerce.number().optional().nullable(),
 });
+
+export type DeliveryForm = z.infer<typeof deliverySchema>;

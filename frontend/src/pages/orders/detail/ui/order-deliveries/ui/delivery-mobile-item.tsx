@@ -12,10 +12,11 @@ import {
   WeightIcon,
 } from "lucide-react";
 import { getFormattedAmount } from "@/lib/utils";
+import { RecipientHistoryList } from "./recipient-history";
 
 interface Props {
   delivery: DeliveryWithIncome;
-  handleCompleteDelivery: (deliveryId: number) => Promise<void>;
+  handleCompleteDelivery: () => Promise<void>;
   handleEditDelivery: (delivery: DeliveryWithIncome) => void;
   disabledByStatus: boolean;
   handleDeleteDelivery: (deliveryId: number) => Promise<void>;
@@ -83,7 +84,7 @@ export const DeliveryMobileItem = ({
             variant="default"
             size="sm"
             type="button"
-            onClick={() => handleCompleteDelivery(delivery.id)}
+            onClick={() => handleCompleteDelivery()}
             className="bg-green-100 text-green-700 hover:bg-green-200 hover:text-green-800 flex items-center gap-2"
           >
             <BanknoteIcon /> Завершить
@@ -110,6 +111,8 @@ export const DeliveryMobileItem = ({
           <TrashIcon className="w-4 h-4" /> Удалить
         </Button>
       </div>
+
+      <RecipientHistoryList deliveryId={delivery.id} />
     </div>
   );
 };

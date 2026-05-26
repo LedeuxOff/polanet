@@ -1,7 +1,54 @@
 import { Router } from "express";
-import { db } from "../db/index.js";
-import { deliveries, drivers, cars, orders, orderHistory, incomes, clients } from "../db/schema.js";
+import { db, sqlite } from "../db/index.js";
+import {
+  deliveries,
+  drivers,
+  cars,
+  orders,
+  orderHistory,
+  incomes,
+  clients,
+  recipientHistory,
+  users,
+} from "../db/schema.js";
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
+
+// Create table aliases for self-joins
+const usersChangedBy = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  lastName: text("last_name").notNull(),
+  firstName: text("first_name").notNull(),
+  middleName: text("middle_name"),
+});
+
+const usersRecipient = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  lastName: text("last_name").notNull(),
+  firstName: text("first_name").notNull(),
+  middleName: text("middle_name"),
+});
+
+const usersOldRecipient = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  lastName: text("last_name").notNull(),
+  firstName: text("first_name").notNull(),
+  middleName: text("middle_name"),
+});
+
+const driversRecipient = sqliteTable("drivers", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  lastName: text("last_name").notNull(),
+  firstName: text("first_name").notNull(),
+  middleName: text("middle_name"),
+});
+
+const driversOldRecipient = sqliteTable("drivers", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  lastName: text("last_name").notNull(),
+  firstName: text("first_name").notNull(),
+  middleName: text("middle_name"),
+});
 import { requirePermission } from "../middleware/permissions.js";
 import {
   createDeliverySchema,
@@ -297,20 +344,27 @@ router.post(
         .get();
 
       // Создаем связанный доход с указанной суммой и статусом оплаты
-      const incomeResult = db
-        .insert(incomes)
-        .values({
-          incomeType: "delivery_payment",
-          paymentMethod: data.paymentMethod,
-          isPaid: data.isPaid,
-          orderId: data.orderId,
-          deliveryId: Number(result.lastInsertRowid),
-          amount: data.amount,
-          paymentDate: now.split("T")[0],
-          createdAt: now,
-          updatedAt: now,
-        })
-        .run();
+      const incomeData: any = {
+        incomeType: "delivery_payment",
+        paymentMethod: data.paymentMethod,
+        isPaid: data.isPaid,
+        orderId: data.orderId,
+        deliveryId: Number(result.lastInsertRowid),
+        amount: data.amount,
+        paymentDate: now.split("T")[0],
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      // Добавляем поля получателя, если они есть
+      if (data.recipientType) {
+        incomeData.recipientType = data.recipientType;
+      }
+      if (data.recipientId) {
+        incomeData.recipientId = data.recipientId;
+      }
+
+      const incomeResult = db.insert(incomes).values(incomeData).run();
 
       // Обновляем доставку, привязывая доход
       db.update(deliveries)
@@ -489,7 +543,8 @@ router.put(
       }
 
       // Удаляем amount и isPaid из updateData - они обновляются в income
-      const { amount, isPaid, ...deliveryUpdateData } = updateData as any;
+      const { amount, isPaid, recipientType, recipientId, ...deliveryUpdateData } =
+        updateData as any;
 
       db.update(deliveries).set(deliveryUpdateData).where(eq(deliveries.id, deliveryId)).run();
 
@@ -508,6 +563,45 @@ router.put(
           .run();
       }
 
+      // Обновляем recipientType и recipientId в связанном income и логируем изменения
+      if ((recipientType !== undefined || recipientId !== undefined) && currentDelivery.incomeId) {
+        // СНАЧАЛА читаем текущие (старые) значения получателя из income
+        const oldIncome = db
+          .select()
+          .from(incomes)
+          .where(eq(incomes.id, currentDelivery.incomeId))
+          .get();
+
+        const incomeUpdate: Record<string, unknown> = { updatedAt: now };
+        if (recipientType !== undefined) incomeUpdate.recipientType = recipientType;
+        if (recipientId !== undefined) incomeUpdate.recipientId = recipientId;
+        db.update(incomes).set(incomeUpdate).where(eq(incomes.id, currentDelivery.incomeId)).run();
+
+        // Проверяем, была ли уже запись в истории для этой доставки
+        const existingHistory = sqlite
+          .prepare("SELECT COUNT(*) as count FROM recipient_history WHERE delivery_id = ?")
+          .all(deliveryId) as { count: number }[];
+
+        const hasHistory = (existingHistory[0]?.count || 0) > 0;
+        const action = hasHistory ? "updated" : "created";
+
+        db.insert(recipientHistory)
+          .values({
+            deliveryId,
+            incomeId: currentDelivery.incomeId,
+            userId,
+            recipientType: recipientType ?? null,
+            recipientId: recipientId ?? null,
+            oldRecipientType: oldIncome?.recipientType ?? null,
+            oldRecipientId: oldIncome?.recipientId ?? null,
+            action,
+            comment: hasHistory
+              ? `Изменен получатель. ${recipientType !== undefined ? `Тип: ${recipientType}` : ""} ${recipientId !== undefined ? `ID: ${recipientId}` : ""}`
+              : `Получатель назначен. ${recipientType !== undefined ? `Тип: ${recipientType}` : ""} ${recipientId !== undefined ? `ID: ${recipientId}` : ""}`,
+            createdAt: now,
+          })
+          .run();
+      }
       const updatedDelivery = db
         .select()
         .from(deliveries)
@@ -606,6 +700,39 @@ router.post(
           .set({ isPaid: true, updatedAt: now })
           .where(eq(incomes.id, delivery.incomeId))
           .run();
+
+        // Записываем изменение получателя в историю при завершении доставки
+        // Только если ещё нет записей в истории (т.е. получатель не был назначен ранее)
+        const existingHistory = sqlite
+          .prepare("SELECT COUNT(*) as count FROM recipient_history WHERE delivery_id = ?")
+          .all(deliveryId) as { count: number }[];
+
+        const hasHistory = (existingHistory[0]?.count || 0) > 0;
+
+        if (!hasHistory) {
+          const currentIncome = db
+            .select()
+            .from(incomes)
+            .where(eq(incomes.id, delivery.incomeId))
+            .get();
+
+          if (currentIncome && (currentIncome.recipientType || currentIncome.recipientId)) {
+            db.insert(recipientHistory)
+              .values({
+                deliveryId,
+                incomeId: delivery.incomeId,
+                userId,
+                recipientType: currentIncome.recipientType,
+                recipientId: currentIncome.recipientId,
+                oldRecipientType: null,
+                oldRecipientId: null,
+                action: "created",
+                comment: `Получатель назначен при завершении доставки. ${currentIncome.recipientType ? `Тип: ${currentIncome.recipientType}` : ""} ${currentIncome.recipientId ? `ID: ${currentIncome.recipientId}` : ""}`,
+                createdAt: now,
+              })
+              .run();
+          }
+        }
       }
 
       // Запись в историю
@@ -627,6 +754,102 @@ router.post(
       res.json(updatedDelivery);
     } catch (error) {
       console.error("Error completing delivery:", error);
+      res.status(500).json({
+        error: "Ошибка сервера",
+        details: error instanceof Error ? error.message : error,
+      });
+    }
+  },
+);
+
+// Получить историю изменений получателей для доставки
+router.get(
+  "/:id/recipient-history",
+  authenticate,
+  requirePermission("deliveries:list"),
+  async (req: AuthRequest, res) => {
+    try {
+      const deliveryId = parseInt(req.params.id);
+
+      if (isNaN(deliveryId)) {
+        return res.status(400).json({ error: "Неверный ID доставки" });
+      }
+
+      // Use raw SQL to avoid Drizzle alias issues with multiple joins
+      const history = sqlite
+        .prepare(
+          `
+          SELECT
+            rh.id,
+            rh.delivery_id,
+            rh.income_id,
+            rh.user_id,
+            rh.recipient_type,
+            rh.recipient_id,
+            rh.old_recipient_type,
+            rh.old_recipient_id,
+            rh.action,
+            rh.comment,
+            rh.created_at,
+            -- Name of user who made the change
+            u_changed.last_name || ' ' || u_changed.first_name || (CASE WHEN u_changed.middle_name IS NOT NULL AND u_changed.middle_name != '' THEN ' ' || u_changed.middle_name ELSE '' END) as changed_by_name,
+            -- New recipient name (employee)
+            u_emp.last_name || ' ' || u_emp.first_name || (CASE WHEN u_emp.middle_name IS NOT NULL AND u_emp.middle_name != '' THEN ' ' || u_emp.middle_name ELSE '' END) as recipient_emp_name,
+            -- New recipient name (driver)
+            d_rec.last_name || ' ' || d_rec.first_name || (CASE WHEN d_rec.middle_name IS NOT NULL AND d_rec.middle_name != '' THEN ' ' || d_rec.middle_name ELSE '' END) as recipient_driver_name,
+            -- Old recipient name (employee)
+            u_old_emp.last_name || ' ' || u_old_emp.first_name || (CASE WHEN u_old_emp.middle_name IS NOT NULL AND u_old_emp.middle_name != '' THEN ' ' || u_old_emp.middle_name ELSE '' END) as old_recipient_emp_name,
+            -- Old recipient name (driver)
+            d_old.last_name || ' ' || d_old.first_name || (CASE WHEN d_old.middle_name IS NOT NULL AND d_old.middle_name != '' THEN ' ' || d_old.middle_name ELSE '' END) as old_recipient_driver_name
+          FROM recipient_history rh
+          LEFT JOIN users u_changed ON rh.user_id = u_changed.id
+          LEFT JOIN users u_emp ON rh.recipient_type = 'employee' AND rh.recipient_id = u_emp.id
+          LEFT JOIN users u_old_emp ON rh.old_recipient_type = 'employee' AND rh.old_recipient_id = u_old_emp.id
+          LEFT JOIN drivers d_rec ON rh.recipient_type = 'driver' AND rh.recipient_id = d_rec.id
+          LEFT JOIN drivers d_old ON rh.old_recipient_type = 'driver' AND rh.old_recipient_id = d_old.id
+          WHERE rh.delivery_id = ?
+          ORDER BY rh.created_at DESC
+        `,
+        )
+        .all(deliveryId) as any[];
+
+      // Map to plain objects
+      const plainHistory = (history || []).map((item: any) => {
+        let recipientName = "";
+        if (item.recipient_type === "employee" && item.recipient_emp_name) {
+          recipientName = item.recipient_emp_name.trim();
+        } else if (item.recipient_type === "driver" && item.recipient_driver_name) {
+          recipientName = item.recipient_driver_name.trim();
+        }
+
+        let oldRecipientName = "";
+        if (item.old_recipient_type === "employee" && item.old_recipient_emp_name) {
+          oldRecipientName = item.old_recipient_emp_name.trim();
+        } else if (item.old_recipient_type === "driver" && item.old_recipient_driver_name) {
+          oldRecipientName = item.old_recipient_driver_name.trim();
+        }
+
+        return {
+          id: Number(item.id),
+          deliveryId: Number(item.delivery_id),
+          incomeId: item.income_id ? Number(item.income_id) : null,
+          userId: Number(item.user_id),
+          recipientType: item.recipient_type ?? null,
+          recipientId: item.recipient_id ? Number(item.recipient_id) : null,
+          recipientName: recipientName || "",
+          oldRecipientType: item.old_recipient_type ?? null,
+          oldRecipientId: item.old_recipient_id ? Number(item.old_recipient_id) : null,
+          oldRecipientName: oldRecipientName || "",
+          action: item.action,
+          comment: item.comment ?? null,
+          createdAt: item.created_at,
+          changedByName: item.changed_by_name?.trim() || null,
+        };
+      });
+
+      res.json(plainHistory);
+    } catch (error) {
+      console.error("Error fetching recipient history:", error);
       res.status(500).json({
         error: "Ошибка сервера",
         details: error instanceof Error ? error.message : error,

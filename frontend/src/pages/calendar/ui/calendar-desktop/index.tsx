@@ -8,10 +8,17 @@ import { ChevronLeft, ChevronRight, HomeIcon, MenuIcon, PlusIcon, BanIcon } from
 import { cn } from "@/lib/utils";
 import { DeliveryBlock } from "./delivery-block";
 import { Link } from "@tanstack/react-router";
+import { useAddDelivery } from "./use-add-delivery";
+import { AddDeliveryModal } from "./add-delivery-modal";
+import { CompleteDeliveryModal } from "./complete-delivery-modal";
 
 // Desktop версия календаря
 export const CalendarDesktop = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [deliveryData, setDeliveryData] = useState<{
+    selectedDate: Date;
+    selectedHour: number;
+  } | null>(null);
 
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
@@ -19,7 +26,7 @@ export const CalendarDesktop = () => {
   const {
     deliveries,
     isLoading,
-    error,
+    error: calendarError,
     formatWeekRange,
     formatTime,
     loadDeliveries,
@@ -31,6 +38,46 @@ export const CalendarDesktop = () => {
   useEffect(() => {
     loadDeliveries();
   }, [loadDeliveries]);
+
+  const handleDeliveryCreated = useCallback(() => {
+    loadDeliveries();
+  }, [loadDeliveries]);
+
+  const {
+    showDeliveryDialog,
+    setShowDeliveryDialog,
+    form,
+    error,
+    editingDelivery,
+    handleCancelDelivery,
+    handleEditDelivery,
+    handleSaveDelivery,
+    handleCompleteDelivery,
+    handleChangeRecipient,
+    drivers,
+    cars,
+    availableOrders,
+    users,
+    completingDelivery,
+    setCompletingDelivery,
+    // Complete delivery modal
+    showCompleteDialog,
+    setShowCompleteDialog,
+    completeForm,
+    handleSaveComplete,
+    handleCancelComplete,
+    isChangingRecipient,
+  } = useAddDelivery({
+    initialData: deliveryData || undefined,
+    onDeliveryCreated: handleDeliveryCreated,
+  });
+
+  // Reset initial data after dialog is shown
+  useEffect(() => {
+    if (showDeliveryDialog && deliveryData) {
+      setDeliveryData(null);
+    }
+  }, [showDeliveryDialog, deliveryData]);
 
   const handlePrevWeek = () => {
     setSelectedDate((prev) => prevWeek(prev));
@@ -58,6 +105,16 @@ export const CalendarDesktop = () => {
     },
     [deliveries],
   );
+
+  const handleCellClick = (dayIndex: number, hour: number) => {
+    const dt = new Date(selectedDate);
+    const currentDay = dt.getDay() === 0 ? 6 : dt.getDay() - 1;
+    const targetDay = DAYS_WEEK.indexOf(DAYS_WEEK[dayIndex]);
+    const diff = targetDay - currentDay;
+    dt.setDate(dt.getDate() + diff);
+    dt.setHours(hour, 0, 0, 0);
+    setDeliveryData({ selectedDate: dt, selectedHour: hour });
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -90,9 +147,9 @@ export const CalendarDesktop = () => {
       </Card>
 
       {isLoading && <div className="text-center py-8">Загрузка...</div>}
-      {error && <div className="text-center py-8 text-red-500">{error}</div>}
+      {calendarError && <div className="text-center py-8 text-red-500">{calendarError}</div>}
 
-      {!isLoading && !error && (
+      {!isLoading && !calendarError && (
         <div className="border rounded-lg overflow-hidden bg-white">
           {/* Шапка с днями недели */}
           <div className="grid grid-cols-[70px_repeat(7,1fr)] border-b bg-zinc-50">
@@ -172,10 +229,23 @@ export const CalendarDesktop = () => {
                         "hover:bg-blue-50 transition-colors cursor-pointer",
                       !hasDelivery && isPast && "hover:bg-zinc-50 transition-colors",
                     )}
+                    onClick={() => {
+                      if (!hasDelivery && !isPast) {
+                        handleCellClick(dayIndex, hour);
+                      }
+                    }}
                   >
                     {/* Иконки по центру ячейки (только если нет доставки) */}
                     {!hasDelivery && (
-                      <div className="absolute inset-0 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div
+                        className="absolute inset-0 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!hasDelivery && !isPast) {
+                            handleCellClick(dayIndex, hour);
+                          }
+                        }}
+                      >
                         {isPast ? (
                           <BanIcon className="h-12 w-12 text-gray-400/40" />
                         ) : (
@@ -188,6 +258,7 @@ export const CalendarDesktop = () => {
                         key={delivery.id}
                         delivery={delivery}
                         time={formatTime(delivery.dateTime)}
+                        onEdit={handleEditDelivery}
                       />
                     ))}
                   </div>
@@ -197,6 +268,40 @@ export const CalendarDesktop = () => {
           ))}
         </div>
       )}
+
+      {/* Модальное окно добавления доставки */}
+      <AddDeliveryModal
+        showDeliveryDialog={showDeliveryDialog}
+        setShowDeliveryDialog={setShowDeliveryDialog}
+        form={form}
+        error={error}
+        editingDelivery={editingDelivery}
+        handleSaveDelivery={handleSaveDelivery}
+        handleCompleteDelivery={handleCompleteDelivery}
+        handleChangeRecipient={handleChangeRecipient}
+        drivers={drivers}
+        cars={cars}
+        availableOrders={availableOrders}
+        users={users}
+        completingDelivery={completingDelivery}
+        setCompletingDelivery={setCompletingDelivery}
+        handleCancelDelivery={handleCancelDelivery}
+        isChangingRecipient={isChangingRecipient}
+      />
+
+      {/* Модальное окно завершения доставки */}
+      <CompleteDeliveryModal
+        showCompleteDialog={showCompleteDialog}
+        setShowCompleteDialog={setShowCompleteDialog}
+        form={completeForm}
+        control={completeForm.control}
+        editingDelivery={editingDelivery}
+        handleSaveComplete={handleSaveComplete}
+        handleCancelComplete={handleCancelComplete}
+        drivers={drivers}
+        users={users}
+        isChangingRecipient={isChangingRecipient}
+      />
 
       <div
         className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}

@@ -4,6 +4,7 @@ import {
   Delivery,
   DeliveryWithIncome,
   UpdateDeliveryInput,
+  RecipientHistory,
 } from "../types/delivery-types";
 
 export const deliveriesApi = {
@@ -24,4 +25,6 @@ export const deliveriesApi = {
     request<Delivery>(`/deliveries/${id}/complete`, {
       method: "POST",
     }),
+  getRecipientHistory: (id: number) =>
+    request<RecipientHistory[]>(`/deliveries/${id}/recipient-history`),
 };

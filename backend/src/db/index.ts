@@ -4,4 +4,5 @@ import * as schema from "./schema.js";
 export { schema };
 
 const sqlite = new Database("data/polanet.db");
+export { sqlite };
 export const db = drizzle(sqlite, { schema });

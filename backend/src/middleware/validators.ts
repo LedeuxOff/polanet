@@ -299,6 +299,8 @@ export const createDeliverySchema = z.object({
   isPaymentBeforeUnloading: z.boolean().default(false),
   notifyClient: z.boolean().default(false),
   notifyDriver: z.boolean().default(false),
+  recipientType: z.enum(["employee", "driver"]).optional().nullable(),
+  recipientId: z.number().int().positive().optional().nullable(),
 });
 
 export const updateDeliverySchema = z.object({
@@ -313,6 +315,8 @@ export const updateDeliverySchema = z.object({
   isPaymentBeforeUnloading: z.boolean().optional(),
   notifyClient: z.boolean().optional(),
   notifyDriver: z.boolean().optional(),
+  recipientType: z.enum(["employee", "driver"]).optional().nullable(),
+  recipientId: z.number().int().positive().optional().nullable(),
 });
 
 // === Incomes (Доходы) Validators ===
@@ -336,6 +340,10 @@ export const createIncomeSchema = z.object({
   paymentDate: z.string().min(1, "Дата оплаты обязательна"),
   // Айди доставки к которой привязан доход (опционально)
   deliveryId: z.number().int().positive().optional().nullable(),
+  // Тип получателя - employee (сотрудник) | driver (водитель)
+  recipientType: z.enum(["employee", "driver"]).optional().nullable(),
+  // Айди получателя (id сотрудника или водителя)
+  recipientId: z.number().int().positive().optional().nullable(),
 });
 
 export const updateIncomeSchema = z.object({
@@ -346,6 +354,8 @@ export const updateIncomeSchema = z.object({
   amount: z.number().int().positive("Сумма должна быть положительной").optional(),
   paymentDate: z.string().min(1, "Дата оплаты обязательна").optional(),
   deliveryId: z.number().int().positive().optional().nullable(),
+  recipientType: z.enum(["employee", "driver"]).optional().nullable(),
+  recipientId: z.number().int().positive().optional().nullable(),
 });
 
 export const completeDeliverySchema = z.object({});

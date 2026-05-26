@@ -18,109 +18,116 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Car, Delivery, DeliveryForm, Driver } from "@/lib/types";
+import { Car, CalendarDelivery, DeliveryForm, Driver, Order, User } from "@/lib/types";
 import { Dispatch, SetStateAction, useEffect, useMemo } from "react";
 import { UseFormReturn } from "react-hook-form";
+import { CheckCircleIcon, Edit3Icon } from "lucide-react";
 
 interface Props {
   showDeliveryDialog: boolean;
   setShowDeliveryDialog: Dispatch<SetStateAction<boolean>>;
   form: UseFormReturn<DeliveryForm>;
   error: string | null;
-  editingDelivery: Delivery | null;
+  editingDelivery: CalendarDelivery | null;
   handleSaveDelivery: (data: DeliveryForm) => Promise<void>;
+  handleCompleteDelivery: () => Promise<void>;
+  handleChangeRecipient: () => void;
   drivers: Driver[];
   cars: Car[];
+  availableOrders: Order[];
   handleCancelDelivery: () => void;
-  users: import("@/lib/types").User[];
+  users: User[];
   completingDelivery?: boolean;
+  setCompletingDelivery?: Dispatch<SetStateAction<boolean>>;
+  isChangingRecipient?: boolean;
 }
 
-export const AddDeliveryDesktopModal = ({
+const isDeliveryComplete = (delivery: CalendarDelivery | null): boolean => {
+  return delivery?.status === "completed";
+};
+
+export const AddDeliveryModal = ({
   showDeliveryDialog,
   setShowDeliveryDialog,
   editingDelivery,
   form,
   error,
   handleSaveDelivery,
+  handleCompleteDelivery,
+  handleChangeRecipient,
   drivers,
   cars,
+  availableOrders,
   handleCancelDelivery,
   users,
   completingDelivery = false,
+  setCompletingDelivery,
+  isChangingRecipient = false,
 }: Props) => {
   const isEditing = !!editingDelivery;
-  const isComplete = editingDelivery?.status === "completed";
+  const isComplete = isDeliveryComplete(editingDelivery);
   const isReadOnly = isEditing && isComplete;
+  const isViewingExisting = isEditing && !isComplete;
 
-  const selectProps = isReadOnly ? { disabled: true as const } : {};
-  const inputProps = isReadOnly ? { disabled: true as const } : {};
-  const checkboxProps = isReadOnly ? { disabled: true as const } : {};
+  const selectProps = isReadOnly || isViewingExisting ? { disabled: true as const } : {};
+  const inputProps = isReadOnly || isViewingExisting ? { disabled: true as const } : {};
+  const checkboxProps = isReadOnly || isViewingExisting ? { disabled: true as const } : {};
 
-  // Фильтруем пользователей - исключаем водителей из списка сотрудников
-  const employees = useMemo(() => {
-    // Получаем ID всех водителей
-    const driverIds = new Set(drivers.map((d) => d.id));
-    // Возвращаем пользователей, которых нет в списке водителей
-    // Примечание: Users и Drivers - это разные таблицы, поэтому просто возвращаем всех пользователей
-    return users;
-  }, [users, drivers]);
+  // Получаем isPaid из editingDelivery для существующих доставок
+  const deliveryIsPaid = editingDelivery?.income?.isPaid ?? false;
+  const formIsPaid = form.watch("isPaid");
+  const isPaid = isEditing ? deliveryIsPaid : formIsPaid;
 
-  // Получаем ID водителя из текущей доставки
-  const driverId = form.watch("driverId");
-  const recipientType = form.watch("recipientType");
-  const isPaid = form.watch("isPaid");
+  // Получаем recipientType и recipientId из income для существующих доставок
+  const recipientType =
+    isEditing && editingDelivery?.income?.recipientType != null
+      ? editingDelivery.income.recipientType
+      : form.watch("recipientType") || "";
+
+  // Получаем recipientId из income для существующих доставок
+  const recipientId =
+    isEditing && editingDelivery?.income?.recipientId != null
+      ? editingDelivery.income.recipientId
+      : form.watch("recipientId") || "";
 
   // Показываем поля получателя если isPaid = true или если мы в режиме завершения доставки
-  const showRecipientFields = (isPaid || completingDelivery) && !isReadOnly;
+  const showRecipientFields = (isPaid && !isViewingExisting) || completingDelivery;
 
   useEffect(() => {
-    if (showDeliveryDialog && editingDelivery) {
-      const dt = new Date(editingDelivery.dateTime);
-      const year = dt.getFullYear();
-      const month = String(dt.getMonth() + 1).padStart(2, "0");
-      const day = String(dt.getDate()).padStart(2, "0");
-      const hours = String(dt.getHours()).padStart(2, "0");
-      const minutes = String(dt.getMinutes()).padStart(2, "0");
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const income = (editingDelivery as any).income;
-
+    if (showDeliveryDialog && !editingDelivery) {
+      // Reset form when creating a new delivery
       form.reset({
-        driverId: editingDelivery.driverId,
-        carId: editingDelivery.carId,
-        dateTime: `${year}-${month}-${day}T${hours}:${minutes}`,
-        amount: income?.amount || editingDelivery.amount || 0,
-        volume: editingDelivery.volume || undefined,
-        comment: editingDelivery.comment || undefined,
-        paymentMethod: editingDelivery.paymentMethod,
-        isPaid: income?.isPaid || false,
-        isPaymentBeforeUnloading: editingDelivery.isPaymentBeforeUnloading,
-        notifyClient: editingDelivery.notifyClient,
-        notifyDriver: editingDelivery.notifyDriver,
-        recipientType: editingDelivery.recipientType || undefined,
-        recipientId: editingDelivery.recipientId || undefined,
+        amount: 0,
+        paymentMethod: "cash",
+        isPaid: false,
+        isPaymentBeforeUnloading: false,
+        notifyClient: false,
+        notifyDriver: false,
       });
     }
   }, [showDeliveryDialog, editingDelivery, form]);
 
   return (
     <Dialog open={showDeliveryDialog} onOpenChange={setShowDeliveryDialog}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing
-              ? isComplete
-                ? "Детали доставки (завершена)"
-                : "Редактирование доставки"
-              : "Добавление доставки"}
+            {isChangingRecipient
+              ? "Смена получателя средств"
+              : isEditing
+                ? isComplete
+                  ? "Детали доставки (завершена)"
+                  : "Редактирование доставки"
+                : "Добавление доставки"}
           </DialogTitle>
           <DialogDescription>
-            {isEditing
-              ? isComplete
-                ? "Эта доставка завершена"
-                : "Заполните данные о доставке"
-              : "Заполните данные о доставке"}
+            {isChangingRecipient
+              ? "Измените данные о получателе средств"
+              : isEditing
+                ? isComplete
+                  ? "Эта доставка завершена"
+                  : `Статус: ${isComplete ? "Завершена" : "В процессе"}`
+                : "Заполните данные о доставке"}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(handleSaveDelivery)} className="space-y-4">
@@ -128,9 +135,34 @@ export const AddDeliveryDesktopModal = ({
             <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">{error}</div>
           )}
 
+          {/* Поле выбора заявки */}
+          <div className="space-y-2">
+            <Label>Заявка {isEditing ? "" : "*"}</Label>
+            <Select
+              value={String(form.watch("orderId") || "")}
+              onValueChange={(value) => form.setValue("orderId", Number(value))}
+              {...selectProps}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Выберите заявку" />
+              </SelectTrigger>
+              <SelectContent>
+                {availableOrders.map((order) => (
+                  <SelectItem key={order.id} value={String(order.id)}>
+                    {order.id} - {order.receiverLastName} {order.receiverFirstName} ({order.address}
+                    )
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {form.formState.errors.orderId && (
+              <p className="text-sm text-destructive">{form.formState.errors.orderId.message}</p>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Водитель *</Label>
+              <Label>Водитель {isEditing ? "" : "*"}</Label>
               <Select
                 value={String(form.watch("driverId") || "")}
                 onValueChange={(value) => form.setValue("driverId", Number(value))}
@@ -150,7 +182,7 @@ export const AddDeliveryDesktopModal = ({
             </div>
 
             <div className="space-y-2">
-              <Label>Автомобиль *</Label>
+              <Label>Автомобиль {isEditing ? "" : "*"}</Label>
               <Select
                 value={String(form.watch("carId") || "")}
                 onValueChange={(value) => form.setValue("carId", Number(value))}
@@ -172,7 +204,7 @@ export const AddDeliveryDesktopModal = ({
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
-              <Label>Дата и время *</Label>
+              <Label>Дата и время {isEditing ? "" : "*"}</Label>
               <Input type="datetime-local" {...form.register("dateTime")} {...inputProps} />
             </div>
 
@@ -182,7 +214,7 @@ export const AddDeliveryDesktopModal = ({
             </div>
 
             <div className="space-y-2">
-              <Label>Стоимость *</Label>
+              <Label>Стоимость {isEditing ? "" : "*"}</Label>
               <Input type="number" {...form.register("amount")} {...inputProps} />
               {form.formState.errors.amount && (
                 <p className="text-sm text-destructive">{form.formState.errors.amount.message}</p>
@@ -197,7 +229,7 @@ export const AddDeliveryDesktopModal = ({
 
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
-              <Label>Тип оплаты *</Label>
+              <Label>Тип оплаты {isEditing ? "" : "*"}</Label>
               <Select
                 value={form.watch("paymentMethod")}
                 onValueChange={(value: "cash" | "bank_transfer") =>
@@ -210,7 +242,7 @@ export const AddDeliveryDesktopModal = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="cash">Наличные</SelectItem>
-                  <SelectItem value="bank_transfer">Безналичный расчет</SelectItem>
+                  <SelectItem value="bank_transfer">Безличный расчет</SelectItem>
                 </SelectContent>
               </Select>
               {form.formState.errors.paymentMethod && (
@@ -264,7 +296,7 @@ export const AddDeliveryDesktopModal = ({
                 <div className="space-y-2">
                   <Label>Сотрудник *</Label>
                   <Select
-                    value={String(form.watch("recipientId") || "")}
+                    value={String(recipientId || "")}
                     onValueChange={(value) => form.setValue("recipientId", Number(value))}
                     {...selectProps}
                   >
@@ -272,7 +304,7 @@ export const AddDeliveryDesktopModal = ({
                       <SelectValue placeholder="Выберите сотрудника" />
                     </SelectTrigger>
                     <SelectContent>
-                      {employees.map((user) => (
+                      {users.map((user) => (
                         <SelectItem key={user.id} value={String(user.id)}>
                           {user.lastName} {user.firstName} {user.middleName || ""}
                         </SelectItem>
@@ -286,7 +318,7 @@ export const AddDeliveryDesktopModal = ({
                 <div className="space-y-2">
                   <Label>Водитель *</Label>
                   <Select
-                    value={String(form.watch("recipientId") || "")}
+                    value={String(recipientId || "")}
                     onValueChange={(value) => form.setValue("recipientId", Number(value))}
                     {...selectProps}
                   >
@@ -345,30 +377,35 @@ export const AddDeliveryDesktopModal = ({
 
           <DialogFooter>
             <Button type="button" variant="outline" onClick={handleCancelDelivery}>
-              Отмена
+              Закрыть
             </Button>
-            {!isComplete && isEditing && (
+            {!isComplete && isEditing && !completingDelivery && (
               <Button
                 type="button"
-                onClick={async () => {
-                  try {
-                    await handleSaveDelivery(form.getValues());
-                  } catch (error) {
-                    console.error("Error saving delivery:", error);
-                  }
-                }}
-                className={
-                  completingDelivery
-                    ? "bg-green-600 hover:bg-green-700 text-white"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
-                }
+                onClick={handleCompleteDelivery}
+                className="bg-green-600 hover:bg-green-700 text-white"
               >
-                {completingDelivery ? "Завершить и выбрать получателя" : "Завершить доставку"}
+                <CheckCircleIcon className="w-4 h-4 mr-2" />
+                Завершить доставку
+              </Button>
+            )}
+            {/* Кнопка смены получателя для завершенной доставки */}
+            {isComplete && isEditing && (
+              <Button
+                type="button"
+                onClick={handleChangeRecipient}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <Edit3Icon className="w-4 h-4 mr-2" />
+                Сменить получателя
               </Button>
             )}
             {!isEditing && <Button type="submit">Добавить</Button>}
-            {isEditing && !isComplete && !completingDelivery && (
-              <Button type="submit">Сохранить</Button>
+            {completingDelivery && (
+              <Button type="submit" className="bg-green-600 hover:bg-green-700 text-white">
+                <CheckCircleIcon className="w-4 h-4 mr-2" />
+                {isChangingRecipient ? "Сохранить" : "Сохранить и завершить"}
+              </Button>
             )}
           </DialogFooter>
         </form>

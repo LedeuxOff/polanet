@@ -42,6 +42,8 @@ export const OrderDeliveries = ({ orderId, setOrder, order, disabledByStatus }: 
     drivers,
     cars,
     setEditingDelivery,
+    users,
+    completingDelivery,
   } = useOrderDeliveries({ orderId, setOrder });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -69,6 +71,7 @@ export const OrderDeliveries = ({ orderId, setOrder, order, disabledByStatus }: 
               setShowDeliveryDialog(true);
               setEditingDelivery(null);
               form.reset();
+              form.setValue("orderId", Number(orderId));
             }}
             className="bg-blue-600 hover:bg-blue-700"
             disabled={disabledByStatus}
@@ -91,7 +94,7 @@ export const OrderDeliveries = ({ orderId, setOrder, order, disabledByStatus }: 
                         <DeliveryMobileItem
                           key={delivery.id}
                           delivery={delivery}
-                          handleCompleteDelivery={handleCompleteDelivery}
+                          handleCompleteDelivery={() => handleCompleteDelivery(delivery)}
                           handleEditDelivery={handleEditDelivery}
                           disabledByStatus={disabledByStatus}
                           handleDeleteDelivery={handleDeleteDelivery}
@@ -102,7 +105,7 @@ export const OrderDeliveries = ({ orderId, setOrder, order, disabledByStatus }: 
                       <DeliveryDesktopItem
                         key={delivery.id}
                         delivery={delivery}
-                        handleCompleteDelivery={handleCompleteDelivery}
+                        handleCompleteDelivery={() => handleCompleteDelivery(delivery)}
                         handleEditDelivery={handleEditDelivery}
                         disabledByStatus={disabledByStatus}
                         handleDeleteDelivery={handleDeleteDelivery}
@@ -128,6 +131,7 @@ export const OrderDeliveries = ({ orderId, setOrder, order, disabledByStatus }: 
                 setShowDeliveryDialog(true);
                 setEditingDelivery(null);
                 form.reset();
+                form.setValue("orderId", Number(orderId));
               }}
               className="bg-blue-600 hover:bg-blue-700"
               disabled={
@@ -154,6 +158,8 @@ export const OrderDeliveries = ({ orderId, setOrder, order, disabledByStatus }: 
           drivers={drivers}
           cars={cars}
           handleCancelDelivery={handleCancelDelivery}
+          users={users}
+          completingDelivery={completingDelivery}
         />
       )}
 
@@ -169,6 +175,8 @@ export const OrderDeliveries = ({ orderId, setOrder, order, disabledByStatus }: 
           drivers={drivers}
           cars={cars}
           handleCancelDelivery={handleCancelDelivery}
+          users={users}
+          completingDelivery={completingDelivery}
         />
       )}
     </>
