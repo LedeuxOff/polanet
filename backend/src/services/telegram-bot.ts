@@ -35,22 +35,22 @@ export async function handleTelegramWebhook(body: any): Promise<{ ok: boolean }>
       return { ok: true };
     }
 
-    // Если пользователь уже начал диалог, пытаемся найти его по telegram_chat_id
-    const user = await findUserByTelegramChatId(String(chatId));
-
-    if (!user) {
-      // Пользователь не найден - отправляем инструкцию
-      await sendMessage(chatId, getStartInstruction());
+    // Проверяем, не отправляет ли пользователь номер телефона
+    const phoneMatch = text.match(/^\+?\d{10,12}$/);
+    if (phoneMatch) {
+      await handlePhoneLink(chatId, phoneMatch[0]);
       return { ok: true };
     }
 
-    // Пользователь найден - отправляем подтверждение
-    const userFio = `${user.lastName} ${user.firstName}`;
-    await sendMessage(
-      chatId,
-      `✅ <b>Telegram привязан к аккаунту</b>\n\n👤 ${userFio}\n📧 ${user.email}\n\nТеперь вы будете получать уведомления о доставках.`,
-    );
+    // Если пользователь уже привязан, игнорируем сообщения
+    const linkedUser = await findUserByTelegramChatId(String(chatId));
+    if (linkedUser) {
+      await sendMessage(chatId, "✅ Ваш Telegram уже привязан к аккаунту.");
+      return { ok: true };
+    }
 
+    // Пользователь не привязан - отправляем инструкцию
+    await sendMessage(chatId, getStartInstruction());
     return { ok: true };
   } catch (error) {
     console.error("[Telegram Bot] Ошибка обработки:", error);
@@ -78,6 +78,82 @@ async function handleStartCommand(chatId: number) {
 }
 
 /**
+ * Обработка отправки номера телефона для привязки
+ */
+async function handlePhoneLink(chatId: number, phone: string) {
+  console.log(`[Telegram Bot] Попытка привязки по телефону ${phone} для chatId ${chatId}`);
+
+  // Ищем пользователя по телефону (нормализуем номер)
+  const normalizedPhone = normalizePhone(phone);
+  console.log(`[Telegram Bot] Нормализованный телефон: ${normalizedPhone}`);
+
+  const user = await findUserByPhone(normalizedPhone);
+
+  if (!user) {
+    // Пользователь не найден
+    await sendMessage(
+      chatId,
+      `❌ <b>Аккаунт не найден</b>\n\nПользователь с номером телефона ${phone} не найден в базе данных.\n\n📌 Проверьте правильность номера или напишите вашему менеджеру.`,
+    );
+    return;
+  }
+
+  // Проверяем, не привязан ли уже этот Telegram к другому пользователю
+  const existingLink = await findUserByTelegramChatId(String(chatId));
+  if (existingLink) {
+    await sendMessage(
+      chatId,
+      `⚠️ <b>Telegram уже привязан</b>\n\nЭтот Telegram аккаунт уже привязан к:\n👤 ${existingLink.firstName} ${existingLink.lastName}`,
+    );
+    return;
+  }
+
+  // Привязываем Telegram к пользователю
+  db.update(users)
+    .set({ telegramChatId: String(chatId) })
+    .where(eq(users.id, user.id))
+    .run();
+
+  console.log(`[Telegram Bot] Успешно привязан chatId ${chatId} к пользователю ${user.id}`);
+
+  // Отправляем подтверждение
+  const userFio = `${user.lastName} ${user.firstName} ${user.middleName || ""}`.trim();
+  await sendMessage(
+    chatId,
+    `🎉 <b>Успешная привязка!</b>\n\n✅ Ваш Telegram аккаунт привязан к аккаунту:\n👤 ${userFio}\n📧 ${user.email}\n\nТеперь вы будете получать уведомления о новых доставках, водителях и статусах заказов.`,
+  );
+}
+
+/**
+ * Нормализация номера телефона
+ */
+function normalizePhone(phone: string): string {
+  // Удаляем все кроме цифров и первого +
+  let normalized = phone.replace(/[^\d+]/g, "");
+
+  // Если начинается с 8, заменяем на +7
+  if (normalized.startsWith("8") && normalized.length === 11) {
+    normalized = "+7" + normalized.slice(1);
+  }
+
+  // Если не начинается с +, добавляем +7
+  if (!normalized.startsWith("+")) {
+    normalized = "+7" + normalized;
+  }
+
+  return normalized;
+}
+
+/**
+ * Поиск пользователя по телефону
+ */
+async function findUserByPhone(phone: string) {
+  if (!phone) return null;
+
+  return db.select().from(users).where(eq(users.phone, phone)).limit(1).get();
+}
+
+/**
  * Инструкция для пользователя
  */
 export function getStartInstruction(): string {
@@ -85,10 +161,11 @@ export function getStartInstruction(): string {
 
 Я бот для получения уведомлений о доставках.
 
-📌 <b>Чтобы получать уведомления:</b>
+📌 <b>Чтобы привязать аккаунт:</b>
 
-1. Войдите в свой аккаунт
-2. Или напишите вашему менеджеру для привязки
+Отправьте мне свой номер телефона, указанный при регистрации.
+
+Пример: <code>79771234567</code> или <code>+79771234567</code>
 
 После привязки вы будете получать:
 📦 Уведомления о новых доставках
