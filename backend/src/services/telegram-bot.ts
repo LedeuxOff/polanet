@@ -1,4 +1,6 @@
 import axios from "axios";
+import http from "http";
+import https from "https";
 import { db } from "../db/index.js";
 import { users } from "../db/schema.js";
 import { eq, isNotNull } from "drizzle-orm";
@@ -199,7 +201,7 @@ async function sendMessage(chatId: number, text: string) {
             [
               {
                 text: "🔗 Открыть PolaNet",
-                web_app: { url: "https://polanet.ru" },
+                web_app: { url: "https://admin-polanet.ru" },
               },
             ],
           ],
@@ -207,12 +209,17 @@ async function sendMessage(chatId: number, text: string) {
       },
       {
         headers: { "Content-Type": "application/json" },
-        timeout: 30000,
+        timeout: 10000,
+        httpAgent: new http.Agent({ keepAlive: false }),
+        httpsAgent: new https.Agent({ keepAlive: false }),
       },
     );
     console.log(`[Telegram Bot] Сообщение отправлено в чат ${chatId}`);
   } catch (error) {
-    console.error("[Telegram Bot] Ошибка отправки сообщения:", error);
+    console.error(
+      "[Telegram Bot] Ошибка отправки сообщения:",
+      error instanceof Error ? error.message : String(error),
+    );
   }
 }
 
