@@ -80,23 +80,22 @@ async function handleStartCommand(chatId: string) {
 /**
  * Инструкция для пользователя
  */
-function getStartInstruction(): string {
+export function getStartInstruction(): string {
   return `🔔 <b>Добро пожаловать в PolaNet!</b>
 
 Я бот для получения уведомлений о доставках.
 
 📌 <b>Чтобы получать уведомления:</b>
 
-1. Нажмите кнопку ниже
-2. Войдите в свой аккаунт
-3. Или напишите вашему менеджеру для привязки
+1. Войдите в свой аккаунт
+2. Или напишите вашему менеджеру для привязки
 
 После привязки вы будете получать:
 📦 Уведомления о новых доставках
 🚗 Информация о водителях
 📅 Даты и адреса
 
-<button onclick="tg.openLink('https://polanet.ru/login')">🔐 Войти в аккаунт</button>`;
+🔗 Ссылка для входа: https://polanet.ru/login`;
 }
 
 /**
@@ -135,7 +134,7 @@ async function sendMessage(chatId: string, text: string) {
       },
       {
         headers: { "Content-Type": "application/json" },
-        timeout: 10000,
+        timeout: 30000,
       },
     );
     console.log(`[Telegram Bot] Сообщение отправлено в чат ${chatId}`);
