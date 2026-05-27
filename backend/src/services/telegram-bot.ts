@@ -130,35 +130,31 @@ async function handlePhoneLink(chatId: number, phone: string) {
  * Нормализация номера телефона
  */
 function normalizePhone(phone: string): string {
-  // Удаляем все кроме цифр и первого +
-  const normalized = phone.replace(/[^\d+]/g, "");
+  // Удаляем все кроме цифр
+  const digits = phone.replace(/[^\d]/g, "");
 
-  // Если начинается с +, оставляем как есть
-  if (normalized.startsWith("+")) {
-    // Если +7 и длина 12, оставляем
-    if (normalized.startsWith("+7") && normalized.length === 12) {
-      return normalized;
-    }
-    // Если +7 и длина 11 (без учёта +), добавляем 8-ю цифру если нужно
-    return normalized;
+  // Если начинается с 8 и длина 11 (8XXXXXXXXXX) -> заменяем на 7XXXXXXXXXX
+  if (digits.startsWith("8") && digits.length === 11) {
+    return "7" + digits.slice(1);
   }
 
-  // Если начинается с 8 и длина 11, заменяем на +7
-  if (normalized.startsWith("8") && normalized.length === 11) {
-    return "+7" + normalized.slice(1);
+  // Если начинается с 7 и длина 11 (7XXXXXXXXXX) -> оставляем как есть
+  if (digits.startsWith("7") && digits.length === 11) {
+    return digits;
   }
 
-  // Если начинается с 7 и длина 10 (7XXXXXXXXX), добавляем +
-  if (normalized.startsWith("7") && normalized.length === 10) {
-    return "+7" + normalized;
+  // Если начинается с 7 и длина 10 (7XXXXXXXXX) -> добавляем цифру в конец (ожидаем 11)
+  if (digits.startsWith("7") && digits.length === 10) {
+    return "7" + digits;
   }
 
-  // Если не начинается с +, добавляем +7
-  if (!normalized.startsWith("+")) {
-    return "+7" + normalized;
+  // Если длина 10 и не начинается с 7 -> добавляем 7 в начало
+  if (digits.length === 10) {
+    return "7" + digits;
   }
 
-  return normalized;
+  // По умолчанию: добавляем 7 в начало
+  return "7" + digits;
 }
 
 /**
