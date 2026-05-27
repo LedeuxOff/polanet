@@ -1,31 +1,51 @@
-FROM node:20-alpine AS builder
+# ===================== FRONTEND BUILD =====================
+FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app
 
 RUN apk add --no-cache python3 make g++
 
-COPY package*.json ./
+# Copy frontend files only
+COPY frontend/package*.json ./
 RUN npm ci
 
-COPY . .
+COPY frontend/. .
 
 RUN npm run build
 
+# ===================== BACKEND BUILD =====================
+FROM node:20-alpine AS backend-builder
+
+WORKDIR /app
+
+RUN apk add --no-cache python3 make g++
+
+COPY backend/package*.json ./
+RUN npm ci
+
+COPY backend/. .
+
+RUN npm run build
+
+# ===================== PRODUCTION =====================
 FROM node:20-alpine
 
 WORKDIR /app
 
 RUN apk add --no-cache curl python3 make g++
 
-COPY package*.json ./
+COPY backend/package*.json ./
 RUN npm ci --omit=dev --ignore-scripts && \
     npm rebuild better-sqlite3
 
-COPY --from=builder /app/dist ./dist
+# Copy backend dist
+COPY --from=backend-builder /app/dist ./dist
 
-# Copy migrations and frontend
-COPY --from=builder /app/drizzle ./drizzle
-COPY frontend/dist ./frontend/dist
+# Copy migrations
+COPY --from=backend-builder /app/drizzle ./drizzle
+
+# Copy frontend dist from frontend builder
+COPY --from=frontend-builder /app/dist ./frontend/dist
 
 RUN mkdir -p data && chmod 777 data
 
