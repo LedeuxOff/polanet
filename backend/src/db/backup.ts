@@ -5,8 +5,22 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DB_PATH = path.join(__dirname, "../../data/polanet.db");
-const BACKUP_DIR = path.join(__dirname, "../../data/backups");
+
+// Determine database and backup paths
+// When running in Docker from /app/backend/dist/db/, data is at /app/data/
+// When running locally from dist/db/, data is at ../../data/
+let DB_PATH: string;
+let BACKUP_DIR: string;
+
+if (fs.existsSync("/app/data/polanet.db")) {
+  // Docker environment
+  DB_PATH = "/app/data/polanet.db";
+  BACKUP_DIR = "/app/data/backups";
+} else {
+  // Local development
+  DB_PATH = path.join(__dirname, "../../data/polanet.db");
+  BACKUP_DIR = path.join(__dirname, "../../data/backups");
+}
 
 /**
  * Создаёт резерную копию базы данных

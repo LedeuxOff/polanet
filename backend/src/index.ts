@@ -84,7 +84,17 @@ if (isProduction) {
   const fs = await import("fs");
   const url = await import("url");
   const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
-  const frontendDist = path.join(__dirname, "../frontend/dist");
+
+  // Determine frontend dist path based on directory structure
+  // When running from /app/backend/dist/, frontend is at /app/frontend/dist
+  let frontendDist;
+  if (fs.existsSync("/app/frontend/dist")) {
+    // Running in Docker with root /app structure
+    frontendDist = "/app/frontend/dist";
+  } else {
+    // Fallback: relative to __dirname
+    frontendDist = path.join(__dirname, "../frontend/dist");
+  }
 
   // Only serve frontend if it exists
   if (fs.existsSync(frontendDist)) {
