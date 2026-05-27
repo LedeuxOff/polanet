@@ -189,11 +189,12 @@ async function sendMessage(chatId: number, text: string) {
     return;
   }
 
-  try {
-    await axios.post(
+  // Неблокирующая отправка - не ждём ответа
+  const sendPromise = axios
+    .post(
       `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
       {
-        chat_id: chatId, // Telegram API требует число
+        chat_id: chatId,
         text: text,
         parse_mode: "HTML",
         reply_markup: {
@@ -213,14 +214,19 @@ async function sendMessage(chatId: number, text: string) {
         httpAgent: new http.Agent({ keepAlive: false }),
         httpsAgent: new https.Agent({ keepAlive: false }),
       },
-    );
-    console.log(`[Telegram Bot] Сообщение отправлено в чат ${chatId}`);
-  } catch (error) {
-    console.error(
-      "[Telegram Bot] Ошибка отправки сообщения:",
-      error instanceof Error ? error.message : String(error),
-    );
-  }
+    )
+    .then(() => {
+      console.log(`[Telegram Bot] Сообщение отправлено в чат ${chatId}`);
+    })
+    .catch((error) => {
+      console.error(
+        "[Telegram Bot] Ошибка отправки сообщения:",
+        error instanceof Error ? error.message : String(error),
+      );
+    });
+
+  // Не ждём завершения отправки
+  sendPromise.catch(() => {});
 }
 
 /**
