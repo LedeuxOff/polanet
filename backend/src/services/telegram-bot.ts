@@ -1,24 +1,10 @@
 import axios from "axios";
-import { ProxyAgent } from "proxy-agent";
 import { db } from "../db/index.js";
 import { users } from "../db/schema.js";
 import { eq, isNotNull } from "drizzle-orm";
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_BOT_USERNAME = process.env.TELEGRAM_BOT_USERNAME;
-
-// Proxy configuration
-const HTTP_PROXY = process.env.HTTP_PROXY || process.env.http_proxy;
-const HTTPS_PROXY = process.env.HTTPS_PROXY || process.env.https_proxy;
-
-// Create proxy agent if proxy is set
-const proxyAgent = HTTP_PROXY || HTTPS_PROXY ? new ProxyAgent() : undefined;
-
-if (HTTP_PROXY || HTTPS_PROXY) {
-  console.log(
-    `[Telegram Bot] Proxy enabled: HTTP_PROXY=${HTTP_PROXY || "not set"}, HTTPS_PROXY=${HTTPS_PROXY || "not set"}`,
-  );
-}
 
 /**
  * Обработка входящих сообщений от Telegram
@@ -150,8 +136,6 @@ async function sendMessage(chatId: string, text: string) {
       {
         headers: { "Content-Type": "application/json" },
         timeout: 10000,
-        httpAgent: proxyAgent,
-        httpsAgent: proxyAgent,
       },
     );
     console.log(`[Telegram Bot] Сообщение отправлено в чат ${chatId}`);
@@ -178,8 +162,6 @@ export async function setupTelegramWebhook(webhookUrl: string) {
       },
       {
         timeout: 10000,
-        httpAgent: proxyAgent,
-        httpsAgent: proxyAgent,
       },
     );
 
@@ -203,8 +185,6 @@ export async function removeTelegramWebhook() {
       {},
       {
         timeout: 10000,
-        httpAgent: proxyAgent,
-        httpsAgent: proxyAgent,
       },
     );
 
@@ -227,8 +207,6 @@ export async function getTelegramWebhookInfo() {
       `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo`,
       {
         timeout: 10000,
-        httpAgent: proxyAgent,
-        httpsAgent: proxyAgent,
       },
     );
     return response.data;
