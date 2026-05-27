@@ -113,17 +113,43 @@ app.use(errorHandler);
 // Запуск автоматического резервного копирования
 startAutoBackup();
 
-// Настройка Telegram webhook
+// Настройка Telegram webhook с повторными попытками
 async function setupTelegram() {
   const { setupTelegramWebhook } = await import("./services/telegram-bot.js");
   const webhookUrl = process.env.TELEGRAM_WEBHOOK_URL;
 
-  if (webhookUrl) {
-    await setupTelegramWebhook(webhookUrl);
-  } else {
+  if (!webhookUrl) {
     console.log(
       "⚠️  TELEGRAM_WEBHOOK_URL не настроен. Для работы бота настройте webhook или используйте ngrok для локальной разработки.",
     );
+    return;
+  }
+
+  // Ждать 10 секунд перед установкой webhook (для WireGuard)
+  console.log("[Telegram Bot] Ожидание 10 секунд перед установкой webhook...");
+  await new Promise((resolve) => setTimeout(resolve, 10000));
+
+  // Попытаться установить webhook с повторными попытками
+  let attempts = 0;
+  const maxAttempts = 5;
+
+  while (attempts < maxAttempts) {
+    try {
+      attempts++;
+      console.log(`[Telegram Bot] Попытка установки webhook (${attempts}/${maxAttempts})...`);
+      await setupTelegramWebhook(webhookUrl);
+      console.log("[Telegram Bot] Webhook успешно установлен");
+      break;
+    } catch (error) {
+      console.error(
+        `[Telegram Bot] Ошибка попытки ${attempts}:`,
+        error instanceof Error ? error.message : String(error),
+      );
+      if (attempts < maxAttempts) {
+        console.log("[Telegram Bot] Повторная попытка через 5 секунд...");
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+      }
+    }
   }
 }
 

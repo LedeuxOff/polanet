@@ -161,7 +161,7 @@ export async function setupTelegramWebhook(webhookUrl: string) {
         allowed_updates: ["message", "callback_query"],
       },
       {
-        timeout: 10000,
+        timeout: 30000,
       },
     );
 
