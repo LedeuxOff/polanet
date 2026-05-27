@@ -48,6 +48,7 @@ COPY --from=backend-builder /app/backend/drizzle ./backend/drizzle
 # Copy frontend dist from frontend builder
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
+# Create data directory (will be mounted from host or use local)
 RUN mkdir -p data && chmod 777 data
 
 EXPOSE 3000
