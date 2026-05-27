@@ -11,6 +11,7 @@ export interface User {
   roleId: number;
   roleCode: string;
   roleName: string;
+  telegramChatId: string | null;
   createdAt: string;
   updatedAt: string;
 }

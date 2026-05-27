@@ -169,6 +169,16 @@ export const EditUserPage = () => {
                   </div>
 
                   <div className="space-y-2">
+                    <Label htmlFor="telegramChatId">Telegram Chat ID</Label>
+                    <Input
+                      id="telegramChatId"
+                      value={user?.telegramChatId || ""}
+                      disabled
+                      placeholder="Не привязан"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
                     <Label htmlFor="birthDate">Дата рождения</Label>
                     <Input
                       id="birthDate"

@@ -26,6 +26,7 @@ router.get("/", authenticate, requirePermission("users:list"), (req: AuthRequest
         roleId: users.roleId,
         roleCode: roles.code,
         roleName: roles.name,
+        telegramChatId: users.telegramChatId,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
       })
@@ -54,6 +55,7 @@ router.get("/:id", authenticate, requirePermission("users:detail"), (req: AuthRe
         roleId: users.roleId,
         roleCode: roles.code,
         roleName: roles.name,
+        telegramChatId: users.telegramChatId,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
       })
