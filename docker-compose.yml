@@ -17,6 +17,7 @@ services:
       - DATABASE_PATH=/app/data/polanet.db
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_WEBHOOK_URL=${TELEGRAM_WEBHOOK_URL}
+      - NODE_OPTIONS=--dns-result-order=ipv4first
     volumes:
       - backend-data:/app/data
     healthcheck:
