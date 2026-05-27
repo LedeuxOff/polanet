@@ -192,4 +192,16 @@ router.post(
   },
 );
 
+// Получить информацию о webhook Telegram (публичный endpoint для проверки)
+router.get("/webhook-info", async (_req, res) => {
+  try {
+    const { getTelegramWebhookInfo } = await import("../services/telegram-bot.js");
+    const info = await getTelegramWebhookInfo();
+    res.json(info || { ok: false, description: "Webhook not configured" });
+  } catch (error) {
+    console.error("[Telegram Webhook Info] Ошибка:", error);
+    res.status(500).json({ error: "Ошибка получения информации о webhook" });
+  }
+});
+
 export default router;
