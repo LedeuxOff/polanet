@@ -205,7 +205,7 @@ export async function getTelegramWebhookInfo() {
     const response = await axios.get(
       `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo`,
       {
-        timeout: 10000,
+        timeout: 30000,
       },
     );
     return response.data;
