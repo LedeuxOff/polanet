@@ -21,7 +21,7 @@ export async function handleTelegramWebhook(body: any): Promise<{ ok: boolean }>
     }
 
     const message = update.message;
-    const chatId = message.chat.id.toString();
+    const chatId = message.chat.id; // Оставляем как число для Telegram API
     const text = message.text?.trim();
 
     // Игнорируем команды от других чатов
@@ -36,7 +36,7 @@ export async function handleTelegramWebhook(body: any): Promise<{ ok: boolean }>
     }
 
     // Если пользователь уже начал диалог, пытаемся найти его по telegram_chat_id
-    const user = await findUserByTelegramChatId(chatId);
+    const user = await findUserByTelegramChatId(String(chatId));
 
     if (!user) {
       // Пользователь не найден - отправляем инструкцию
@@ -61,9 +61,9 @@ export async function handleTelegramWebhook(body: any): Promise<{ ok: boolean }>
 /**
  * Обработка команды /start
  */
-async function handleStartCommand(chatId: string) {
+async function handleStartCommand(chatId: number) {
   // Проверяем, привязан ли уже этот chatId
-  const existingUser = await findUserByTelegramChatId(chatId);
+  const existingUser = await findUserByTelegramChatId(String(chatId));
 
   if (existingUser) {
     const userFio = `${existingUser.lastName} ${existingUser.firstName}`;
@@ -108,7 +108,7 @@ async function findUserByTelegramChatId(chatId: string) {
 /**
  * Отправка сообщения через Telegram Bot API
  */
-async function sendMessage(chatId: string, text: string) {
+async function sendMessage(chatId: number, text: string) {
   if (!TELEGRAM_BOT_TOKEN) {
     console.error("[Telegram Bot] TOKEN не настроен");
     return;
@@ -118,7 +118,7 @@ async function sendMessage(chatId: string, text: string) {
     await axios.post(
       `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
       {
-        chat_id: chatId,
+        chat_id: chatId, // Telegram API требует число
         text: text,
         parse_mode: "HTML",
         reply_markup: {
