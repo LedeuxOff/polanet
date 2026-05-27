@@ -10,11 +10,13 @@ const router = Router();
 
 // Webhook endpoint для Telegram (должен быть доступен публично)
 router.post("/webhook", async (req, res) => {
+  console.log("[Telegram Webhook] Получён запрос от Telegram");
   try {
     const result = await handleTelegramWebhook(req.body);
+    console.log("[Telegram Webhook] Обработано, ответ:", JSON.stringify(result));
     res.json(result);
   } catch (error) {
-    console.error("[Telegram Webhook] Ошибка:", error);
+    console.error("[Telegram Webhook] Ошибка обработки:", error);
     res.status(500).json({ error: "Ошибка обработки webhook" });
   }
 });

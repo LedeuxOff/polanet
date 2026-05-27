@@ -66,18 +66,6 @@ app.use("/api/system-logs", systemLogsRoutes);
 app.use("/api/permissions", permissionsRoutes);
 app.use("/api/telegram", telegramRoutes);
 
-// Telegram webhook endpoint (должен быть перед другими маршрутами)
-app.post("/api/telegram/webhook", async (req, res) => {
-  try {
-    const { handleTelegramWebhook } = await import("./services/telegram-bot.js");
-    const result = await handleTelegramWebhook(req.body);
-    res.json(result);
-  } catch (error) {
-    console.error("[Telegram Webhook] Ошибка:", error);
-    res.status(500).json({ error: "Ошибка обработки webhook" });
-  }
-});
-
 // Serve built frontend in production (после API роутов!)
 if (isProduction) {
   const path = await import("path");
