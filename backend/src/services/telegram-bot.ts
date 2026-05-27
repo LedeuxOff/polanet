@@ -130,17 +130,32 @@ async function handlePhoneLink(chatId: number, phone: string) {
  * Нормализация номера телефона
  */
 function normalizePhone(phone: string): string {
-  // Удаляем все кроме цифров и первого +
-  let normalized = phone.replace(/[^\d+]/g, "");
+  // Удаляем все кроме цифр и первого +
+  const normalized = phone.replace(/[^\d+]/g, "");
 
-  // Если начинается с 8, заменяем на +7
+  // Если начинается с +, оставляем как есть
+  if (normalized.startsWith("+")) {
+    // Если +7 и длина 12, оставляем
+    if (normalized.startsWith("+7") && normalized.length === 12) {
+      return normalized;
+    }
+    // Если +7 и длина 11 (без учёта +), добавляем 8-ю цифру если нужно
+    return normalized;
+  }
+
+  // Если начинается с 8 и длина 11, заменяем на +7
   if (normalized.startsWith("8") && normalized.length === 11) {
-    normalized = "+7" + normalized.slice(1);
+    return "+7" + normalized.slice(1);
+  }
+
+  // Если начинается с 7 и длина 10 (7XXXXXXXXX), добавляем +
+  if (normalized.startsWith("7") && normalized.length === 10) {
+    return "+7" + normalized;
   }
 
   // Если не начинается с +, добавляем +7
   if (!normalized.startsWith("+")) {
-    normalized = "+7" + normalized;
+    return "+7" + normalized;
   }
 
   return normalized;
