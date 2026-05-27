@@ -16,6 +16,8 @@ services:
       - AUTO_BACKUP_MAX_COUNT=24
       - CORS_ORIGIN=https://admin-polanet.ru
       - DATABASE_PATH=/app/data/polanet.db
+      - TELEGRAM_BOT_TOKEN=8817861097:AAFdM38_0lZbyVTJnaJi6uHZ7QIZQPorPWY
+      - TELEGRAM_WEBHOOK_URL=https://admin-polanet.ru/api/telegram/webhook
     volumes:
       - backend-data:/app/data
     healthcheck:
