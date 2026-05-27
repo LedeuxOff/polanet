@@ -17,6 +17,9 @@ services:
       - DATABASE_PATH=/app/data/polanet.db
       - TELEGRAM_BOT_TOKEN=8817861097:AAFdM38_0lZbyVTJnaJi6uHZ7QIZQPorPWY
       - TELEGRAM_WEBHOOK_URL=https://admin-polanet.ru/api/telegram/webhook
+      - HTTP_PROXY=http://127.0.0.1:2017
+      - HTTPS_PROXY=http://127.0.0.1:2017
+      - NO_PROXY=localhost,127.0.0.1
     volumes:
       - backend-data:/app/data
     healthcheck:
