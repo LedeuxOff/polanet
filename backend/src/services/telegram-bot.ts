@@ -1,5 +1,5 @@
 import axios from "axios";
-import ProxyAgent from "proxy-agent";
+import { ProxyAgent } from "proxy-agent";
 import { db } from "../db/index.js";
 import { users } from "../db/schema.js";
 import { eq, isNotNull } from "drizzle-orm";
