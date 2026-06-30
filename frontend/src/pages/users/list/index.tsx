@@ -205,10 +205,13 @@ export const UsersPage = () => {
         )}
 
         <div
-          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
         >
           <Link to="/">
-            <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
+            <Button
+              type="button"
+              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+            >
               <HomeIcon className="w-4 h-4" />
             </Button>
           </Link>
@@ -225,7 +228,7 @@ export const UsersPage = () => {
 
           <Button
             type="button"
-            className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
+            className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600"
             onClick={() => {
               if (!hasPermission("users:create")) {
                 showToast("У вас нет прав на создание пользователя", "error");
