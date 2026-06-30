@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1200" font-family="Arial, sans-serif">
+  <defs>
+    <!-- Arrow marker -->
+    <marker id="arrow" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#333"/>
+    </marker>
+    <!-- Gradient for roles -->
+    <linearGradient id="grad-roles" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90D9;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#357ABD;stop-opacity:1"/>
+    </linearGradient>
+    <!-- Gradient for users -->
+    <linearGradient id="grad-users" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#5BA3E6;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#4A90D9;stop-opacity:1"/>
+    </linearGradient>
+    <!-- Gradient for permissions -->
+    <linearGradient id="grad-permissions" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#6BB3F0;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#5BA3E6;stop-opacity:1"/>
+    </linearGradient>
+    <!-- Gradient for cars -->
+    <linearGradient id="grad-cars" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#50B87A;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#3DA365;stop-opacity:1"/>
+    </linearGradient>
+    <!-- Gradient for drivers -->
+    <linearGradient id="grad-drivers" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#63C98D;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#50B87A;stop-opacity:1"/>
+    </linearGradient>
+    <!-- Gradient for clients -->
+    <linearGradient id="grad-clients" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#78D9A0;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#63C98D;stop-opacity:1"/>
+    </linearGradient>
+    <!-- Gradient for orders -->
+    <linearGradient id="grad-orders" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5A623;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#E09010;stop-opacity:1"/>
+    </linearGradient>
+    <!-- Gradient for deliveries -->
+    <linearGradient id="grad-deliveries" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5B04A;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#F5A623;stop-opacity:1"/>
+    </linearGradient>
+    <!-- Gradient for incomes -->
+    <linearGradient id="grad-incomes" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8734A;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#D4603A;stop-opacity:1"/>
+    </linearGradient>
+    <!-- Gradient for payments -->
+    <linearGradient id="grad-payments" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F08A60;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#E8734A;stop-opacity:1"/>
+    </linearGradient>
+    <!-- Gradient for transport cards -->
+    <linearGradient id="grad-transport-cards" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#9B7ED8;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#8565C0;stop-opacity:1"/>
+    </linearGradient>
+    <!-- Gradient for order history -->
+    <linearGradient id="grad-order-history" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#A88EE0;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#9B7ED8;stop-opacity:1"/>
+    </linearGradient>
+    <!-- Shadow filter -->
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="#00000033"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1600" height="1200" fill="#F8F9FA"/>
+  
+  <!-- Title -->
+  <text x="800" y="35" text-anchor="middle" font-size="20" font-weight="bold" fill="#333">ER-диаграмма базы данных Polanet</text>
+
+  <!-- ==================== ROLES TABLE ==================== -->
+  <g transform="translate(50, 70)" filter="url(#shadow)">
+    <rect width="200" height="110" rx="8" fill="url(#grad-roles)" stroke="#2E6BA0" stroke-width="2"/>
+    <text x="100" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#FFF">roles</text>
+    <line x1="0" y1="35" x2="200" y2="35" stroke="#2E6BA0" stroke-width="1"/>
+    <text x="10" y="52" font-size="11" fill="#FFF">● id (PK)</text>
+    <text x="10" y="68" font-size="11" fill="#FFF">  code (UNIQUE)</text>
+    <text x="10" y="84" font-size="11" fill="#FFF">  name</text>
+    <text x="10" y="100" font-size="11" fill="#FFF">  created_at</text>
+  </g>
+
+  <!-- ==================== PERMISSIONS TABLE ==================== -->
+  <g transform="translate(850, 70)" filter="url(#shadow)">
+    <rect width="220" height="130" rx="8" fill="url(#grad-permissions)" stroke="#4A90D9" stroke-width="2"/>
+    <text x="110" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#FFF">permissions</text>
+    <line x1="0" y1="35" x2="220" y2="35" stroke="#4A90D9" stroke-width="1"/>
+    <text x="10" y="52" font-size="11" fill="#FFF">● id (PK)</text>
+    <text x="10" y="68" font-size="11" fill="#FFF">  code (UNIQUE)</text>
+    <text x="10" y="84" font-size="11" fill="#FFF">  name</text>
+    <text x="10" y="100" font-size="11" fill="#FFF">  module</text>
+    <text x="10" y="116" font-size="11" fill="#FFF">  description</text>
+  </g>
+
+  <!-- ==================== ROLE_PERMISSIONS TABLE ==================== -->
+  <g transform="translate(400, 70)" filter="url(#shadow)">
+    <rect width="220" height="110" rx="8" fill="#E8E8E8" stroke="#999" stroke-width="2"/>
+    <text x="110" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">role_permissions</text>
+    <line x1="0" y1="35" x2="220" y2="35" stroke="#999" stroke-width="1"/>
+    <text x="10" y="52" font-size="11" fill="#333">● id (PK)</text>
+    <text x="10" y="68" font-size="11" fill="#333">○ role_id (FK) → roles</text>
+    <text x="10" y="84" font-size="11" fill="#333">○ permission_id (FK)</text>
+    <text x="10" y="100" font-size="11" fill="#333">  created_at</text>
+  </g>
+
+  <!-- ==================== USERS TABLE ==================== -->
+  <g transform="translate(50, 250)" filter="url(#shadow)">
+    <rect width="220" height="200" rx="8" fill="url(#grad-users)" stroke="#3A7FB8" stroke-width="2"/>
+    <text x="110" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#FFF">users</text>
+    <line x1="0" y1="35" x2="220" y2="35" stroke="#3A7FB8" stroke-width="1"/>
+    <text x="10" y="52" font-size="11" fill="#FFF">● id (PK)</text>
+    <text x="10" y="68" font-size="11" fill="#FFF">  last_name</text>
+    <text x="10" y="84" font-size="11" fill="#FFF">  first_name</text>
+    <text x="10" y="100" font-size="11" fill="#FFF">  middle_name</text>
+    <text x="10" y="116" font-size="11" fill="#FFF">  birth_date</text>
+    <text x="10" y="132" font-size="11" fill="#FFF">  email (UNIQUE)</text>
+    <text x="10" y="148" font-size="11" fill="#FFF">  phone</text>
+    <text x="10" y="164" font-size="11" fill="#FFF">  telegram_chat_id</text>
+    <text x="10" y="180" font-size="11" fill="#FFF">  password_hash</text>
+  </g>
+
+  <!-- ==================== CARS TABLE ==================== -->
+  <g transform="translate(50, 500)" filter="url(#shadow)">
+    <rect width="200" height="110" rx="8" fill="url(#grad-cars)" stroke="#2E8A52" stroke-width="2"/>
+    <text x="100" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#FFF">cars</text>
+    <line x1="0" y1="35" x2="200" y2="35" stroke="#2E8A52" stroke-width="1"/>
+    <text x="10" y="52" font-size="11" fill="#FFF">● id (PK)</text>
+    <text x="10" y="68" font-size="11" fill="#FFF">  brand</text>
+    <text x="10" y="84" font-size="11" fill="#FFF">  license_plate (UNIQUE)</text>
+    <text x="10" y="100" font-size="11" fill="#FFF">  created_at</text>
+  </g>
+
+  <!-- ==================== DRIVERS TABLE ==================== -->
+  <g transform="translate(300, 500)" filter="url(#shadow)">
+    <rect width="200" height="130" rx="8" fill="url(#grad-drivers)" stroke="#45A070" stroke-width="2"/>
+    <text x="100" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#FFF">drivers</text>
+    <line x1="0" y1="35" x2="200" y2="35" stroke="#45A070" stroke-width="1"/>
+    <text x="10" y="52" font-size="11" fill="#FFF">● id (PK)</text>
+    <text x="10" y="68" font-size="11" fill="#FFF">  last_name</text>
+    <text x="10" y="84" font-size="11" fill="#FFF">  first_name</text>
+    <text x="10" y="100" font-size="11" fill="#FFF">  middle_name</text>
+    <text x="10" y="116" font-size="11" fill="#FFF">  phone</text>
+    <text x="10" y="132" font-size="11" fill="#FFF">  created_at</text>
+  </g>
+
+  <!-- ==================== CLIENTS TABLE ==================== -->
+  <g transform="translate(550, 470)" filter="url(#shadow)">
+    <rect width="220" height="170" rx="8" fill="url(#grad-clients)" stroke="#4DA060" stroke-width="2"/>
+    <text x="110" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#FFF">clients</text>
+    <line x1="0" y1="35" x2="220" y2="35" stroke="#4DA060" stroke-width="1"/>
+    <text x="10" y="52" font-size="11" fill="#FFF">● id (PK)</text>
+    <text x="10" y="68" font-size="11" fill="#FFF">  type</text>
+    <text x="10" y="84" font-size="11" fill="#FFF">  last_name</text>
+    <text x="10" y="100" font-size="11" fill="#FFF">  first_name</text>
+    <text x="10" y="116" font-size="11" fill="#FFF">  org_name</text>
+    <text x="10" y="132" font-size="11" fill="#FFF">  phone</text>
+    <text x="10" y="148" font-size="11" fill="#FFF">  email</text>
+    <text x="10" y="164" font-size="11" fill="#FFF">  created_at</text>
+  </g>
+
+  <!-- ==================== ORDERS TABLE ==================== -->
+  <g transform="translate(850, 250)" filter="url(#shadow)">
+    <rect width="240" height="220" rx="8" fill="url(#grad-orders)" stroke="#C87A10" stroke-width="2"/>
+    <text x="120" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#FFF">orders</text>
+    <line x1="0" y1="35" x2="240" y2="35" stroke="#C87A10" stroke-width="1"/>
+    <text x="10" y="52" font-size="11" fill="#FFF">● id (PK)</text>
+    <text x="10" y="68" font-size="11" fill="#FFF">  type</text>
+    <text x="10" y="84" font-size="11" fill="#FFF">  address</text>
+    <text x="10" y="100" font-size="11" fill="#FFF">  payer_*</text>
+    <text x="10" y="116" font-size="11" fill="#FFF">  receiver_*</text>
+    <text x="10" y="132" font-size="11" fill="#FFF">  date_time</text>
+    <text x="10" y="148" font-size="11" fill="#FFF">  status</text>
+    <text x="10" y="164" font-size="11" fill="#FFF">○ client_id (FK)</text>
+    <text x="10" y="180" font-size="11" fill="#FFF">○ created_by_id (FK)</text>
+    <text x="10" y="196" font-size="11" fill="#FFF">  created_at</text>
+    <text x="10" y="212" font-size="11" fill="#FFF">  updated_at</text>
+  </g>
+
+  <!-- ==================== DELIVERIES TABLE ==================== -->
+  <g transform="translate(850, 520)" filter="url(#shadow)">
+    <rect width="240" height="200" rx="8" fill="url(#grad-deliveries)" stroke="#D4950A" stroke-width="2"/>
+    <text x="120" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#FFF">deliveries</text>
+    <line x1="0" y1="35" x2="240" y2="35" stroke="#D4950A" stroke-width="1"/>
+    <text x="10" y="52" font-size="11" fill="#FFF">● id (PK)</text>
+    <text x="10" y="68" font-size="11" fill="#FFF">○ order_id (FK) → orders</text>
+    <text x="10" y="84" font-size="11" fill="#FFF">○ driver_id (FK) → drivers</text>
+    <text x="10" y="100" font-size="11" fill="#FFF">○ car_id (FK) → cars</text>
+    <text x="10" y="116" font-size="11" fill="#FFF">  date_time</text>
+    <text x="10" y="132" font-size="11" fill="#FFF">  volume</text>
+    <text x="10" y="148" font-size="11" fill="#FFF">  payment_method</text>
+    <text x="10" y="164" font-size="11" fill="#FFF">  status</text>
+    <text x="10" y="180" font-size="11" fill="#FFF">  created_at</text>
+    <text x="10" y="196" font-size="11" fill="#FFF">  updated_at</text>
+  </g>
+
+  <!-- ==================== INCOMES TABLE ==================== -->
+  <g transform="translate(1150, 250)" filter="url(#shadow)">
+    <rect width="220" height="170" rx="8" fill="url(#grad-incomes)" stroke="#C05030" stroke-width="2"/>
+    <text x="110" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#FFF">incomes</text>
+    <line x1="0" y1="35" x2="220" y2="35" stroke="#C05030" stroke-width="1"/>
+    <text x="10" y="52" font-size="11" fill="#FFF">● id (PK)</text>
+    <text x="10" y="68" font-size="11" fill="#FFF">  income_type</text>
+    <text x="10" y="84" font-size="11" fill="#FFF">  payment_method</text>
+    <text x="10" y="100" font-size="11" fill="#FFF">  is_paid</text>
+    <text x="10" y="116" font-size="11" fill="#FFF">○ order_id (FK)</text>
+    <text x="10" y="132" font-size="11" fill="#FFF">○ delivery_id (FK)</text>
+    <text x="10" y="148" font-size="11" fill="#FFF">  amount</text>
+    <text x="10" y="164" font-size="11" fill="#FFF">  payment_date</text>
+  </g>
+
+  <!-- ==================== PAYMENTS TABLE ==================== -->
+  <g transform="translate(1150, 470)" filter="url(#shadow)">
+    <rect width="220" height="150" rx="8" fill="url(#grad-payments)" stroke="#D06840" stroke-width="2"/>
+    <text x="110" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#FFF">payments</text>
+    <line x1="0" y1="35" x2="220" y2="35" stroke="#D06840" stroke-width="1"/>
+    <text x="10" y="52" font-size="11" fill="#FFF">● id (PK)</text>
+    <text x="10" y="68" font-size="11" fill="#FFF">○ order_id (FK)</text>
+    <text x="10" y="84" font-size="11" fill="#FFF">○ delivery_id (FK)</text>
+    <text x="10" y="100" font-size="11" fill="#FFF">  amount</text>
+    <text x="10" y="116" font-size="11" fill="#FFF">  payment_date</text>
+    <text x="10" y="132" font-size="11" fill="#FFF">  type</text>
+    <text x="10" y="148" font-size="11" fill="#FFF">  created_at</text>
+  </g>
+
+  <!-- ==================== TRANSPORT CARDS TABLE ==================== -->
+  <g transform="translate(550, 680)" filter="url(#shadow)">
+    <rect width="220" height="110" rx="8" fill="url(#grad-transport-cards)" stroke="#7050A0" stroke-width="2"/>
+    <text x="110" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#FFF">transport_cards</text>
+    <line x1="0" y1="35" x2="220" y2="35" stroke="#7050A0" stroke-width="1"/>
+    <text x="10" y="52" font-size="11" fill="#FFF">● id (PK)</text>
+    <text x="10" y="68" font-size="11" fill="#FFF">  card_number (UNIQUE)</text>
+    <text x="10" y="84" font-size="11" fill="#FFF">  status</text>
+    <text x="10" y="100" font-size="11" fill="#FFF">○ driver_id (FK) → drivers</text>
+  </g>
+
+  <!-- ==================== ORDER HISTORY TABLE ==================== -->
+  <g transform="translate(1150, 660)" filter="url(#shadow)">
+    <rect width="220" height="130" rx="8" fill="url(#grad-order-history)" stroke="#8565B0" stroke-width="2"/>
+    <text x="110" y="25" text-anchor="middle" font-size="14" font-weight="bold" fill="#FFF">order_history</text>
+    <line x1="0" y1="35" x2="220" y2="35" stroke="#8565B0" stroke-width="1"/>
+    <text x="10" y="52" font-size="11" fill="#FFF">● id (PK)</text>
+    <text x="10" y="68" font-size="11" fill="#FFF">○ order_id (FK) → orders</text>
+    <text x="10" y="84" font-size="11" fill="#FFF">○ user_id (FK) → users</text>
+    <text x="10" y="100" font-size="11" fill="#FFF">  action</text>
+    <text x="10" y="116" font-size="11" fill="#FFF">  old_value</text>
+    <text x="10" y="132" font-size="11" fill="#FFF">  new_value</text>
+  </g>
+
+  <!-- ==================== RELATIONSHIP LINES ==================== -->
+  
+  <!-- roles ↔ role_permissions -->
+  <line x1="250" y1="125" x2="400" y2="125" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="310" y="118" font-size="10" fill="#666">1</text>
+  <text x="350" y="118" font-size="10" fill="#666">N</text>
+
+  <!-- permissions ↔ role_permissions -->
+  <line x1="850" y1="135" x2="620" y2="135" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="770" y="128" font-size="10" fill="#666">1</text>
+  <text x="650" y="128" font-size="10" fill="#666">N</text>
+
+  <!-- roles → users -->
+  <line x1="150" y1="180" x2="160" y2="250" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="155" y="220" font-size="10" fill="#666">1</text>
+  <text x="155" y="235" font-size="10" fill="#666">N</text>
+
+  <!-- clients → orders -->
+  <line x1="770" y1="505" x2="850" y2="360" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="790" y="430" font-size="10" fill="#666">1</text>
+  <text x="820" y="380" font-size="10" fill="#666">N</text>
+
+  <!-- orders ↔ deliveries -->
+  <line x1="970" y1="470" x2="970" y2="520" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="975" y="495" font-size="10" fill="#666">1</text>
+  <text x="975" y="510" font-size="10" fill="#666">N</text>
+
+  <!-- orders ↔ incomes -->
+  <line x1="1090" y1="350" x2="1150" y2="350" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="1105" y="343" font-size="10" fill="#666">1</text>
+  <text x="1130" y="343" font-size="10" fill="#666">N</text>
+
+  <!-- orders ↔ payments -->
+  <line x1="1090" y1="400" x2="1150" y2="520" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="1105" y="465" font-size="10" fill="#666">1</text>
+  <text x="1130" y="505" font-size="10" fill="#666">N</text>
+
+  <!-- orders ↔ order_history -->
+  <line x1="1090" y1="420" x2="1150" y2="660" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="1105" y="545" font-size="10" fill="#666">1</text>
+  <text x="1130" y="650" font-size="10" fill="#666">N</text>
+
+  <!-- deliveries → incomes -->
+  <line x1="1090" y1="560" x2="1150" y2="420" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="1105" y="495" font-size="10" fill="#666">N</text>
+  <text x="1130" y="440" font-size="10" fill="#666">1</text>
+
+  <!-- cars → deliveries -->
+  <line x1="250" y1="555" x2="850" y2="600" stroke="#333" stroke-width="1.5" stroke-dasharray="5,5"/>
+  <text x="400" y="575" font-size="10" fill="#666">1</text>
+  <text x="600" y="595" font-size="10" fill="#666">N</text>
+
+  <!-- drivers → deliveries -->
+  <line x1="500" y1="565" x2="850" y2="600" stroke="#333" stroke-width="1.5" stroke-dasharray="5,5"/>
+  <text x="550" y="580" font-size="10" fill="#666">1</text>
+  <text x="700" y="600" font-size="10" fill="#666">N</text>
+
+  <!-- drivers → transport_cards -->
+  <line x1="400" y1="630" x2="550" y2="735" stroke="#333" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="460" y="685" font-size="10" fill="#666">1</text>
+  <text x="490" y="720" font-size="10" fill="#666">0..1</text>
+
+  <!-- users → order_history -->
+  <line x1="270" y1="350" x2="1150" y2="725" stroke="#333" stroke-width="1.5" stroke-dasharray="5,5"/>
+  <text x="500" y="540" font-size="10" fill="#666">1</text>
+  <text x="800" y="720" font-size="10" fill="#666">N</text>
+
+  <!-- ==================== LEGEND ==================== -->
+  <g transform="translate(1250, 850)">
+    <rect width="300" height="280" rx="8" fill="#FFF" stroke="#CCC" stroke-width="2"/>
+    <text x="150" y="30" text-anchor="middle" font-size="14" font-weight="bold" fill="#333">Легенда</text>
+    <line x1="20" y1="40" x2="280" y2="40" stroke="#CCC" stroke-width="1"/>
+    
+    <text x="20" y="60" font-size="11" fill="#333">● — первичный ключ (PK)</text>
+    <text x="20" y="80" font-size="11" fill="#333">○ — внешний ключ (FK)</text>
+    <text x="20" y="100" font-size="11" fill="#333">(UNIQUE) — уникальное поле</text>
+    
+    <line x1="20" y1="120" x2="280" y2="120" stroke="#CCC" stroke-width="1"/>
+    
+    <text x="20" y="140" font-size="11" fill="#333">─── → отношение «один-ко-многим»</text>
+    <text x="20" y="160" font-size="11" fill="#333">- - - → связь через таблицу</text>
+    
+    <line x1="20" y1="180" x2="280" y2="180" stroke="#CCC" stroke-width="1"/>
+    
+    <!-- Color boxes -->
+    <rect x="20" y="195" width="15" height="15" fill="url(#grad-roles)"/>
+    <text x="45" y="207" font-size="11" fill="#333">Система доступа</text>
+    
+    <rect x="20" y="215" width="15" height="15" fill="url(#grad-clients)"/>
+    <text x="45" y="227" font-size="11" fill="#333">Клиенты и заявки</text>
+    
+    <rect x="150" y="195" width="15" height="15" fill="url(#grad-orders)"/>
+    <text x="175" y="207" font-size="11" fill="#333">Заказы и доставки</text>
+    
+    <rect x="150" y="215" width="15" height="15" fill="url(#grad-incomes)"/>
+    <text x="175" y="227" font-size="11" fill="#333">Финансы</text>
+    
+    <rect x="20" y="235" width="15" height="15" fill="url(#grad-cars)"/>
+    <text x="45" y="247" font-size="11" fill="#333">Транспорт</text>
+    
+    <rect x="150" y="235" width="15" height="15" fill="url(#grad-transport-cards)"/>
+    <text x="175" y="247" font-size="11" fill="#333">Транспортные карты</text>
+  </g>
+
+  <!-- ==================== KEY ==================== -->
+  <g transform="translate(50, 900)">
+    <rect width="1180" height="250" rx="8" fill="#FFF" stroke="#CCC" stroke-width="2"/>
+    <text x="20" y="30" font-size="14" font-weight="bold" fill="#333">Ключевые характеристики базы данных</text>
+    <line x1="20" y1="40" x2="1160" y2="40" stroke="#CCC" stroke-width="1"/>
+    
+    <text x="20" y="60" font-size="12" font-weight="bold" fill="#333">Таблицы системы:</text>
+    <text x="20" y="80" font-size="11" fill="#555">• roles — роли пользователей (администратор, оператор, водитель, гость)</text>
+    <text x="20" y="100" font-size="11" fill="#555">• permissions — права доступа (30+ операций: orders:list, orders:create, permissions:manage и др.)</text>
+    <text x="20" y="120" font-size="11" fill="#555">• role_permissions — связь ролей с правами (RBAC)</text>
+    <text x="20" y="140" font-size="11" fill="#555">• users — пользователи системы с аутентификацией JWT</text>
+    
+    <text x="20" y="170" font-size="12" font-weight="bold" fill="#333">Бизнес-сущности:</text>
+    <text x="20" y="190" font-size="11" fill="#555">• cars — транспортные средства (марка, гос. номер, статус)</text>
+    <text x="20" y="210" font-size="11" fill="#555">• drivers — водители (ФИО, контакты, категория прав)</text>
+    <text x="20" y="230" font-size="11" fill="#555">• clients — клиенты (физические и юридические лица)</text>
+    
+    <text x="600" y="60" font-size="12" font-weight="bold" fill="#333">Операции и финансы:</text>
+    <text x="600" y="80" font-size="11" fill="#555">• orders — заявки (создание → обработка → доставка → завершение)</text>
+    <text x="600" y="100" font-size="11" fill="#555">• deliveries — доставки (привязка к водителю и автомобилю)</text>
+    <text x="600" y="120" font-size="11" fill="#555">• incomes — доходы (предоплата, оплата доставки)</text>
+    <text x="600" y="140" font-size="11" fill="#555">• payments — платежи (предоплата, перевод, доставка)</text>
+    <text x="600" y="160" font-size="11" fill="#555">• order_history — история изменений заявок (аудит)</text>
+    
+    <text x="600" y="190" font-size="12" font-weight="bold" fill="#333">Дополнительно:</text>
+    <text x="600" y="210" font-size="11" fill="#555">• transport_cards — платёжные карты для транспорта</text>
+    <text x="600" y="230" font-size="11" fill="#555">• transport_card_expenses — расходы по транспортным картам</text>
+    <text x="600" y="250" font-size="11" fill="#555">• transport_card_history — история изменений карт</text>
+  </g>
+
+</svg>
