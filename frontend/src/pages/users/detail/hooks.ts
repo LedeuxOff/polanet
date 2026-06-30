@@ -43,7 +43,7 @@ export const useUserDetailPage = () => {
   useEffect(() => {
     Promise.all([
       usersApi.get(Number(userId)).then(setUser).catch(console.error),
-      rolesApi.list().then(setRoles).catch(console.error),
+      rolesApi.listAll().then(setRoles).catch(console.error),
     ]).finally(() => setIsLoading(false));
   }, [userId]);
 

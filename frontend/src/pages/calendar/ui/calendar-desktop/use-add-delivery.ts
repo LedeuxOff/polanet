@@ -89,7 +89,7 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
           await Promise.all([
             driversApi.list(),
             carsApi.list(),
-            usersApi.list(),
+            usersApi.list({ limit: 100 }),
             ordersApi.list({ status: "draft" }),
             ordersApi.list({ status: "new" }),
             ordersApi.list({ status: "in_progress" }),
@@ -97,7 +97,7 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
 
         setDrivers(driversData || []);
         setCars(carsData || []);
-        setUsers(usersData || []);
+        setUsers(usersData.data || []);
 
         // Объединяем заказы из всех статусов и убираем дубликаты
         const allOrders = [

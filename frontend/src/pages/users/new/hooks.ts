@@ -17,7 +17,7 @@ export const useNewUserPage = () => {
   });
 
   useEffect(() => {
-    rolesApi.list().then(setRoles).catch(console.error);
+    rolesApi.listAll().then(setRoles).catch(console.error);
   }, []);
 
   const onSubmit = async (data: UserForm): Promise<{ success: boolean; error?: string }> => {

@@ -34,7 +34,10 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
       deliveriesApi.list(Number(orderId)).then(setDeliveries).catch(console.error),
       driversApi.list().then(setDrivers).catch(console.error),
       carsApi.list().then(setCars).catch(console.error),
-      usersApi.list().then(setUsers).catch(console.error),
+      usersApi
+        .list({ limit: 100 })
+        .then((res) => setUsers(res.data || []))
+        .catch(console.error),
     ]).catch(console.error);
   }, []);
 

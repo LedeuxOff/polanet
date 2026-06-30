@@ -10,7 +10,7 @@ export const useRolesListPage = () => {
 
   const loadRoles = async () => {
     try {
-      const data = await rolesApi.list();
+      const data = await rolesApi.listAll();
       setRoles(data);
     } catch (error) {
       console.error("Ошибка загрузки ролей:", error);

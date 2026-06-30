@@ -5,37 +5,123 @@ import { users, roles } from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { requirePermission } from "../middleware/permissions.js";
 import { registerSchema, updateUserSchema } from "../middleware/validators.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, or, count, like } from "drizzle-orm";
 import { generatePassword } from "../utils/password-generator.js";
 import { sendPasswordNotification } from "../services/telegram-service.js";
 
 const router = Router();
 
-// Получить всех пользователей (с ролью)
+// Получить всех пользователей (с ролью) - с пагинацией и фильтрами
 router.get("/", authenticate, requirePermission("users:list"), (req: AuthRequest, res) => {
   try {
-    const allUsers = db
-      .select({
-        id: users.id,
-        lastName: users.lastName,
-        firstName: users.firstName,
-        middleName: users.middleName,
-        birthDate: users.birthDate,
-        email: users.email,
-        phone: users.phone,
-        roleId: users.roleId,
-        roleCode: roles.code,
-        roleName: roles.name,
-        telegramChatId: users.telegramChatId,
-        createdAt: users.createdAt,
-        updatedAt: users.updatedAt,
-      })
-      .from(users)
-      .leftJoin(roles, eq(users.roleId, roles.id))
-      .all();
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = [1, 5, 10, 25, 50].includes(parseInt(req.query.limit as string))
+      ? parseInt(req.query.limit as string)
+      : 10;
+    const offset = (page - 1) * limit;
 
-    res.json(allUsers);
+    // Параметры фильтрации
+    const search = req.query.search as string | undefined;
+    const roleCode = req.query.roleCode as string | undefined;
+
+    // Формируем условия WHERE
+    // Поиск по полям - используем LIKE (SQLite case-insensitive для ASCII)
+    // Объединяем через OR (любое поле может совпасть)
+    const whereClause: Array<import("drizzle-orm").SQL<unknown>> = [];
+
+    if (search) {
+      const searchPattern = `%${search}%`;
+      const searchOrCondition = or(
+        like(users.lastName, searchPattern),
+        like(users.firstName, searchPattern),
+        like(users.middleName, searchPattern),
+        like(users.email, searchPattern),
+        like(users.phone, searchPattern),
+      )!;
+      whereClause.push(searchOrCondition);
+    }
+
+    // Фильтр по роли
+    if (roleCode && roleCode !== "all") {
+      whereClause.push(eq(users.roleId, parseInt(roleCode)));
+    }
+
+    // Получаем общее количество пользователей с фильтрами
+    let totalRecords = 0;
+    if (whereClause.length > 0) {
+      const totalResult = db
+        .select({ count: count() })
+        .from(users)
+        .where(and(...whereClause))
+        .get();
+      totalRecords = totalResult?.count || 0;
+    } else {
+      const totalResult = db.select({ count: count() }).from(users).get();
+      totalRecords = totalResult?.count || 0;
+    }
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    // Получаем пагинированные данные с фильтрами
+    let paginatedUsers: any[];
+
+    if (whereClause.length > 0) {
+      paginatedUsers = db
+        .select({
+          id: users.id,
+          lastName: users.lastName,
+          firstName: users.firstName,
+          middleName: users.middleName,
+          birthDate: users.birthDate,
+          email: users.email,
+          phone: users.phone,
+          roleId: users.roleId,
+          roleCode: roles.code,
+          roleName: roles.name,
+          telegramChatId: users.telegramChatId,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt,
+        })
+        .from(users)
+        .leftJoin(roles, eq(users.roleId, roles.id))
+        .where(and(...whereClause))
+        .limit(limit)
+        .offset(offset)
+        .all();
+    } else {
+      paginatedUsers = db
+        .select({
+          id: users.id,
+          lastName: users.lastName,
+          firstName: users.firstName,
+          middleName: users.middleName,
+          birthDate: users.birthDate,
+          email: users.email,
+          phone: users.phone,
+          roleId: users.roleId,
+          roleCode: roles.code,
+          roleName: roles.name,
+          telegramChatId: users.telegramChatId,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt,
+        })
+        .from(users)
+        .leftJoin(roles, eq(users.roleId, roles.id))
+        .limit(limit)
+        .offset(offset)
+        .all();
+    }
+
+    res.json({
+      data: paginatedUsers,
+      pagination: {
+        page,
+        limit,
+        totalRecords,
+        totalPages,
+      },
+    });
   } catch (error) {
+    console.error("Ошибка при получении пользователей:", error);
     res.status(500).json({ error: "Ошибка сервера" });
   }
 });

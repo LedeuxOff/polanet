@@ -1,8 +1,34 @@
 import { request } from ".";
 import { RegisterInput, User } from "../types";
 
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  roleCode?: string;
+}
+
+export interface PaginationResponse<T> {
+  data: T;
+  pagination: {
+    page: number;
+    limit: number;
+    totalRecords: number;
+    totalPages: number;
+  };
+}
+
 export const usersApi = {
-  list: () => request<User[]>("/users"),
+  list: (params?: PaginationParams) => {
+    const queryParams = new URLSearchParams();
+    if (params?.page) queryParams.append("page", String(params.page));
+    if (params?.limit) queryParams.append("limit", String(params.limit));
+    if (params?.search) queryParams.append("search", params.search);
+    if (params?.roleCode) queryParams.append("roleCode", params.roleCode);
+    const query = queryParams.toString();
+    const url = query ? `/users?${query}` : "/users";
+    return request<PaginationResponse<User[]>>(url);
+  },
   get: (id: number) => request<User>(`/users/${id}`),
   create: (data: RegisterInput) =>
     request<User>("/users", {
