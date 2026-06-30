@@ -4,6 +4,25 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { cleanPhone } from "@/lib/utils/phone";
+
+/**
+ * Конвертирует телефон из формата базы (79999999999) в формат маски (+7 (999) 999-99-99)
+ */
+function convertPhoneToMask(phone: string | null | undefined): string {
+  if (!phone) return "";
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length === 10) {
+    return `+7 (${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 8)}-${digits.slice(8)}`;
+  }
+  if (digits.length === 11 && digits.startsWith("7")) {
+    return `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9)}`;
+  }
+  if (digits.length === 11 && digits.startsWith("8")) {
+    return `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9)}`;
+  }
+  return phone;
+}
 
 export const useClientDetailPage = (clientId: string) => {
   const navigate = useNavigate();
@@ -29,16 +48,16 @@ export const useClientDetailPage = (clientId: string) => {
         form.setValue("firstName", data.firstName || "");
         form.setValue("middleName", data.middleName || "");
         form.setValue("organizationName", data.organizationName || "");
-        form.setValue("phone", data.phone || "");
+        form.setValue("phone", convertPhoneToMask(data.phone));
         form.setValue("email", data.email || "");
         form.setValue("payerLastName", data.payerLastName || "");
         form.setValue("payerFirstName", data.payerFirstName || "");
         form.setValue("payerMiddleName", data.payerMiddleName || "");
-        form.setValue("payerPhone", data.payerPhone || "");
+        form.setValue("payerPhone", convertPhoneToMask(data.payerPhone));
         form.setValue("receiverLastName", data.receiverLastName || "");
         form.setValue("receiverFirstName", data.receiverFirstName || "");
         form.setValue("receiverMiddleName", data.receiverMiddleName || "");
-        form.setValue("receiverPhone", data.receiverPhone || "");
+        form.setValue("receiverPhone", convertPhoneToMask(data.receiverPhone));
       })
       .catch(console.error)
       .finally(() => setIsLoading(false));
@@ -54,18 +73,21 @@ export const useClientDetailPage = (clientId: string) => {
       if (data.firstName !== undefined) updateData.firstName = data.firstName;
       if (data.middleName !== undefined) updateData.middleName = data.middleName;
       if (data.organizationName !== undefined) updateData.organizationName = data.organizationName;
-      if (data.phone !== undefined) updateData.phone = data.phone;
+      if (data.phone !== undefined)
+        updateData.phone = data.phone ? cleanPhone(data.phone) : undefined;
       if (data.email !== undefined) updateData.email = data.email;
       if (data.payerLastName !== undefined) updateData.payerLastName = data.payerLastName;
       if (data.payerFirstName !== undefined) updateData.payerFirstName = data.payerFirstName;
       if (data.payerMiddleName !== undefined) updateData.payerMiddleName = data.payerMiddleName;
-      if (data.payerPhone !== undefined) updateData.payerPhone = data.payerPhone;
+      if (data.payerPhone !== undefined)
+        updateData.payerPhone = data.payerPhone ? cleanPhone(data.payerPhone) : undefined;
       if (data.receiverLastName !== undefined) updateData.receiverLastName = data.receiverLastName;
       if (data.receiverFirstName !== undefined)
         updateData.receiverFirstName = data.receiverFirstName;
       if (data.receiverMiddleName !== undefined)
         updateData.receiverMiddleName = data.receiverMiddleName;
-      if (data.receiverPhone !== undefined) updateData.receiverPhone = data.receiverPhone;
+      if (data.receiverPhone !== undefined)
+        updateData.receiverPhone = data.receiverPhone ? cleanPhone(data.receiverPhone) : undefined;
 
       await clientsApi.update(Number(clientId), updateData);
       return { success: true };

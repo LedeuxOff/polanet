@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { InputPhone } from "@/components/ui/input-phone";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -100,7 +101,14 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
         <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} gap-4 mt-2`}>
           <div className="space-y-2">
             <Label htmlFor="phone">Телефон</Label>
-            <Input id="phone" disabled={isSubmitting} {...form.register("phone")} />
+            <InputPhone
+              id="phone"
+              disabled={isSubmitting}
+              value={form.watch("phone")}
+              onPhoneChange={(value) =>
+                form.setValue("phone", value || "", { shouldValidate: true })
+              }
+            />
           </div>
 
           <div className="space-y-2">

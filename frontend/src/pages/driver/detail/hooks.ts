@@ -4,6 +4,25 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { driversApi, transportCardsApi } from "@/lib/api/index";
 import { useNavigate, useParams } from "@tanstack/react-router";
+import { cleanPhone } from "@/lib/utils/phone";
+
+/**
+ * Конвертирует телефон из формата базы (79999999999) в формат маски (+7 (999) 999-99-99)
+ */
+function convertPhoneToMask(phone: string | null | undefined): string {
+  if (!phone) return "";
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length === 10) {
+    return `+7 (${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 8)}-${digits.slice(8)}`;
+  }
+  if (digits.length === 11 && digits.startsWith("7")) {
+    return `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9)}`;
+  }
+  if (digits.length === 11 && digits.startsWith("8")) {
+    return `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9)}`;
+  }
+  return phone;
+}
 
 export const useDriverDetailPage = () => {
   const { driverId } = useParams({ from: "/drivers/$driverId" });
@@ -32,7 +51,7 @@ export const useDriverDetailPage = () => {
           form.setValue("lastName", data.lastName);
           form.setValue("firstName", data.firstName);
           form.setValue("middleName", data.middleName || "");
-          form.setValue("phone", data.phone || "");
+          form.setValue("phone", convertPhoneToMask(data.phone));
           // Устанавливаем выбранную карту
           if (data.transportCard) {
             setSelectedCardId(String(data.transportCard.id));
@@ -61,7 +80,8 @@ export const useDriverDetailPage = () => {
       if (data.lastName) updateData.lastName = data.lastName;
       if (data.firstName) updateData.firstName = data.firstName;
       if (data.middleName !== undefined) updateData.middleName = data.middleName;
-      if (data.phone !== undefined) updateData.phone = data.phone;
+      if (data.phone !== undefined)
+        updateData.phone = data.phone ? cleanPhone(data.phone) : undefined;
 
       await driversApi.update(Number(driverId), updateData);
 

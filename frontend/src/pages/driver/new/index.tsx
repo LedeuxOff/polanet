@@ -3,6 +3,7 @@ import { useNewDriverPage } from "./hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { InputPhone } from "@/components/ui/input-phone";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, MenuIcon } from "lucide-react";
 import { usePermissions } from "@/lib/contexts/permission-context";
@@ -126,11 +127,12 @@ export const NewDriverPage = () => {
                 <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="phone">Телефон</Label>
-                    <Input
+                    <InputPhone
                       id="phone"
-                      placeholder="+7 (999) 000-00-00"
                       disabled={isSubmitting}
-                      {...form.register("phone")}
+                      onPhoneChange={(value) =>
+                        form.setValue("phone", value || "", { shouldValidate: true })
+                      }
                     />
                   </div>
                 </div>

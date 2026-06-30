@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { InputPhone } from "@/components/ui/input-phone";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, MenuIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks";
@@ -145,11 +146,12 @@ export const NewClientPage = () => {
                   <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Телефон</Label>
-                      <Input
+                      <InputPhone
                         id="phone"
-                        placeholder="+7 (999) 000-00-00"
                         disabled={isSubmitting}
-                        {...form.register("phone")}
+                        onPhoneChange={(value) =>
+                          form.setValue("phone", value || "", { shouldValidate: true })
+                        }
                       />
                     </div>
 
@@ -215,11 +217,12 @@ export const NewClientPage = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="payer.phone">Телефон</Label>
-                    <Input
+                    <InputPhone
                       id="payer.phone"
-                      placeholder="+7 (999) 000-00-00"
                       disabled={isSubmitting}
-                      {...form.register("payer.phone")}
+                      onPhoneChange={(value) =>
+                        form.setValue("payer.phone", value || "", { shouldValidate: true })
+                      }
                     />
                   </div>
                 </div>
@@ -266,11 +269,12 @@ export const NewClientPage = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="receiver.phone">Телефон</Label>
-                    <Input
+                    <InputPhone
                       id="receiver.phone"
-                      placeholder="+7 (999) 111-11-11"
                       disabled={isSubmitting}
-                      {...form.register("receiver.phone")}
+                      onPhoneChange={(value) =>
+                        form.setValue("receiver.phone", value || "", { shouldValidate: true })
+                      }
                     />
                   </div>
                 </div>

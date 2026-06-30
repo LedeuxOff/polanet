@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { InputPhone } from "@/components/ui/input-phone";
 import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks";
 import { DriverForm } from "@/lib/types";
@@ -40,7 +41,12 @@ export const DriverSection = ({ form, isSubmitting }: Props) => {
       <div className="grid grid-cols-1 gap-4">
         <div className="space-y-2">
           <Label htmlFor="phone">Телефон</Label>
-          <Input id="phone" disabled={isSubmitting} {...form.register("phone")} />
+          <InputPhone
+            id="phone"
+            disabled={isSubmitting}
+            value={form.watch("phone")}
+            onPhoneChange={(value) => form.setValue("phone", value || "", { shouldValidate: true })}
+          />
         </div>
       </div>
     </div>

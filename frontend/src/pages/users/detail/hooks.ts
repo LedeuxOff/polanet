@@ -6,6 +6,25 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { cleanPhone } from "@/lib/utils/phone";
+
+/**
+ * Конвертирует телефон из формата базы (79999999999) в формат маски (+7 (999) 999-99-99)
+ */
+function convertPhoneToMask(phone: string | null | undefined): string {
+  if (!phone) return "";
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length === 10) {
+    return `+7 (${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 8)}-${digits.slice(8)}`;
+  }
+  if (digits.length === 11 && digits.startsWith("7")) {
+    return `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9)}`;
+  }
+  if (digits.length === 11 && digits.startsWith("8")) {
+    return `+7 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7, 9)}-${digits.slice(9)}`;
+  }
+  return phone;
+}
 
 export const useUserDetailPage = () => {
   const { userId } = useParams({ from: "/users/$userId" });
@@ -35,7 +54,7 @@ export const useUserDetailPage = () => {
       form.setValue("middleName", user.middleName || "");
       form.setValue("birthDate", user.birthDate || "");
       form.setValue("email", user.email);
-      form.setValue("phone", user.phone || "");
+      form.setValue("phone", convertPhoneToMask(user.phone));
       form.setValue("roleId", user.roleId);
     }
   }, [user, form.setValue]);
@@ -50,7 +69,8 @@ export const useUserDetailPage = () => {
       if (data.middleName !== undefined) updateData.middleName = data.middleName;
       if (data.birthDate !== undefined) updateData.birthDate = data.birthDate;
       if (data.email) updateData.email = data.email;
-      if (data.phone !== undefined) updateData.phone = data.phone;
+      if (data.phone !== undefined)
+        updateData.phone = data.phone ? cleanPhone(data.phone) : undefined;
       if (data.roleId) updateData.roleId = data.roleId;
 
       await usersApi.update(Number(userId), updateData);

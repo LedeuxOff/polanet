@@ -3,6 +3,7 @@ import { useNewUserPage } from "./hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { InputPhone } from "@/components/ui/input-phone";
 import {
   Select,
   SelectContent,
@@ -146,7 +147,13 @@ export const NewUserPage = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="phone">Телефон</Label>
-                    <Input id="phone" disabled={isSubmitting} {...form.register("phone")} />
+                    <InputPhone
+                      id="phone"
+                      disabled={isSubmitting}
+                      onPhoneChange={(value) =>
+                        form.setValue("phone", value || "", { shouldValidate: true })
+                      }
+                    />
                   </div>
 
                   <div className="space-y-2">

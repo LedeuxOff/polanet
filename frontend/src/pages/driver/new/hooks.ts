@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { cleanPhone } from "@/lib/utils/phone";
 
 export const useNewDriverPage = () => {
   const navigate = useNavigate();
@@ -19,7 +20,11 @@ export const useNewDriverPage = () => {
     setError(null);
     setIsSubmitting(true);
     try {
-      await driversApi.create(data);
+      const payload = {
+        ...data,
+        phone: data.phone ? cleanPhone(data.phone) : undefined,
+      };
+      await driversApi.create(payload);
       navigate({ to: "/drivers" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка при создании");

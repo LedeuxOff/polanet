@@ -5,6 +5,7 @@ import { Role } from "@/lib/types/role-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { cleanPhone } from "@/lib/utils/phone";
 
 export const useNewUserPage = () => {
   const [roles, setRoles] = useState<Role[]>([]);
@@ -23,7 +24,11 @@ export const useNewUserPage = () => {
     setError(null);
     setIsSubmitting(true);
     try {
-      await usersApi.create(data);
+      const payload = {
+        ...data,
+        phone: data.phone ? cleanPhone(data.phone) : undefined,
+      };
+      await usersApi.create(payload);
       return { success: true };
     } catch (err) {
       const message = err instanceof Error ? err.message : "Ошибка при создании";

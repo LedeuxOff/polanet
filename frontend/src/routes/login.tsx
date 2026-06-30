@@ -60,9 +60,11 @@ function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Вход в систему</CardTitle>
-          <CardDescription>Введите свои данные для входа в административную панель</CardDescription>
+        <CardHeader className="space-y-4">
+          <CardTitle className="text-2xl font-bold text-center">Вход в систему</CardTitle>
+          <CardDescription className="text-center">
+            Введите свои данные для входа в административную панель
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -99,9 +101,6 @@ function LoginPage() {
               {isSubmitting ? "Вход..." : "Войти"}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm text-muted-foreground">
-            <p>По умолчанию: admin@polanet.local / admin123</p>
-          </div>
         </CardContent>
       </Card>
     </div>
