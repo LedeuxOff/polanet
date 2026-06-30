@@ -39,7 +39,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="w-full">
-      <div className="rounded-md border w-full">
+      <div className="rounded-md border w-full bg-card">
         <div className="w-full overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-muted">

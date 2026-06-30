@@ -67,8 +67,8 @@ export const UsersPage = () => {
           </CardHeader>
         </Card>
 
-        <Card>
-          <CardContent className="pt-8">
+        <Card className="bg-transparent p-0 shadow-none border-none">
+          <CardContent className="p-0">
             {isLoading ? (
               <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
             ) : (
@@ -113,7 +113,7 @@ export const UsersPage = () => {
               navigate({ to: "/users/new" });
             }}
           >
-            Создать пользователя
+            Создать
           </Button>
         </div>
       </div>

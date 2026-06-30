@@ -5,7 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
-import { MenuIcon } from "lucide-react";
+import { MenuIcon, UsersIcon } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -18,10 +18,9 @@ function Index() {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      <Card>
+      <Card className="col-span-3 rounded-2xl shadow-xl">
         <CardHeader>
           <CardTitle>Добро пожаловать</CardTitle>
-          <CardDescription>Административная панель Polanet</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
@@ -30,27 +29,24 @@ function Index() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Пользователи</CardTitle>
-          <CardDescription>Управление пользователями системы</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Link to="/users">
-            <Button>Перейти к пользователям</Button>
-          </Link>
-        </CardContent>
-      </Card>
+      <Link to="/users" className="col-span-2">
+        <Card className="rounded-2xl shadow-xl relative overflow-hidden">
+          <CardHeader>
+            <CardTitle className="">Пользователи</CardTitle>
+            <CardDescription className="">Управление пользователями системы</CardDescription>
+          </CardHeader>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Роли</CardTitle>
-          <CardDescription>Управление ролями и доступом</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">В разработке...</p>
-        </CardContent>
-      </Card>
+          <div className="absolute top-3 right-3">
+            <div className="relative flex h-20 w-20 items-center justify-center">
+              <div className="absolute inset-0 rounded-full bg-blue-300/30 animate-[pulse-ring-expand_2s_ease-in-out_infinite]" />
+              <div className="absolute inset-0 rounded-full bg-blue-300/30 animate-[pulse-ring-expand_2s_ease-in-out_infinite_1s]" />
+              <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full bg-blue-300/10">
+                <UsersIcon className="h-10 w-10 text-blue-300" />
+              </div>
+            </div>
+          </div>
+        </Card>
+      </Link>
 
       {isMobile && (
         <div

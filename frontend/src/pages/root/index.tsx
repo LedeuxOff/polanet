@@ -45,7 +45,7 @@ export const RootLayout = () => {
       {!isMobile && <Sidebar />}
 
       <main
-        className={`flex-1 overflow-auto min-h-screen ${!isMobile ? "ml-[360px] pr-[40px]" : "pl-[20px] pr-[20px]"} pt-[40px]`}
+        className={`flex-1 overflow-auto min-h-screen ${!isMobile ? "ml-[300px] pl-[16px] pr-[16px]" : "pl-[20px] pr-[20px]"} pt-[16px]`}
       >
         <Outlet />
       </main>
