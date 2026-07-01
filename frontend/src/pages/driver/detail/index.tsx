@@ -5,13 +5,17 @@ import { DriverSection } from "./ui/driver-section";
 import { DriveRemoveTransportCardModal } from "./ui/driver-remove-transport-card-modal";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { ChevronLeft, MenuIcon, TrashIcon } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronUp, MenuIcon, TrashIcon } from "lucide-react";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 
 export const EditDriverPage = () => {
+  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
+
   const navigate = useNavigate();
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
   const { showToast } = useToast();
@@ -36,7 +40,7 @@ export const EditDriverPage = () => {
 
   if (isLoading || isPermissionsLoading) {
     return (
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardContent className="py-8 text-center text-muted-foreground">Загрузка...</CardContent>
       </Card>
     );
@@ -44,7 +48,7 @@ export const EditDriverPage = () => {
 
   if (!hasPermission("drivers:detail")) {
     return (
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardContent className="py-8 text-center">
           <p className="text-muted-foreground mb-4">У вас нет доступа к этой странице</p>
           <Link to="/">
@@ -59,7 +63,7 @@ export const EditDriverPage = () => {
 
   if (!driver) {
     return (
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardContent className="py-8 text-center text-muted-foreground">
           Водитель не найден
         </CardContent>
@@ -69,21 +73,21 @@ export const EditDriverPage = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardHeader>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-4">
             <CardTitle>Водители</CardTitle>
 
             <div className="flex items-center gap-2">
               <Link to="/drivers" className="text-sm text-muted-foreground">
-                Список
+                <Badge variant="outline">Список</Badge>
               </Link>
 
-              <span className="text-sm text-muted-foreground">/</span>
+              <span className="w-1 h-1 bg-blue-400 rounded-full" />
 
-              <span className="text-sm text-black">
+              <Badge variant="secondary">
                 {`${driver.lastName} ${driver.firstName} ${driver.middleName || ""}`.trim()}
-              </span>
+              </Badge>
             </div>
           </div>
         </CardHeader>
@@ -100,9 +104,9 @@ export const EditDriverPage = () => {
           navigate({ to: "/drivers" });
         })}
       >
-        <div className={`flex ${isMobile ? "flex-col" : "flex-row"} gap-4 pb-32`}>
+        <div className={`flex flex-col gap-4 pb-32`}>
           <div className="flex flex-col gap-4 flex-1">
-            <Card>
+            <Card className="rounded-2xl shadow-xl">
               <CardHeader>
                 <CardTitle>Основная информация</CardTitle>
               </CardHeader>
@@ -113,7 +117,7 @@ export const EditDriverPage = () => {
           </div>
 
           <div className="flex flex-col gap-4 flex-1">
-            <Card>
+            <Card className="rounded-2xl shadow-xl">
               <CardHeader>
                 <CardTitle>Транспортная карта</CardTitle>
               </CardHeader>
@@ -140,12 +144,19 @@ export const EditDriverPage = () => {
         </div>
 
         <div
-          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[58px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[58px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
         >
+          <div
+            onClick={() => setHideBottomTabbar(false)}
+            className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
+          >
+            <ChevronUp className="text-white w-5" />
+          </div>
+
           <Button
             type="button"
             disabled={isDeleting || isSubmitting}
-            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
             onClick={() => navigate({ to: "/drivers" })}
           >
             <ChevronLeft className="w-4 h-4" />
@@ -154,7 +165,7 @@ export const EditDriverPage = () => {
           {isMobile && (
             <Button
               type="button"
-              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
               onClick={() => setOpen(true)}
             >
               <MenuIcon className="w-4 h-4" />
@@ -164,7 +175,7 @@ export const EditDriverPage = () => {
           {driver && (
             <Button
               type="button"
-              className="px-3 py-4 bg-red-600 rounded-md hover:bg-red-700"
+              className="px-3 py-4 bg-red-400 rounded-2xl hover:bg-red-500"
               onClick={() => {
                 if (!hasPermission("drivers:delete")) {
                   showToast("У вас нет прав на удаление водителя", "error");
@@ -181,9 +192,17 @@ export const EditDriverPage = () => {
           <Button
             type="submit"
             disabled={isDeleting || isSubmitting}
-            className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
+            className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600"
           >
             {isSubmitting ? "Сохранение..." : "Сохранить"}
+          </Button>
+
+          <Button
+            onClick={() => setHideBottomTabbar(true)}
+            type="button"
+            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+          >
+            <ChevronDown className="w-4 h-4" />
           </Button>
         </div>
       </form>

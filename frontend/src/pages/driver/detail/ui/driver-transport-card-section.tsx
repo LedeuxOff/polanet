@@ -89,10 +89,10 @@ export const DriverTransportCardSection = ({
         <div className="space-y-2">
           <Label>Привязать транспортную карту</Label>
           <Select value={selectedCardId} onValueChange={setSelectedCardId}>
-            <SelectTrigger>
+            <SelectTrigger className="rounded-2xl">
               <SelectValue placeholder="Выберите карту" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-2xl shadow-xl">
               {transportCards.length === 0 ? (
                 <div className="px-2 py-3 text-sm text-muted-foreground">Нет доступных карт</div>
               ) : (

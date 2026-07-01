@@ -5,15 +5,18 @@ import { Driver } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
-import { HomeIcon, MenuIcon, SearchIcon } from "lucide-react";
+import { ChevronDown, ChevronUp, HomeIcon, MenuIcon, SearchIcon } from "lucide-react";
 import { PermissionGuard } from "@/lib/components/permission-guard";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 export const DriversPage = () => {
+  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
+
   const navigate = useNavigate();
   const {
     drivers,
@@ -91,8 +94,15 @@ export const DriversPage = () => {
         )}
 
         <div
-          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
+          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[58px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[58px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
         >
+          <div
+            onClick={() => setHideBottomTabbar(false)}
+            className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
+          >
+            <ChevronUp className="text-white w-5" />
+          </div>
+
           <Link to="/">
             <Button
               type="button"
@@ -124,6 +134,14 @@ export const DriversPage = () => {
             }}
           >
             Создать
+          </Button>
+
+          <Button
+            onClick={() => setHideBottomTabbar(true)}
+            type="button"
+            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+          >
+            <ChevronDown className="w-4 h-4" />
           </Button>
         </div>
       </div>

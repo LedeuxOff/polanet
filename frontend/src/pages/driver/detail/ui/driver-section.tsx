@@ -18,7 +18,12 @@ export const DriverSection = ({ form, isSubmitting }: Props) => {
       <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-3"} gap-4`}>
         <div className="space-y-2">
           <Label htmlFor="lastName">Фамилия</Label>
-          <Input id="lastName" disabled={isSubmitting} {...form.register("lastName")} />
+          <Input
+            className="rounded-2xl"
+            id="lastName"
+            disabled={isSubmitting}
+            {...form.register("lastName")}
+          />
           {form.formState.errors.lastName && (
             <p className="text-sm text-destructive">{form.formState.errors.lastName.message}</p>
           )}
@@ -26,7 +31,12 @@ export const DriverSection = ({ form, isSubmitting }: Props) => {
 
         <div className="space-y-2">
           <Label htmlFor="firstName">Имя</Label>
-          <Input id="firstName" disabled={isSubmitting} {...form.register("firstName")} />
+          <Input
+            className="rounded-2xl"
+            id="firstName"
+            disabled={isSubmitting}
+            {...form.register("firstName")}
+          />
           {form.formState.errors.firstName && (
             <p className="text-sm text-destructive">{form.formState.errors.firstName.message}</p>
           )}
@@ -34,7 +44,12 @@ export const DriverSection = ({ form, isSubmitting }: Props) => {
 
         <div className="space-y-2">
           <Label htmlFor="middleName">Отчество</Label>
-          <Input id="middleName" disabled={isSubmitting} {...form.register("middleName")} />
+          <Input
+            className="rounded-2xl"
+            id="middleName"
+            disabled={isSubmitting}
+            {...form.register("middleName")}
+          />
         </div>
       </div>
 
@@ -42,6 +57,7 @@ export const DriverSection = ({ form, isSubmitting }: Props) => {
         <div className="space-y-2">
           <Label htmlFor="phone">Телефон</Label>
           <InputPhone
+            className="rounded-2xl"
             id="phone"
             disabled={isSubmitting}
             value={form.watch("phone")}
