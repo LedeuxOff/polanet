@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   HomeIcon,
-  MenuIcon,
   PlusIcon,
   BanIcon,
   ChevronUp,
@@ -476,7 +475,7 @@ export const CalendarDesktop = () => {
       />
 
       <div
-        className={`fixed transition-all ${isMobile ? "bottom-2" : hideBottomTabbar ? "-bottom-14" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
+        className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[58px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[58px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
       >
         <div
           onClick={() => setHideBottomTabbar(false)}
@@ -490,16 +489,6 @@ export const CalendarDesktop = () => {
             <HomeIcon className="w-4 h-4" />
           </Button>
         </Link>
-
-        {isMobile && (
-          <Button
-            type="button"
-            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
-            onClick={() => setOpen(true)}
-          >
-            <MenuIcon className="w-4 h-4" />
-          </Button>
-        )}
 
         <Button
           onClick={() => setHideBottomTabbar(true)}

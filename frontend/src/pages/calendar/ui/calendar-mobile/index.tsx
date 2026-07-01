@@ -11,7 +11,15 @@ import {
   DrawerTrigger,
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, HomeIcon, MenuIcon, PlusIcon, BanIcon } from "lucide-react";
+import {
+  CalendarIcon,
+  HomeIcon,
+  MenuIcon,
+  PlusIcon,
+  BanIcon,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { DatePicker } from "./date-picker";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
@@ -107,6 +115,7 @@ function DeliveryBlock({ delivery, time, onEdit }: DeliveryBlockProps) {
 
 // Mobile версия календаря
 export const CalendarMobile = () => {
+  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isOpen, setIsOpen] = useState(false);
   const [deliveryData, setDeliveryData] = useState<{
@@ -288,7 +297,7 @@ export const CalendarMobile = () => {
                       return (
                         <div
                           className={cn(
-                            "absolute inset-0 flex items-center justify-center z-10",
+                            "absolute inset-0 flex items-center justify-center",
                             !isPast && "opacity-0 group-hover:opacity-100",
                             !isPast && "hover:opacity-100",
                           )}
@@ -334,26 +343,36 @@ export const CalendarMobile = () => {
       />
 
       <div
-        className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[58px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[58px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
       >
+        <div
+          onClick={() => setHideBottomTabbar(false)}
+          className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
+        >
+          <ChevronUp className="text-white w-5" />
+        </div>
+
         <Link to="/">
-          <Button
-            type="button"
-            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900 flex gap-2"
-          >
-            <HomeIcon className="w-4 h-4" /> Главная
+          <Button type="button" className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600">
+            <HomeIcon className="w-4 h-4" />
           </Button>
         </Link>
 
-        {isMobile && (
-          <Button
-            type="button"
-            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
-            onClick={() => setOpen(true)}
-          >
-            <MenuIcon className="w-4 h-4" />
-          </Button>
-        )}
+        <Button
+          type="button"
+          className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+          onClick={() => setOpen(true)}
+        >
+          <MenuIcon className="w-4 h-4" />
+        </Button>
+
+        <Button
+          onClick={() => setHideBottomTabbar(true)}
+          type="button"
+          className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+        >
+          <ChevronDown className="w-4 h-4" />
+        </Button>
       </div>
     </div>
   );
