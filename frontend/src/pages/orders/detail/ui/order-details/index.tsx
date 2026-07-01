@@ -39,10 +39,10 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
             onValueChange={(value: "delivery" | "pickup") => form.setValue("type", value)}
             disabled={disabledByStatus}
           >
-            <SelectTrigger disabled={isSubmitting}>
+            <SelectTrigger disabled={isSubmitting} className="rounded-2xl">
               <SelectValue placeholder="Выберите тип" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-2xl shadow-xl">
               <SelectItem value="delivery">Доставка</SelectItem>
               <SelectItem value="pickup">Вывоз</SelectItem>
             </SelectContent>
@@ -55,6 +55,7 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
         <div className="space-y-2">
           <Label htmlFor="dateTime">Дата и время *</Label>
           <Input
+            className="rounded-2xl"
             id="dateTime"
             type="datetime-local"
             disabled={isSubmitting || disabledByStatus}
@@ -74,10 +75,10 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
             ) => form.setValue("status", value)}
             disabled={isSubmitting}
           >
-            <SelectTrigger>
+            <SelectTrigger className="rounded-2xl">
               <SelectValue placeholder="Выберите статус" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-2xl shadow-xl">
               {allStatusOptions.map((status) => (
                 <SelectItem key={status} value={status}>
                   {statusLabels[status] || status}
@@ -96,6 +97,7 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
         <div className="space-y-2">
           <Label htmlFor="address">Адрес *</Label>
           <Textarea
+            className="rounded-2xl"
             id="address"
             disabled={isSubmitting || disabledByStatus}
             {...form.register("address")}
@@ -109,6 +111,7 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
         <div className="space-y-2">
           <Label htmlFor="addressComment">Комментарий к адресу</Label>
           <Textarea
+            className="rounded-2xl"
             id="addressComment"
             disabled={isSubmitting || disabledByStatus}
             {...form.register("addressComment")}

@@ -5,13 +5,16 @@ import { useNavigate, Link } from "@tanstack/react-router";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { HomeIcon, MenuIcon } from "lucide-react";
+import { ChevronDown, ChevronUp, HomeIcon, MenuIcon } from "lucide-react";
 import { QuickCreateOrderButton } from "./ui/quick-create-order-button";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
 import { OrdersListFilters } from "./ui/filters";
+import { useState } from "react";
 
 export const OrdersPage = () => {
+  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
+
   const navigate = useNavigate();
   const {
     orders,
@@ -163,8 +166,15 @@ export const OrdersPage = () => {
       )}
 
       <div
-        className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
+        className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[108px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[108px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
       >
+        <div
+          onClick={() => setHideBottomTabbar(false)}
+          className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
+        >
+          <ChevronUp className="text-white w-5" />
+        </div>
+
         <div className="flex flex-col gap-3">
           <div className="flex gap-3">
             <Link to="/">
@@ -179,7 +189,7 @@ export const OrdersPage = () => {
             {isMobile && (
               <Button
                 type="button"
-                className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+                className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
                 onClick={() => setOpen(true)}
               >
                 <MenuIcon className="w-4 h-4" />
@@ -194,6 +204,14 @@ export const OrdersPage = () => {
                 Создать заявку
               </Button>
             </Link>
+
+            <Button
+              onClick={() => setHideBottomTabbar(true)}
+              type="button"
+              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+            >
+              <ChevronDown className="w-4 h-4" />
+            </Button>
           </div>
 
           <QuickCreateOrderButton />

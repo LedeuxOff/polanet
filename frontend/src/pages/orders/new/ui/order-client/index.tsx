@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { InputPhone } from "@/components/ui/input-phone";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -44,7 +45,13 @@ export const NewOrderClient = ({ form, isSubmitting }: Props) => {
           form.setValue("payerFirstName", selectedClient.payerFirstName);
         if (selectedClient.payerMiddleName)
           form.setValue("payerMiddleName", selectedClient.payerMiddleName);
-        if (selectedClient.payerPhone) form.setValue("payerPhone", selectedClient.payerPhone);
+        if (selectedClient.payerPhone)
+          form.setValue(
+            "payerPhone",
+            selectedClient.payerPhone.replace(/\D/g, "").length === 11
+              ? selectedClient.payerPhone
+              : `+7 ${selectedClient.payerPhone?.slice(1) || ""}`,
+          );
 
         // Заполняем приемщика
         if (selectedClient.receiverLastName)
@@ -54,7 +61,12 @@ export const NewOrderClient = ({ form, isSubmitting }: Props) => {
         if (selectedClient.receiverMiddleName)
           form.setValue("receiverMiddleName", selectedClient.receiverMiddleName);
         if (selectedClient.receiverPhone)
-          form.setValue("receiverPhone", selectedClient.receiverPhone);
+          form.setValue(
+            "receiverPhone",
+            selectedClient.receiverPhone.replace(/\D/g, "").length === 11
+              ? selectedClient.receiverPhone
+              : `+7 ${selectedClient.receiverPhone?.slice(1) || ""}`,
+          );
       }
     }
   }, [selectedClientId, clients, form.setValue]);
@@ -68,10 +80,10 @@ export const NewOrderClient = ({ form, isSubmitting }: Props) => {
           value={String(form.watch("clientId") || "")}
           onValueChange={(value) => form.setValue("clientId", value ? Number(value) : null)}
         >
-          <SelectTrigger disabled={isSubmitting}>
+          <SelectTrigger disabled={isSubmitting} className="rounded-2xl">
             <SelectValue placeholder="Не выбран" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="rounded-2xl shadow-xl">
             {clients.map((client) => (
               <SelectItem key={client.id} value={String(client.id)}>
                 {client.type === "individual"
@@ -87,9 +99,14 @@ export const NewOrderClient = ({ form, isSubmitting }: Props) => {
       <div>
         <h3 className="text-lg font-semibold mb-3">Плательщик</h3>
         <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-4"} gap-4`}>
-          <div className="space-y-2">
+          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="payerLastName">Фамилия *</Label>
-            <Input id="payerLastName" disabled={isSubmitting} {...form.register("payerLastName")} />
+            <Input
+              className="rounded-2xl"
+              id="payerLastName"
+              disabled={isSubmitting}
+              {...form.register("payerLastName")}
+            />
             {form.formState.errors.payerLastName && (
               <p className="text-sm text-destructive">
                 {form.formState.errors.payerLastName.message}
@@ -97,9 +114,10 @@ export const NewOrderClient = ({ form, isSubmitting }: Props) => {
             )}
           </div>
 
-          <div className="space-y-2">
+          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="payerFirstName">Имя *</Label>
             <Input
+              className="rounded-2xl"
               id="payerFirstName"
               disabled={isSubmitting}
               {...form.register("payerFirstName")}
@@ -111,22 +129,26 @@ export const NewOrderClient = ({ form, isSubmitting }: Props) => {
             )}
           </div>
 
-          <div className="space-y-2">
+          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="payerMiddleName">Отчество</Label>
             <Input
+              className="rounded-2xl"
               id="payerMiddleName"
               disabled={isSubmitting}
               {...form.register("payerMiddleName")}
             />
           </div>
 
-          <div className="space-y-2">
+          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="payerPhone">Телефон</Label>
-            <Input
+            <InputPhone
+              className="rounded-2xl"
               id="payerPhone"
               disabled={isSubmitting}
-              placeholder="+7 (999) 000-00-00"
-              {...form.register("payerPhone")}
+              value={form.watch("payerPhone") || ""}
+              onPhoneChange={(value) =>
+                form.setValue("payerPhone", value || undefined, { shouldValidate: true })
+              }
             />
           </div>
         </div>
@@ -136,9 +158,10 @@ export const NewOrderClient = ({ form, isSubmitting }: Props) => {
       <div>
         <h3 className="text-lg font-semibold mb-3">Приемщик</h3>
         <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-4"} gap-4`}>
-          <div className="space-y-2">
+          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="receiverLastName">Фамилия *</Label>
             <Input
+              className="rounded-2xl"
               id="receiverLastName"
               disabled={isSubmitting}
               {...form.register("receiverLastName")}
@@ -150,9 +173,10 @@ export const NewOrderClient = ({ form, isSubmitting }: Props) => {
             )}
           </div>
 
-          <div className="space-y-2">
+          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="receiverFirstName">Имя *</Label>
             <Input
+              className="rounded-2xl"
               id="receiverFirstName"
               disabled={isSubmitting}
               {...form.register("receiverFirstName")}
@@ -164,22 +188,26 @@ export const NewOrderClient = ({ form, isSubmitting }: Props) => {
             )}
           </div>
 
-          <div className="space-y-2">
+          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="receiverMiddleName">Отчество</Label>
             <Input
+              className="rounded-2xl"
               id="receiverMiddleName"
               disabled={isSubmitting}
               {...form.register("receiverMiddleName")}
             />
           </div>
 
-          <div className="space-y-2">
+          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="receiverPhone">Телефон</Label>
-            <Input
+            <InputPhone
+              className="rounded-2xl"
               id="receiverPhone"
               disabled={isSubmitting}
-              placeholder="+7 (999) 000-00-00"
-              {...form.register("receiverPhone")}
+              value={form.watch("receiverPhone") || ""}
+              onPhoneChange={(value) =>
+                form.setValue("receiverPhone", value || undefined, { shouldValidate: true })
+              }
             />
           </div>
         </div>

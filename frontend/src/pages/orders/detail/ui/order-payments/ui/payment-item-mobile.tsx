@@ -11,7 +11,7 @@ interface Props {
 
 export const PaymentItemMobile = ({ income }: Props) => {
   return (
-    <div className="flex flex-col gap-4 border rounded-md p-4">
+    <div className="flex flex-col gap-4 border rounded-2xl p-4">
       <div className="flex justify-between gap-4">
         <OrderPaymentsIncomeItemStatus isPaid={income.isPaid} />
         {income.deliveryId && <Badge variant="outline">№ {income.deliveryId}</Badge>}

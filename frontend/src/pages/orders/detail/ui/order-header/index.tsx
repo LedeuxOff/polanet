@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { CardTitle } from "@/components/ui/card";
 import { Order } from "@/lib/types";
 import { Link } from "@tanstack/react-router";
@@ -10,19 +11,17 @@ interface Props {
 
 export const OrderHeader = ({ isNewOrder, orderId }: Props) => {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
       <CardTitle>Заявки</CardTitle>
 
       <div className="flex items-center gap-2">
         <Link to="/orders" className="text-sm text-muted-foreground">
-          Список заявок
+          <Badge variant="outline">Список заявок</Badge>
         </Link>
 
-        <span className="text-sm text-muted-foreground">/</span>
+        <span className="w-1 h-1 bg-blue-400 rounded-full" />
 
-        <span className="text-sm text-black">
-          {isNewOrder ? "Новая заявка" : `Заявка #${orderId}`}
-        </span>
+        <Badge variant="secondary">{isNewOrder ? "Новая заявка" : `Заявка #${orderId}`}</Badge>
       </div>
     </div>
   );

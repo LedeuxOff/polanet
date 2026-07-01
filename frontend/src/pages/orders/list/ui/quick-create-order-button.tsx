@@ -71,7 +71,10 @@ export function QuickCreateOrderButton() {
     return (
       <Drawer open={open} onOpenChange={(value) => setOpen(value)}>
         <DrawerTrigger>
-          <Button type="button" className="px-8 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600">
+          <Button
+            type="button"
+            className="w-full px-8 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+          >
             Создать черновик
           </Button>
         </DrawerTrigger>

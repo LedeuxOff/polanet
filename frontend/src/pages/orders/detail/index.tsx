@@ -7,12 +7,15 @@ import { OrderPayments } from "./ui/order-payments";
 import { OrderDeliveries } from "./ui/order-deliveries";
 import { OrderHistory } from "./ui/order-history";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, MenuIcon, TrashIcon } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronUp, MenuIcon, TrashIcon } from "lucide-react";
 import { useOrderDetailPage } from "./hooks";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
+import { useState } from "react";
 
 export const OrderDetailPage = () => {
+  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
+
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
@@ -35,26 +38,26 @@ export const OrderDetailPage = () => {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardContent className="py-8 text-center text-muted-foreground">Загрузка...</CardContent>
       </Card>
     );
   }
 
   return (
-    <div className="flex flex-col gap-4 pb-32">
+    <div className="flex flex-col gap-4 pb-4">
       {/* Шапка заявки */}
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardHeader>
           <OrderHeader isNewOrder={isNewOrder} orderId={orderId} order={order} />
         </CardHeader>
       </Card>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className={`flex ${isMobile ? "flex-col" : "flex-row"} gap-6`}>
+        <div className={`flex flex-col gap-6`}>
           <div className="flex flex-col gap-6 flex-1">
             {/* Основная информация */}
-            <Card>
+            <Card className="rounded-2xl shadow-xl">
               <CardHeader>
                 <CardTitle>Основная информация</CardTitle>
               </CardHeader>
@@ -69,7 +72,7 @@ export const OrderDetailPage = () => {
             </Card>
 
             {/* Информация о клиента */}
-            <Card>
+            <Card className="rounded-2xl shadow-xl">
               <CardHeader>
                 <CardTitle>Информация о клиенте</CardTitle>
               </CardHeader>
@@ -87,7 +90,7 @@ export const OrderDetailPage = () => {
             {!isNewOrder && order && (
               <>
                 {/* Финансы */}
-                <Card>
+                <Card className="rounded-2xl shadow-xl">
                   <CardHeader>
                     <CardTitle>Финансы</CardTitle>
                   </CardHeader>
@@ -97,7 +100,7 @@ export const OrderDetailPage = () => {
                 </Card>
 
                 {/* Доставки */}
-                <Card>
+                <Card className="rounded-2xl shadow-xl">
                   <CardHeader>
                     <CardTitle>Информация о доставках</CardTitle>
                   </CardHeader>
@@ -113,7 +116,7 @@ export const OrderDetailPage = () => {
 
                 {/* История изменений */}
                 {order.history && (
-                  <Card>
+                  <Card className="rounded-2xl shadow-xl">
                     <CardHeader>
                       <CardTitle>Информация об изменениях</CardTitle>
                     </CardHeader>
@@ -128,12 +131,19 @@ export const OrderDetailPage = () => {
         </div>
 
         <div
-          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[58px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[58px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
         >
+          <div
+            onClick={() => setHideBottomTabbar(false)}
+            className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
+          >
+            <ChevronUp className="text-white w-5" />
+          </div>
+
           <Button
             type="button"
             disabled={isDeleting || isSubmitting}
-            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
             onClick={() => navigate({ to: "/orders" })}
           >
             <ChevronLeft className="w-4 h-4" />
@@ -142,17 +152,25 @@ export const OrderDetailPage = () => {
           {isMobile && (
             <Button
               type="button"
-              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
               onClick={() => setOpen(true)}
             >
               <MenuIcon className="w-4 h-4" />
             </Button>
           )}
 
+          <Button
+            type="submit"
+            disabled={isDeleting || isSubmitting}
+            className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600 flex-1"
+          >
+            {isSubmitting ? "Сохранение..." : "Сохранить"}
+          </Button>
+
           {!isNewOrder && order && (
             <Button
               type="button"
-              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              className="rounded-2xl px-3 py-4 bg-red-400 hover:bg-red-500"
               onClick={handleDelete}
               disabled={isDeleting || isSubmitting}
             >
@@ -161,11 +179,11 @@ export const OrderDetailPage = () => {
           )}
 
           <Button
-            type="submit"
-            disabled={isDeleting || isSubmitting}
-            className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
+            onClick={() => setHideBottomTabbar(true)}
+            type="button"
+            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
           >
-            {isSubmitting ? "Сохранение..." : "Сохранить"}
+            <ChevronDown className="w-4 h-4" />
           </Button>
         </div>
       </form>

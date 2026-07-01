@@ -24,17 +24,17 @@ export const NewOrderDetails = ({ form, isSubmitting }: Props) => {
   return (
     <div className="flex flex-col gap-4">
       {/* Тип, статус и дата и время */}
-      <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-3"} gap-4`}>
-        <div className="space-y-2">
+      <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-4"} gap-4`}>
+        <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
           <Label htmlFor="type">Тип заявки *</Label>
           <Select
             value={form.watch("type")}
             onValueChange={(value: "delivery" | "pickup") => form.setValue("type", value)}
           >
-            <SelectTrigger disabled={isSubmitting}>
+            <SelectTrigger disabled={isSubmitting} className="rounded-2xl">
               <SelectValue placeholder="Выберите тип" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-2xl shadow-xl">
               <SelectItem value="delivery">Доставка</SelectItem>
               <SelectItem value="pickup">Вывоз</SelectItem>
             </SelectContent>
@@ -44,9 +44,10 @@ export const NewOrderDetails = ({ form, isSubmitting }: Props) => {
           )}
         </div>
 
-        <div className="space-y-2">
+        <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
           <Label htmlFor="dateTime">Дата и время *</Label>
           <Input
+            className="rounded-2xl"
             id="dateTime"
             type="datetime-local"
             disabled={isSubmitting}
@@ -57,7 +58,7 @@ export const NewOrderDetails = ({ form, isSubmitting }: Props) => {
           )}
         </div>
 
-        <div className="space-y-2">
+        <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
           <Label htmlFor="status">Статус *</Label>
           <Select
             value={form.watch("status")}
@@ -66,10 +67,10 @@ export const NewOrderDetails = ({ form, isSubmitting }: Props) => {
             ) => form.setValue("status", value)}
             disabled={isSubmitting}
           >
-            <SelectTrigger>
+            <SelectTrigger className="rounded-2xl">
               <SelectValue placeholder="Выберите статус" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-2xl shadow-xl">
               {availableTransitions.map((status) => (
                 <SelectItem key={status} value={status}>
                   {statusLabels[status] || status}
@@ -87,7 +88,13 @@ export const NewOrderDetails = ({ form, isSubmitting }: Props) => {
       <div className="grid grid-cols-1 gap-4">
         <div className="space-y-2">
           <Label htmlFor="address">Адрес *</Label>
-          <Textarea id="address" disabled={isSubmitting} {...form.register("address")} rows={2} />
+          <Textarea
+            className="rounded-2xl"
+            id="address"
+            disabled={isSubmitting}
+            {...form.register("address")}
+            rows={2}
+          />
           {form.formState.errors.address && (
             <p className="text-sm text-destructive">{form.formState.errors.address.message}</p>
           )}
@@ -96,6 +103,7 @@ export const NewOrderDetails = ({ form, isSubmitting }: Props) => {
         <div className="space-y-2">
           <Label htmlFor="addressComment">Комментарий к адресу</Label>
           <Textarea
+            className="rounded-2xl"
             id="addressComment"
             disabled={isSubmitting}
             {...form.register("addressComment")}
