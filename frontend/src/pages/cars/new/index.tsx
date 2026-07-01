@@ -4,13 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, MenuIcon } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronUp, MenuIcon } from "lucide-react";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 
 export const NewCarPage = () => {
+  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
+
   const navigate = useNavigate();
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
   const { showToast } = useToast();
@@ -20,7 +24,7 @@ export const NewCarPage = () => {
 
   if (isPermissionsLoading) {
     return (
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardContent className="py-8 text-center text-muted-foreground">
           Загрузка прав доступа...
         </CardContent>
@@ -30,7 +34,7 @@ export const NewCarPage = () => {
 
   if (!hasPermission("cars:create")) {
     return (
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardContent className="py-8 text-center">
           <p className="text-muted-foreground mb-4">У вас нет доступа к этой странице</p>
           <Link to="/">
@@ -45,19 +49,19 @@ export const NewCarPage = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardHeader>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-4">
             <CardTitle>Автомобили</CardTitle>
 
             <div className="flex items-center gap-2">
               <Link to="/cars" className="text-sm text-muted-foreground">
-                Список
+                <Badge variant="outline">Список</Badge>
               </Link>
 
-              <span className="text-sm text-muted-foreground">/</span>
+              <span className="w-1 h-1 bg-blue-400 rounded-full" />
 
-              <span className="text-sm text-black">Создание</span>
+              <Badge variant="secondary">Создание</Badge>
             </div>
           </div>
         </CardHeader>
@@ -76,14 +80,19 @@ export const NewCarPage = () => {
       >
         <div className="flex gap-4">
           <div className="flex flex-col gap-4 flex-1">
-            <Card>
+            <Card className="rounded-2xl shadow-xl">
               <CardHeader>
                 <CardTitle>Основная информация</CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col gap-2">
                 <div className="space-y-2">
                   <Label htmlFor="brand">Марка</Label>
-                  <Input id="brand" disabled={isSubmitting} {...form.register("brand")} />
+                  <Input
+                    className="rounded-2xl"
+                    id="brand"
+                    disabled={isSubmitting}
+                    {...form.register("brand")}
+                  />
                   {form.formState.errors.brand && (
                     <p className="text-sm text-destructive">
                       {form.formState.errors.brand.message}
@@ -94,6 +103,7 @@ export const NewCarPage = () => {
                 <div className="space-y-2">
                   <Label htmlFor="licensePlate">Гос номер</Label>
                   <Input
+                    className="rounded-2xl"
                     id="licensePlate"
                     disabled={isSubmitting}
                     {...form.register("licensePlate")}
@@ -110,12 +120,19 @@ export const NewCarPage = () => {
         </div>
 
         <div
-          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[58px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[58px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
         >
+          <div
+            onClick={() => setHideBottomTabbar(false)}
+            className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
+          >
+            <ChevronUp className="text-white w-5" />
+          </div>
+
           <Button
             type="button"
             disabled={isSubmitting}
-            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
             onClick={() => navigate({ to: "/cars" })}
           >
             <ChevronLeft className="w-4 h-4" />
@@ -124,7 +141,7 @@ export const NewCarPage = () => {
           {isMobile && (
             <Button
               type="button"
-              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
               onClick={() => setOpen(true)}
             >
               <MenuIcon className="w-4 h-4" />
@@ -134,9 +151,17 @@ export const NewCarPage = () => {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
+            className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600"
           >
             {isSubmitting ? "Сохранение..." : "Сохранить"}
+          </Button>
+
+          <Button
+            onClick={() => setHideBottomTabbar(true)}
+            type="button"
+            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+          >
+            <ChevronDown className="w-4 h-4" />
           </Button>
         </div>
       </form>
