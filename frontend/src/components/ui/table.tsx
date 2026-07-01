@@ -116,7 +116,7 @@ export function DataTable<TData, TValue>({
                       </td>
                     </tr>
                   )}
-                  {hasServerPagination && (
+                  {hasServerPagination && !!totalRecords && totalRecords > 0 && (
                     <tr className="transition-colors hover:bg-muted/50 cursor-pointer">
                       <td className="p-3 align-middle whitespace-nowrap text-sm border-r last:border-r-0 font-medium">
                         Общее кол-во записей:

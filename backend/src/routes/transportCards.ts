@@ -38,18 +38,30 @@ async function logHistory(
     .run();
 }
 
-// Получить все карты
+// Получить все карты с пагинацией
 router.get(
   "/",
   authenticate,
   requirePermission("transport-cards:list"),
   (req: AuthRequest, res) => {
     try {
-      const allCards = db
-        .select()
-        .from(transportCards)
-        .orderBy(desc(transportCards.createdAt))
-        .all();
+      const page = parseInt(req.query.page as string, 10) || 1;
+      const limit = parseInt(req.query.limit as string, 10) || 10;
+      const offset = (page - 1) * limit;
+      const searchCardNumber = req.query.cardNumber as string;
+
+      // Получаем все карты
+      let allCards = db.select().from(transportCards).orderBy(desc(transportCards.createdAt)).all();
+
+      // Фильтрация по номеру карты
+      if (searchCardNumber) {
+        allCards = allCards.filter((card) =>
+          card.cardNumber?.toLowerCase().includes(searchCardNumber.toLowerCase()),
+        );
+      }
+
+      const totalRecords = allCards.length;
+      const totalPages = Math.ceil(totalRecords / limit);
 
       // Проверяем наличие права на просмотр расходов
       const hasExpensesListPermission = req.user?.roleId
@@ -66,8 +78,11 @@ router.get(
             .all().length > 0
         : false;
 
+      // Пагинация
+      const paginatedCards = allCards.slice(offset, offset + limit);
+
       // Для каждой карты получаем водителя и расходы
-      const cardsWithDetails = allCards.map((card) => {
+      const cardsWithDetails = paginatedCards.map((card) => {
         const driver = card.driverId
           ? db.select().from(drivers).where(eq(drivers.id, card.driverId)).get()
           : null;
@@ -92,7 +107,10 @@ router.get(
         };
       });
 
-      res.json(cardsWithDetails);
+      res.json({
+        data: cardsWithDetails,
+        pagination: { page, limit, totalRecords, totalPages },
+      });
     } catch (error) {
       console.error("Error getting transport cards:", error);
       res

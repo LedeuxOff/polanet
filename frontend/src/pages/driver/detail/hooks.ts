@@ -59,8 +59,9 @@ export const useDriverDetailPage = () => {
         })
         .catch(console.error),
       transportCardsApi
-        .list()
-        .then((cards) => {
+        .list({ limit: 1000 })
+        .then((res) => {
+          const cards = res.data || [];
           // Фильтруем карты которые не привязаны к водителю или привязаны к текущему
           const availableCards = cards.filter(
             (c) => !c.driverId || c.driverId === Number(driverId),
@@ -125,7 +126,8 @@ export const useDriverDetailPage = () => {
       setSelectedCardId("");
 
       // Обновляем список карт
-      const cards = await transportCardsApi.list();
+      const cardsResponse = await transportCardsApi.list({ limit: 1000 });
+      const cards = cardsResponse.data || [];
       const availableCards = cards.filter((c) => !c.driverId || c.driverId === Number(driverId));
       setTransportCards(availableCards);
     } catch (err) {

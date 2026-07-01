@@ -2,19 +2,31 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useTransportCardsListPage } from "./hooks";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { HomeIcon, MenuIcon } from "lucide-react";
+import { HomeIcon, MenuIcon, SearchIcon } from "lucide-react";
 import { PermissionGuard } from "@/lib/components/permission-guard";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
+import { Input } from "@/components/ui/input";
 
 export const TransportCardsPage = () => {
   const navigate = useNavigate();
-  const { cards, isLoading } = useTransportCardsListPage();
+  const {
+    cards,
+    isLoading,
+    currentPage,
+    limit,
+    totalRecords,
+    totalPages,
+    search,
+    handlePageChange,
+    handleLimitChange,
+    handleSearchChange,
+  } = useTransportCardsListPage();
   const { hasPermission } = usePermissions();
   const { showToast } = useToast();
   const isMobile = useIsMobile();
@@ -66,43 +78,50 @@ export const TransportCardsPage = () => {
   return (
     <PermissionGuard permission="transport-cards:list">
       <div className="flex flex-col gap-4">
-        <Card>
+        <Card className="rounded-2xl shadow-xl">
           <CardHeader>
-            <div className="flex flex-col gap-2">
-              <CardTitle>Транспортные карты</CardTitle>
-
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-black">Список</span>
-              </div>
-            </div>
+            <CardTitle>Транспортные карты</CardTitle>
           </CardHeader>
         </Card>
 
-        <Card>
-          <CardHeader></CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
-            ) : (
-              <DataTable
-                columns={columns}
-                data={cards}
-                onRowClick={(row) =>
-                  navigate({
-                    to: "/transport-cards/$cardId",
-                    params: { cardId: row.id.toString() },
-                  })
-                }
-              />
-            )}
-          </CardContent>
-        </Card>
+        {/* Search */}
+        <div className="relative flex-1">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Поиск по номеру карты"
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className="pl-10 rounded-xl"
+          />
+        </div>
+
+        {isLoading ? (
+          <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={cards}
+            pagination={{ currentPage, limit, totalRecords, totalPages }}
+            onPageChange={handlePageChange}
+            onLimitChange={handleLimitChange}
+            onRowClick={(row) =>
+              navigate({
+                to: "/transport-cards/$cardId",
+                params: { cardId: row.id.toString() },
+              })
+            }
+          />
+        )}
 
         <div
-          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
         >
           <Link to="/">
-            <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
+            <Button
+              type="button"
+              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+            >
               <HomeIcon className="w-4 h-4" />
             </Button>
           </Link>
@@ -119,7 +138,7 @@ export const TransportCardsPage = () => {
 
           <Button
             type="button"
-            className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
+            className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600"
             onClick={() => {
               if (!hasPermission("transport-cards:create")) {
                 showToast("У вас нет прав на создание карты", "error");
