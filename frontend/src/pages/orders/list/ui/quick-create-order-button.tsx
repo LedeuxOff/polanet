@@ -33,8 +33,8 @@ export function QuickCreateOrderButton() {
 
   const loadClients = async () => {
     try {
-      const data = await clientsApi.list();
-      setClients(data);
+      const response = await clientsApi.list({ limit: 1000 });
+      setClients(response.data || []);
     } catch (error) {
       console.error("Ошибка загрузки клиентов:", error);
     }

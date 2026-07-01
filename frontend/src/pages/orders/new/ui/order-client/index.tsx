@@ -23,7 +23,12 @@ export const NewOrderClient = ({ form, isSubmitting }: Props) => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    Promise.all([clientsApi.list().then(setClients).catch(console.error)]).catch(console.error);
+    Promise.all([
+      clientsApi
+        .list({ limit: 1000 })
+        .then((res) => setClients(res.data || []))
+        .catch(console.error),
+    ]).catch(console.error);
   }, []);
 
   // Автозаполнение при выборе клиента

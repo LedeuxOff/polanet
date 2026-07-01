@@ -8,11 +8,69 @@ import { eq } from "drizzle-orm";
 
 const router = Router();
 
-// Получить всех клиентов
+// Получить всех клиентов с пагинацией и поиском
 router.get("/", authenticate, requirePermission("clients:list"), (req: AuthRequest, res) => {
   try {
-    const allClients = db.select().from(clients).all();
-    res.json(allClients);
+    // Парсинг параметров пагинации
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+    const offset = (page - 1) * limit;
+
+    // Парсинг параметров поиска и фильтрации
+    const searchName = req.query.search as string;
+    const searchPhone = req.query.search as string;
+    const searchEmail = req.query.search as string;
+    const clientType = req.query.type as string;
+
+    // Получаем всех клиентов
+    let allClients = db.select().from(clients).all();
+
+    // Применяем фильтр по типу клиента
+    if (clientType && clientType !== "all") {
+      const typeValue = clientType === "individual" || clientType === "legal" ? clientType : null;
+      if (typeValue) {
+        allClients = allClients.filter((client) => client.type === typeValue);
+      }
+    }
+
+    // Применяем фильтр поиска по наименованию/ФИО, телефону или email
+    if (searchName || searchPhone || searchEmail) {
+      const searchTerm = (searchName || searchPhone || searchEmail).toLowerCase();
+      allClients = allClients.filter((client) => {
+        // Для физлица ищем по ФИО
+        const matchesName =
+          client.lastName?.toLowerCase().includes(searchTerm) ||
+          false ||
+          client.firstName?.toLowerCase().includes(searchTerm) ||
+          false ||
+          client.middleName?.toLowerCase().includes(searchTerm) ||
+          false;
+
+        // Для юрлица ищем по наименованию организации
+        const matchesOrgName = client.organizationName?.toLowerCase().includes(searchTerm) || false;
+
+        // Ищем по телефону и email
+        const matchesPhone = client.phone?.includes(searchTerm || "") || false;
+        const matchesEmail = client.email?.toLowerCase().includes(searchTerm) || false;
+
+        return matchesName || matchesOrgName || matchesPhone || matchesEmail;
+      });
+    }
+
+    // Пагинация
+    const totalRecords = allClients.length;
+    const totalPages = Math.ceil(totalRecords / limit);
+    const paginatedClients = allClients.slice(offset, offset + limit);
+
+    res.json({
+      data: paginatedClients,
+      pagination: {
+        page,
+        limit,
+        totalRecords,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error("Error getting clients:", error);
     res

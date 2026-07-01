@@ -149,7 +149,7 @@ export function DataTable<TData, TValue>({
                       <SelectTrigger className="w-auto pl-4 gap-2 rounded-2xl">
                         <SelectValue placeholder="Выбрать" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="rounded-2xl shadow-xl">
                         {pageOptions.map((option) => (
                           <SelectItem key={option} value={String(option)}>
                             {option}
