@@ -137,7 +137,7 @@ export function DataTable<TData, TValue>({
       {hasServerPagination && (
         <Card className="rounded-2xl shadow-xl my-4">
           <CardContent className="py-2 px-4">
-            <div className="flex gap-3 justify-between">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 justify-between">
               {onLimitChange && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -161,7 +161,7 @@ export function DataTable<TData, TValue>({
                 </div>
               )}
 
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-between sm:justify-center gap-2">
                 <span className="text-sm text-muted-foreground">
                   Страница {currentPage} из {totalPages || 1}
                 </span>

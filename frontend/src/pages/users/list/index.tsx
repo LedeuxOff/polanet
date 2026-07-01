@@ -1,12 +1,19 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { DataTable } from "@/components/ui/table";
-import { User, Role } from "@/lib/types";
+import { User } from "@/lib/types";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ColumnDef } from "@tanstack/react-table";
 import { useUsersList } from "./hooks";
-import { HomeIcon, MenuIcon, SearchIcon, ChevronDownIcon } from "lucide-react";
+import {
+  HomeIcon,
+  MenuIcon,
+  SearchIcon,
+  ChevronDownIcon,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { PermissionGuard } from "@/lib/components/permission-guard";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
@@ -16,6 +23,8 @@ import * as Popover from "@radix-ui/react-popover";
 import { useState } from "react";
 
 export const UsersPage = () => {
+  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
+
   const navigate = useNavigate();
   const {
     users,
@@ -205,8 +214,15 @@ export const UsersPage = () => {
         )}
 
         <div
-          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
+          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-14" : "bottom-2") : hideBottomTabbar ? "-bottom-14" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
         >
+          <div
+            onClick={() => setHideBottomTabbar(false)}
+            className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
+          >
+            <ChevronUp className="text-white w-5" />
+          </div>
+
           <Link to="/">
             <Button
               type="button"
@@ -219,7 +235,7 @@ export const UsersPage = () => {
           {isMobile && (
             <Button
               type="button"
-              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
               onClick={() => setOpen(true)}
             >
               <MenuIcon className="w-4 h-4" />
@@ -238,6 +254,14 @@ export const UsersPage = () => {
             }}
           >
             Создать
+          </Button>
+
+          <Button
+            onClick={() => setHideBottomTabbar(true)}
+            type="button"
+            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+          >
+            <ChevronDown className="w-4 h-4" />
           </Button>
         </div>
       </div>
