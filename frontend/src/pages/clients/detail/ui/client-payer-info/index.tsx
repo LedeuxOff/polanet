@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { InputPhone } from "@/components/ui/input-phone";
 import { Label } from "@/components/ui/label";
 import { useIsMobile } from "@/hooks";
 import { ClientForm } from "@/lib/types";
@@ -14,7 +15,7 @@ export const ClientPayerInfo = ({ form, isSubmitting }: Props) => {
   const isMobile = useIsMobile();
 
   return (
-    <Card>
+    <Card className="rounded-2xl shadow-xl">
       <CardHeader>
         <CardTitle>Плательщик</CardTitle>
       </CardHeader>
@@ -24,6 +25,7 @@ export const ClientPayerInfo = ({ form, isSubmitting }: Props) => {
             <div className="space-y-2">
               <Label htmlFor="payerLastName">Фамилия</Label>
               <Input
+                className="rounded-2xl"
                 id="payerLastName"
                 disabled={isSubmitting}
                 {...form.register("payerLastName")}
@@ -33,6 +35,7 @@ export const ClientPayerInfo = ({ form, isSubmitting }: Props) => {
             <div className="space-y-2">
               <Label htmlFor="payerFirstName">Имя</Label>
               <Input
+                className="rounded-2xl"
                 id="payerFirstName"
                 disabled={isSubmitting}
                 {...form.register("payerFirstName")}
@@ -42,6 +45,7 @@ export const ClientPayerInfo = ({ form, isSubmitting }: Props) => {
             <div className="space-y-2">
               <Label htmlFor="payerMiddleName">Отчество</Label>
               <Input
+                className="rounded-2xl"
                 id="payerMiddleName"
                 disabled={isSubmitting}
                 {...form.register("payerMiddleName")}
@@ -51,7 +55,15 @@ export const ClientPayerInfo = ({ form, isSubmitting }: Props) => {
 
           <div className="space-y-2">
             <Label htmlFor="payerPhone">Телефон</Label>
-            <Input id="payerPhone" disabled={isSubmitting} {...form.register("payerPhone")} />
+            <InputPhone
+              className="rounded-2xl"
+              id="payerPhone"
+              disabled={isSubmitting}
+              value={form.watch("payerPhone")}
+              onPhoneChange={(value) =>
+                form.setValue("payerPhone", value || "", { shouldValidate: true })
+              }
+            />
           </div>
         </div>
       </CardContent>

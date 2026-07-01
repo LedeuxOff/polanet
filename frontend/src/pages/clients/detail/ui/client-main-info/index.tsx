@@ -25,11 +25,11 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
   const isMobile = useIsMobile();
 
   return (
-    <Card>
+    <Card className="rounded-2xl shadow-xl">
       <CardHeader>
         <CardTitle>Основная информация</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-4">
         <div className="space-y-2">
           <Label htmlFor="type">Тип клиента</Label>
           <Select
@@ -40,10 +40,10 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
               form.setValue("type", value);
             }}
           >
-            <SelectTrigger disabled={isSubmitting}>
+            <SelectTrigger disabled={isSubmitting} className="rounded-2xl">
               <SelectValue placeholder="Выберите тип" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-2xl shadow-xl">
               <SelectItem value="individual">Физическое лицо</SelectItem>
               <SelectItem value="legal">Юридическое лицо</SelectItem>
             </SelectContent>
@@ -58,7 +58,12 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
             <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-3"} gap-4`}>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Фамилия</Label>
-                <Input id="lastName" disabled={isSubmitting} {...form.register("lastName")} />
+                <Input
+                  className="rounded-2xl"
+                  id="lastName"
+                  disabled={isSubmitting}
+                  {...form.register("lastName")}
+                />
                 {form.formState.errors.lastName && (
                   <p className="text-sm text-destructive">
                     {form.formState.errors.lastName.message}
@@ -68,7 +73,12 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
 
               <div className="space-y-2">
                 <Label htmlFor="firstName">Имя</Label>
-                <Input id="firstName" disabled={isSubmitting} {...form.register("firstName")} />
+                <Input
+                  className="rounded-2xl"
+                  id="firstName"
+                  disabled={isSubmitting}
+                  {...form.register("firstName")}
+                />
                 {form.formState.errors.firstName && (
                   <p className="text-sm text-destructive">
                     {form.formState.errors.firstName.message}
@@ -78,7 +88,12 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
 
               <div className="space-y-2">
                 <Label htmlFor="middleName">Отчество</Label>
-                <Input id="middleName" disabled={isSubmitting} {...form.register("middleName")} />
+                <Input
+                  className="rounded-2xl"
+                  id="middleName"
+                  disabled={isSubmitting}
+                  {...form.register("middleName")}
+                />
               </div>
             </div>
           </>
@@ -86,6 +101,7 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
           <div className="space-y-2 mt-2">
             <Label htmlFor="organizationName">Название организации</Label>
             <Input
+              className="rounded-2xl"
               id="organizationName"
               disabled={isSubmitting}
               {...form.register("organizationName")}
@@ -102,6 +118,7 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
           <div className="space-y-2">
             <Label htmlFor="phone">Телефон</Label>
             <InputPhone
+              className="rounded-2xl"
               id="phone"
               disabled={isSubmitting}
               value={form.watch("phone")}
@@ -113,7 +130,13 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
 
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" disabled={isSubmitting} {...form.register("email")} />
+            <Input
+              className="rounded-2xl"
+              id="email"
+              type="email"
+              disabled={isSubmitting}
+              {...form.register("email")}
+            />
             {form.formState.errors.email && (
               <p className="text-sm text-destructive">{form.formState.errors.email.message}</p>
             )}
