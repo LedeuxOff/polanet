@@ -2,7 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useOrdersListPage } from "./hooks";
 import { statusLabels } from "./consts";
 import { useNavigate, Link } from "@tanstack/react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { HomeIcon, MenuIcon } from "lucide-react";
