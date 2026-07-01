@@ -85,18 +85,20 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [driversData, carsData, usersData, draftOrders, newOrders, inProgressOrders] =
-          await Promise.all([
-            driversApi.list(),
-            carsApi.list(),
-            usersApi.list({ limit: 100 }),
-            ordersApi.list({ status: "draft" }),
-            ordersApi.list({ status: "new" }),
-            ordersApi.list({ status: "in_progress" }),
-          ]);
+        const [usersData, draftOrders, newOrders, inProgressOrders] = await Promise.all([
+          usersApi.list({ limit: 100 }),
+          ordersApi.list({ status: "draft" }),
+          ordersApi.list({ status: "new" }),
+          ordersApi.list({ status: "in_progress" }),
+        ]);
 
-        setDrivers(driversData || []);
-        setCars(carsData || []);
+        const [driversResponse, carsResponse] = await Promise.all([
+          driversApi.list({ limit: 1000 }),
+          carsApi.list(),
+        ]);
+
+        setDrivers(driversResponse.data || []);
+        setCars(carsResponse.data || []);
         setUsers(usersData.data || []);
 
         // Объединяем заказы из всех статусов и убираем дубликаты

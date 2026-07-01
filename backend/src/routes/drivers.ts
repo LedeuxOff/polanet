@@ -8,11 +8,46 @@ import { eq } from "drizzle-orm";
 
 const router = Router();
 
-// Получить всех водителей
+// Получить всех водителей с пагинацией и поиском
 router.get("/", authenticate, requirePermission("drivers:list"), (req: AuthRequest, res) => {
   try {
-    const allDrivers = db.select().from(drivers).all();
-    res.json(allDrivers);
+    // Парсинг параметров пагинации
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+    const offset = (page - 1) * limit;
+
+    // Парсинг параметров поиска
+    const searchName = req.query.search as string;
+
+    // Получаем всех водителей
+    let allDrivers = db.select().from(drivers).all();
+
+    // Применяем фильтр поиска по ФИО
+    if (searchName) {
+      const searchLower = searchName.toLowerCase();
+      allDrivers = allDrivers.filter((driver) => {
+        const matchesLastName = driver.lastName?.toLowerCase().includes(searchLower) || false;
+        const matchesFirstName = driver.firstName?.toLowerCase().includes(searchLower) || false;
+        const matchesMiddleName = driver.middleName?.toLowerCase().includes(searchLower) || false;
+        const matchesPhone = driver.phone?.includes(searchName) || false;
+        return matchesLastName || matchesFirstName || matchesMiddleName || matchesPhone;
+      });
+    }
+
+    // Пагинация
+    const totalRecords = allDrivers.length;
+    const totalPages = Math.ceil(totalRecords / limit);
+    const paginatedDrivers = allDrivers.slice(offset, offset + limit);
+
+    res.json({
+      data: paginatedDrivers,
+      pagination: {
+        page,
+        limit,
+        totalRecords,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error("Error getting drivers:", error);
     res

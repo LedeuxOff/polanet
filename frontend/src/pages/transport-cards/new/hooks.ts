@@ -19,7 +19,10 @@ export const useNewTransportCardPage = () => {
   });
 
   useEffect(() => {
-    driversApi.list().then(setDrivers).catch(console.error);
+    driversApi
+      .list({ limit: 1000 })
+      .then((res) => setDrivers(res.data || []))
+      .catch(console.error);
   }, []);
 
   const onSubmit = async (data: NewTransportCardForm) => {
