@@ -160,7 +160,7 @@ export const TransportCardExpenses = ({
           }}
           variant="outline"
           type="button"
-          className="bg-blue-500 text-white hover:bg-blue-600 hover:text-white"
+          className="rounded-2xl bg-blue-400 text-white hover:bg-blue-500 hover:text-white"
         >
           Добавить расход
         </Button>

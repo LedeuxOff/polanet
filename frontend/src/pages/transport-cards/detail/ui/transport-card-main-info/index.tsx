@@ -19,10 +19,15 @@ interface Props {
 
 export const TransportCardMainInfo = ({ isSubmitting, form, card, drivers }: Props) => {
   return (
-    <>
+    <div className="flex flex-col gap-4">
       <div className="space-y-2">
         <Label htmlFor="cardNumber">Номер карты</Label>
-        <Input id="cardNumber" disabled={isSubmitting} {...form.register("cardNumber")} />
+        <Input
+          className="rounded-2xl"
+          id="cardNumber"
+          disabled={isSubmitting}
+          {...form.register("cardNumber")}
+        />
         {form.formState.errors.cardNumber && (
           <p className="text-sm text-destructive">{form.formState.errors.cardNumber.message}</p>
         )}
@@ -36,10 +41,10 @@ export const TransportCardMainInfo = ({ isSubmitting, form, card, drivers }: Pro
             form.setValue("status", value as "active" | "inactive")
           }
         >
-          <SelectTrigger disabled={isSubmitting}>
+          <SelectTrigger disabled={isSubmitting} className="rounded-2xl">
             <SelectValue placeholder="Активна" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="rounded-2xl shadow-xl">
             <SelectItem value="active">Активна</SelectItem>
             <SelectItem value="inactive">Неактивна</SelectItem>
           </SelectContent>
@@ -52,10 +57,10 @@ export const TransportCardMainInfo = ({ isSubmitting, form, card, drivers }: Pro
           value={String(form.watch("driverId") || "")}
           onValueChange={(value) => form.setValue("driverId", value ? Number(value) : null)}
         >
-          <SelectTrigger disabled={isSubmitting}>
+          <SelectTrigger disabled={isSubmitting} className="rounded-2xl">
             <SelectValue placeholder="Не назначен" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="rounded-2xl shadow-xl">
             {drivers.map((driver) => (
               <SelectItem key={driver.id} value={String(driver.id)}>
                 {driver.lastName} {driver.firstName} {driver.middleName}
@@ -64,6 +69,6 @@ export const TransportCardMainInfo = ({ isSubmitting, form, card, drivers }: Pro
           </SelectContent>
         </Select>
       </div>
-    </>
+    </div>
   );
 };

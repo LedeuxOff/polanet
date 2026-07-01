@@ -58,7 +58,7 @@ export const TransportCardHistory = ({ card }: Props) => {
                 .join(" ");
 
               return (
-                <div key={item.id} className="p-3 border rounded-md bg-muted/50">
+                <div key={item.id} className="p-3 border rounded-2xl bg-muted/50">
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
                       <Badge
