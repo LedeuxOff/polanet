@@ -1,14 +1,17 @@
 import { useBackupsListPage } from "./hooks";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
-import { HomeIcon, MenuIcon, RotateCcw, Trash2 } from "lucide-react";
+import { ChevronDown, ChevronUp, HomeIcon, MenuIcon, RotateCcw, Trash2 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
+import { useState } from "react";
 
 export const BackupsPage = () => {
+  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
+
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
 
@@ -60,6 +63,7 @@ export const BackupsPage = () => {
               onClick={() => handleRestore(row.original.filename)}
               disabled={isRestoring === row.original.filename}
               title="Восстановить базу данных"
+              className="rounded-2xl"
             >
               <RotateCcw className="w-4 h-4 mr-1" />
               {isRestoring === row.original.filename ? "Восстановление..." : "Восстановить"}
@@ -72,9 +76,9 @@ export const BackupsPage = () => {
               onClick={() => handleDelete(row.original.filename)}
               disabled={isDeleting === row.original.filename}
               title="Удалить резервную копию"
+              className="rounded-2xl"
             >
-              <Trash2 className="w-4 h-4 mr-1" />
-              {isDeleting === row.original.filename ? "Удаление..." : "Удалить"}
+              <Trash2 className="w-4 h-4" />
             </Button>
           )}
         </div>
@@ -84,34 +88,30 @@ export const BackupsPage = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardHeader>
-          <div className="flex flex-col gap-2">
-            <CardTitle>Резервные копии</CardTitle>
-
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-black">Список резервных копий</span>
-            </div>
-          </div>
+          <CardTitle>Резервные копии</CardTitle>
         </CardHeader>
       </Card>
 
-      <Card>
-        <CardHeader></CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
-          ) : (
-            <DataTable columns={columns} data={backups} />
-          )}
-        </CardContent>
-      </Card>
+      {isLoading ? (
+        <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
+      ) : (
+        <DataTable columns={columns} data={backups} />
+      )}
 
       <div
-        className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        className={`fixed transition-all ${isMobile ? "bottom-2" : hideBottomTabbar ? "-bottom-14" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
       >
+        <div
+          onClick={() => setHideBottomTabbar(false)}
+          className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
+        >
+          <ChevronUp className="text-white w-5" />
+        </div>
+
         <Link to="/">
-          <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
+          <Button type="button" className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600">
             <HomeIcon className="w-4 h-4" />
           </Button>
         </Link>
@@ -128,13 +128,21 @@ export const BackupsPage = () => {
 
         {canCreate && (
           <Button
-            onClick={handleCreate}
             type="button"
-            className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
+            onClick={handleCreate}
+            className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600"
           >
-            Создать копию
+            Создать
           </Button>
         )}
+
+        <Button
+          onClick={() => setHideBottomTabbar(true)}
+          type="button"
+          className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+        >
+          <ChevronDown className="w-4 h-4" />
+        </Button>
       </div>
     </div>
   );

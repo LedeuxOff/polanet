@@ -3,7 +3,7 @@ import { useRolesListPage } from "./hooks";
 import { ColumnDef } from "@tanstack/react-table";
 import { Role } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
 import { ChevronDown, ChevronUp, HomeIcon, MenuIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks";
