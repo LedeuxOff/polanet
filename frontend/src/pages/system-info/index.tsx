@@ -12,6 +12,8 @@ import {
   DatabaseIcon,
   ServerIcon,
   MenuIcon,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { useSystemInfo } from "./hooks";
 import { DonutChart } from "./ui/donut-chart";
@@ -20,8 +22,11 @@ import { NetworkChart } from "./ui/network-chart";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
+import { useState } from "react";
 
 export const SystemInfoPage = () => {
+  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
+
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
@@ -65,7 +70,7 @@ export const SystemInfoPage = () => {
   if (isLoading && !lastUpdated) {
     return (
       <div className="flex flex-col gap-4">
-        <Card>
+        <Card className="rounded-2xl shadow-xl">
           <CardHeader>
             <CardTitle>Информация о системе</CardTitle>
           </CardHeader>
@@ -87,7 +92,7 @@ export const SystemInfoPage = () => {
   if (error) {
     return (
       <div className="flex flex-col gap-4">
-        <Card>
+        <Card className="rounded-2xl shadow-xl">
           <CardHeader>
             <CardTitle>Информация о системе</CardTitle>
           </CardHeader>
@@ -113,7 +118,7 @@ export const SystemInfoPage = () => {
   return (
     <div className="flex flex-col gap-4 pb-24">
       {/* Header with refresh */}
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardHeader>
           <div
             className={`flex ${isMobile ? "flex-col gap-2" : "flex-row items-center"} justify-between`}
@@ -131,7 +136,7 @@ export const SystemInfoPage = () => {
       </Card>
 
       {/* OS Info Card - Top */}
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardHeader>
           <div className="flex items-center gap-2">
             <MonitorIcon className="w-5 h-5 text-muted-foreground" />
@@ -186,7 +191,7 @@ export const SystemInfoPage = () => {
       {/* CPU and Memory Charts */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* CPU Usage Donut Chart */}
-        <Card>
+        <Card className="rounded-2xl shadow-xl">
           <CardHeader>
             <CardTitle className="text-center">Нагрузка ЦП</CardTitle>
           </CardHeader>
@@ -201,7 +206,7 @@ export const SystemInfoPage = () => {
         </Card>
 
         {/* Memory Usage Donut Chart */}
-        <Card>
+        <Card className="rounded-2xl shadow-xl">
           <CardHeader>
             <CardTitle className="text-center">Загрузка памяти</CardTitle>
           </CardHeader>
@@ -217,7 +222,7 @@ export const SystemInfoPage = () => {
       </div>
 
       {/* Disk Usage */}
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardHeader>
           <div className="flex items-center gap-2">
             <HardDriveIcon className="w-5 h-5 text-muted-foreground" />
@@ -238,7 +243,7 @@ export const SystemInfoPage = () => {
       {/* Network and Uptime */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Network Info */}
-        <Card>
+        <Card className="rounded-2xl shadow-xl">
           <CardHeader>
             <div className="flex items-center gap-2">
               <NetworkIconLucide className="w-5 h-5 text-muted-foreground" />
@@ -255,7 +260,7 @@ export const SystemInfoPage = () => {
         </Card>
 
         {/* Uptime Info */}
-        <Card>
+        <Card className="rounded-2xl shadow-xl">
           <CardHeader>
             <div className="flex items-center gap-2">
               <ClockIcon className="w-5 h-5 text-muted-foreground" />
@@ -274,10 +279,17 @@ export const SystemInfoPage = () => {
 
       {/* Bottom Navigation */}
       <div
-        className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        className={`fixed transition-all ${isMobile ? "bottom-2" : hideBottomTabbar ? "-bottom-14" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
       >
+        <div
+          onClick={() => setHideBottomTabbar(false)}
+          className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
+        >
+          <ChevronUp className="text-white w-5" />
+        </div>
+
         <Link to="/">
-          <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
+          <Button type="button" className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600">
             <HomeIcon className="w-4 h-4" />
           </Button>
         </Link>
@@ -296,10 +308,18 @@ export const SystemInfoPage = () => {
           onClick={refresh}
           disabled={isLoading}
           type="button"
-          className="px-3 py-4 bg-blue-600 rounded-md hover:bg-blue-700 flex items-center gap-2"
+          className="px-4 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600 flex items-center gap-2"
         >
           <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
           <span>Обновить</span>
+        </Button>
+
+        <Button
+          onClick={() => setHideBottomTabbar(true)}
+          type="button"
+          className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+        >
+          <ChevronDown className="w-4 h-4" />
         </Button>
       </div>
     </div>

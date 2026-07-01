@@ -1,14 +1,17 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { HomeIcon, MenuIcon } from "lucide-react";
+import { ChevronDown, ChevronUp, HomeIcon, MenuIcon } from "lucide-react";
 import { useMoneyStatistic } from "./hooks";
 import { MoneyChart } from "./ui/money-chart";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
+import { useState } from "react";
 
 export const MoneyStatisticPage = () => {
+  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
+
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
@@ -39,19 +42,13 @@ export const MoneyStatisticPage = () => {
 
   return (
     <div className="flex flex-col gap-4 pb-24">
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardHeader>
-          <div className="flex flex-col gap-2">
-            <CardTitle>Статистика по финансам</CardTitle>
-
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-black">График</span>
-            </div>
-          </div>
+          <CardTitle>Статистика по финансам</CardTitle>
         </CardHeader>
       </Card>
 
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardHeader>
           <CardTitle>Динамика доходов и расходов по месяцам</CardTitle>
         </CardHeader>
@@ -76,10 +73,17 @@ export const MoneyStatisticPage = () => {
       </Card>
 
       <div
-        className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        className={`fixed transition-all ${isMobile ? "bottom-2" : hideBottomTabbar ? "-bottom-14" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
       >
+        <div
+          onClick={() => setHideBottomTabbar(false)}
+          className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
+        >
+          <ChevronUp className="text-white w-5" />
+        </div>
+
         <Link to="/">
-          <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
+          <Button type="button" className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600">
             <HomeIcon className="w-4 h-4" />
           </Button>
         </Link>
@@ -93,6 +97,14 @@ export const MoneyStatisticPage = () => {
             <MenuIcon className="w-4 h-4" />
           </Button>
         )}
+
+        <Button
+          onClick={() => setHideBottomTabbar(true)}
+          type="button"
+          className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+        >
+          <ChevronDown className="w-4 h-4" />
+        </Button>
       </div>
     </div>
   );

@@ -1,13 +1,24 @@
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { HomeIcon, RefreshCw, Trash2, AlertTriangle, MenuIcon } from "lucide-react";
+import {
+  HomeIcon,
+  RefreshCw,
+  Trash2,
+  AlertTriangle,
+  MenuIcon,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { useSystemLogs } from "./hooks";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
+import { useState } from "react";
 
 export const SystemLogsPage = () => {
+  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
+
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
 
@@ -25,7 +36,7 @@ export const SystemLogsPage = () => {
   if (isLoading && errors.length === 0) {
     return (
       <div className="flex flex-col gap-4">
-        <Card>
+        <Card className="rounded-2xl shadow-xl">
           <CardHeader>
             <CardTitle>Серверные логи</CardTitle>
           </CardHeader>
@@ -47,7 +58,7 @@ export const SystemLogsPage = () => {
   if (error && errors.length === 0) {
     return (
       <div className="flex flex-col gap-4">
-        <Card>
+        <Card className="rounded-2xl shadow-xl">
           <CardHeader>
             <CardTitle>Серверные логи</CardTitle>
           </CardHeader>
@@ -73,7 +84,7 @@ export const SystemLogsPage = () => {
   return (
     <div className="flex flex-col gap-4">
       {/* Header with refresh */}
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardHeader>
           <div
             className={`flex ${isMobile ? "flex-col gap-2" : "flex-row items-center"} justify-between`}
@@ -91,7 +102,9 @@ export const SystemLogsPage = () => {
             </div>
             <div className="flex items-center gap-2">
               {lastUpdated && (
-                <span className="text-sm text-muted-foreground">Обновлено: {lastUpdated}</span>
+                <Button variant="outline" size="sm" className="rounded-2xl text-zinc-500">
+                  Обновлено: {lastUpdated}
+                </Button>
               )}
             </div>
           </div>
@@ -100,7 +113,7 @@ export const SystemLogsPage = () => {
 
       {/* Error list */}
       {errors.length > 0 ? (
-        <Card>
+        <Card className="rounded-2xl shadow-xl">
           <CardHeader>
             <CardTitle className="text-lg">Список ошибок</CardTitle>
           </CardHeader>
@@ -144,7 +157,7 @@ export const SystemLogsPage = () => {
           </CardContent>
         </Card>
       ) : (
-        <Card>
+        <Card className="rounded-2xl shadow-xl">
           <CardContent className="flex items-center justify-center h-32">
             <p className="text-muted-foreground">Ошибок не найдено</p>
           </CardContent>
@@ -153,34 +166,41 @@ export const SystemLogsPage = () => {
 
       {/* Bottom Navigation */}
       <div
-        className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        className={`fixed transition-all ${isMobile ? "bottom-2" : hideBottomTabbar ? "-bottom-14" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
       >
-        <div className="flex gap-2">
-          <Link to="/">
-            <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
-              <HomeIcon className="w-4 h-4" />
-            </Button>
-          </Link>
-
-          {isMobile && (
-            <Button
-              type="button"
-              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
-              onClick={() => setOpen(true)}
-            >
-              <MenuIcon className="w-4 h-4" />
-            </Button>
-          )}
-
-          <Button
-            onClick={refresh}
-            disabled={isLoading}
-            className="px-3 py-4 bg-blue-600 rounded-md hover:bg-blue-700 flex gap-2"
-          >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
-            <span>Обновить</span>
-          </Button>
+        <div
+          onClick={() => setHideBottomTabbar(false)}
+          className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
+        >
+          <ChevronUp className="text-white w-5" />
         </div>
+
+        <Link to="/">
+          <Button type="button" className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600">
+            <HomeIcon className="w-4 h-4" />
+          </Button>
+        </Link>
+
+        {isMobile && (
+          <Button
+            type="button"
+            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+            onClick={() => setOpen(true)}
+          >
+            <MenuIcon className="w-4 h-4" />
+          </Button>
+        )}
+
+        <Button
+          onClick={refresh}
+          disabled={isLoading}
+          type="button"
+          className="px-4 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600 flex items-center gap-2"
+        >
+          <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
+          <span>Обновить</span>
+        </Button>
+
         {errors.length > 0 && canClearErrors && (
           <Button
             onClick={clearAllErrors}
@@ -191,6 +211,14 @@ export const SystemLogsPage = () => {
             <span>Очистить</span>
           </Button>
         )}
+
+        <Button
+          onClick={() => setHideBottomTabbar(true)}
+          type="button"
+          className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+        >
+          <ChevronDown className="w-4 h-4" />
+        </Button>
       </div>
     </div>
   );
