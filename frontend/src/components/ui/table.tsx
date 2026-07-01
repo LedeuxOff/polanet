@@ -146,7 +146,7 @@ export function DataTable<TData, TValue>({
                       value={String(limit)}
                       onValueChange={(value) => onLimitChange(Number(value))}
                     >
-                      <SelectTrigger className="w-auto pl-4 gap-2">
+                      <SelectTrigger className="w-auto pl-4 gap-2 rounded-2xl">
                         <SelectValue placeholder="Выбрать" />
                       </SelectTrigger>
                       <SelectContent>

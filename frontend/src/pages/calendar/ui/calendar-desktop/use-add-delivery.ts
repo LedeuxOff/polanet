@@ -101,9 +101,9 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
 
         // Объединяем заказы из всех статусов и убираем дубликаты
         const allOrders = [
-          ...(draftOrders || []),
-          ...(newOrders || []),
-          ...(inProgressOrders || []),
+          ...(draftOrders?.data || []),
+          ...(newOrders?.data || []),
+          ...(inProgressOrders?.data || []),
         ];
         const uniqueOrders = Array.from(
           new Map(allOrders.map((order) => [order.id, order])).values(),

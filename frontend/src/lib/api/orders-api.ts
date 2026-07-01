@@ -1,8 +1,9 @@
 import { request } from ".";
 import { CreateOrderInput, Order, OrderHistory } from "../types/order-types";
 import { CreatePaymentInput, Payment } from "../types/payment-types";
+import { PaginationParams, PaginationResponse } from "./users-api";
 
-export interface OrdersListQuery {
+export interface OrdersListQuery extends PaginationParams {
   id?: string;
   status?: string;
   customerDebt?: string;
@@ -14,6 +15,8 @@ export interface OrdersListQuery {
 export const ordersApi = {
   list: (query?: OrdersListQuery) => {
     const params = new URLSearchParams();
+    if (query?.page) params.set("page", String(query.page));
+    if (query?.limit) params.set("limit", String(query.limit));
     if (query?.id) params.set("id", query.id);
     if (query?.status) params.set("status", query.status);
     if (query?.customerDebt) params.set("customerDebt", query.customerDebt);
@@ -22,13 +25,15 @@ export const ordersApi = {
     if (query?.dateTo) params.set("dateTo", query.dateTo);
     const queryString = params.toString();
     return request<
-      (Order & {
-        payments: Payment[];
-        receivedAmount: number;
-        pendingAmount: number;
-        customerDebt: number;
-        companyDebt: number;
-      })[]
+      PaginationResponse<
+        (Order & {
+          payments: Payment[];
+          receivedAmount: number;
+          pendingAmount: number;
+          customerDebt: number;
+          companyDebt: number;
+        })[]
+      >
     >(`/orders${queryString ? `?${queryString}` : ""}`);
   },
   get: (id: number) =>

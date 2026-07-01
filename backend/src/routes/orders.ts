@@ -45,7 +45,7 @@ async function logHistory(
     .run();
 }
 
-// Получить все заявки с фильтрами
+// Получить все заявки с фильтрами и пагинацией
 router.get("/", authenticate, requirePermission("orders:list"), (req: AuthRequest, res) => {
   try {
     // Парсинг query параметров
@@ -55,6 +55,11 @@ router.get("/", authenticate, requirePermission("orders:list"), (req: AuthReques
     const queryCompanyDebt = req.query.companyDebt as string;
     const queryDateFrom = req.query.dateFrom as string;
     const queryDateTo = req.query.dateTo as string;
+
+    // Парсинг параметров пагинации
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+    const offset = (page - 1) * limit;
 
     // Получаем все заявки
     const allOrders = db.select().from(orders).orderBy(desc(orders.createdAt)).all();
@@ -180,7 +185,20 @@ router.get("/", authenticate, requirePermission("orders:list"), (req: AuthReques
       finalOrders = finalOrders.filter((o) => (o.companyDebt ?? 0) === 0);
     }
 
-    res.json(finalOrders);
+    // Пагинация
+    const totalRecords = finalOrders.length;
+    const totalPages = Math.ceil(totalRecords / limit);
+    const paginatedOrders = finalOrders.slice(offset, offset + limit);
+
+    res.json({
+      data: paginatedOrders,
+      pagination: {
+        page,
+        limit,
+        totalRecords,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error("Error getting orders:", error);
     res.status(500).json({
