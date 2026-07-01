@@ -119,7 +119,7 @@ export const BackupsPage = () => {
         {isMobile && (
           <Button
             type="button"
-            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
             onClick={() => setOpen(true)}
           >
             <MenuIcon className="w-4 h-4" />
