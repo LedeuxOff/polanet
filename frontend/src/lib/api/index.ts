@@ -13,7 +13,7 @@ export { incomesApi } from "./incomes-api";
 export { expensesApi } from "./expenses-api";
 export { templatesApi } from "./templates-api";
 
-const APP_VERSION = import.meta.env.VITE_APP_VERSION || "1.8.5";
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || "1.9.11";
 
 export { APP_VERSION };
 
