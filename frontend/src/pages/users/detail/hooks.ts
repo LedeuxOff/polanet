@@ -3,7 +3,7 @@ import { rolesApi } from "@/lib/api/roles-api";
 import { User, UserForm, userSchema } from "@/lib/types";
 import { Role } from "@/lib/types/role-types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { cleanPhone } from "@/lib/utils/phone";
@@ -27,6 +27,7 @@ function convertPhoneToMask(phone: string | null | undefined): string {
 }
 
 export const useUserDetailPage = () => {
+  const navigate = useNavigate();
   const { userId } = useParams({ from: "/users/$userId" });
 
   const [user, setUser] = useState<User | null>(null);
@@ -36,6 +37,7 @@ export const useUserDetailPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSendingPassword, setIsSendingPassword] = useState(false);
   const [isUnbindingTelegram, setIsUnbindingTelegram] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const form = useForm<UserForm>({
     resolver: zodResolver(userSchema),
@@ -112,6 +114,22 @@ export const useUserDetailPage = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("Вы уверены, что хотите безвозвратно удалить этого пользователя?")) {
+      return;
+    }
+    setIsDeleting(true);
+    setError(null);
+    try {
+      await usersApi.delete(Number(userId));
+      navigate({ to: "/users" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ошибка при удалении пользователя");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return {
     isLoading,
     user,
@@ -124,5 +142,7 @@ export const useUserDetailPage = () => {
     handleSendPassword,
     isUnbindingTelegram,
     handleUnbindTelegram,
+    isDeleting,
+    handleDelete,
   };
 };

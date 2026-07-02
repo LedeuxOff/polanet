@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { useUserDetailPage } from "./hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,11 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronDown, ChevronLeft, ChevronUp, MenuIcon, Send } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronUp, MenuIcon, Send, TrashIcon } from "lucide-react";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
+import { useAuth } from "@/lib/contexts/auth-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
@@ -25,10 +26,15 @@ export const EditUserPage = () => {
   const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
 
   const navigate = useNavigate();
+  const { userId } = useParams({ from: "/users/$userId" });
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
   const { showToast } = useToast();
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
+  const { user: currentUser } = useAuth();
+
+  // Проверяем, просматривает ли пользователь свою собственную карточку
+  const isOwnUser = currentUser?.id === Number(userId);
 
   const {
     isLoading,
@@ -41,6 +47,8 @@ export const EditUserPage = () => {
     handleSendPassword,
     isUnbindingTelegram,
     handleUnbindTelegram,
+    isDeleting,
+    handleDelete,
   } = useUserDetailPage();
 
   // Показываем лоадер пока загружаются данные или permissions
@@ -220,7 +228,7 @@ export const EditUserPage = () => {
                         placeholder="Не привязан"
                       />
 
-                      {user?.telegramChatId && (
+                      {user?.telegramChatId && !isOwnUser && (
                         <Button
                           type="button"
                           disabled={isUnbindingTelegram}
@@ -313,6 +321,17 @@ export const EditUserPage = () => {
               >
                 {isSubmitting ? "Сохранение..." : "Сохранить"}
               </Button>
+
+              {user?.roleCode === "DEVELOPER" && !isOwnUser && (
+                <Button
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={handleDelete}
+                  className="px-3 py-4 bg-red-400 hover:bg-red-500 rounded-2xl"
+                >
+                  <TrashIcon className="w-4 h-4" />
+                </Button>
+              )}
 
               <Button
                 onClick={() => setHideBottomTabbar(true)}
