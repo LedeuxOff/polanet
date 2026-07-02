@@ -73,7 +73,7 @@ export const NewUserPage = () => {
 
                 <span className="w-1 h-1 bg-blue-400 rounded-full" />
 
-                <Badge variant="outline">Создание пользователя</Badge>
+                <Badge variant="secondary">Создание пользователя</Badge>
               </div>
             )}
           </div>

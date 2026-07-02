@@ -171,8 +171,16 @@ router.post("/", authenticate, requirePermission("users:create"), async (req: Au
       return res.status(409).json({ error: "Пользователь с таким email уже существует" });
     }
 
-    // Генерируем случайный пароль
-    const password = generatePassword(8);
+    // Генерируем пароль: если есть телефон - используем его, иначе - часть email до @
+    let password: string;
+    if (data.phone) {
+      // Удаляем все нецифровые символы из телефона
+      password = data.phone.replace(/\D/g, "");
+    } else {
+      // Берём часть email до символа @
+      const emailPart = data.email.split("@")[0];
+      password = emailPart;
+    }
     const passwordHash = await bcrypt.hash(password, 10);
 
     const result = db
@@ -270,14 +278,31 @@ router.post(
       const userId = Number(req.params.id);
 
       // Получаем пользователя
-      const user = db.select().from(users).where(eq(users.id, userId)).get();
+      const user = db
+        .select({
+          id: users.id,
+          telegramChatId: users.telegramChatId,
+          email: users.email,
+        })
+        .from(users)
+        .where(eq(users.id, userId))
+        .get();
 
       if (!user) {
         return res.status(404).json({ error: "Пользователь не найден" });
       }
 
-      // Генерируем новый пароль
-      const newPassword = generatePassword(8);
+      // Проверяем, привязан ли Telegram
+      if (!user.telegramChatId) {
+        return res.status(400).json({ error: "У пользователя не привязан Telegram" });
+      }
+
+      // Генерируем 8-символьный пароль (буквы + цифры)
+      const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      let newPassword = "";
+      for (let i = 0; i < 8; i++) {
+        newPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
       const passwordHash = await bcrypt.hash(newPassword, 10);
 
       // Обновляем пароль в БД
@@ -289,16 +314,17 @@ router.post(
         .where(eq(users.id, userId))
         .run();
 
-      // Отправляем новый пароль через Telegram
-      if (process.env.TELEGRAM_CHAT_ID) {
-        try {
-          await sendPasswordNotification(process.env.TELEGRAM_CHAT_ID, user.email, newPassword);
-        } catch (error) {
-          console.error("Ошибка отправки Telegram уведомления:", error);
-        }
+      // Отправляем новый пароль на привязанный Telegram
+      try {
+        await sendTelegramMessage(
+          user.telegramChatId,
+          `🔑 <b>Ваш новый пароль для PolaNet</b>\n\n🔐 Пароль: <b>${newPassword}</b>\n\nПожалуйста, сохраните этот пароль в безопасном месте.`,
+        );
+      } catch (error) {
+        console.error("Ошибка отправки уведомления об отвязке Telegram:", error);
       }
 
-      res.json({ success: true, message: "Новый пароль сгенерирован" });
+      res.json({ success: true, message: "Новый пароль сгенерирован и отправлен" });
     } catch (error) {
       if (error instanceof Error && error.name === "ZodError") {
         return res.status(400).json({ error: "Ошибка валидации", details: error });

@@ -106,7 +106,7 @@ export const EditUserPage = () => {
 
                 <span className="w-1 h-1 bg-blue-400 rounded-full" />
 
-                <Badge variant="outline">
+                <Badge variant="secondary">
                   {user.firstName} {user.lastName}
                 </Badge>
               </div>
@@ -324,7 +324,7 @@ export const EditUserPage = () => {
             </div>
             <Button
               type="button"
-              disabled={isSendingPassword}
+              disabled={isSendingPassword || !user?.telegramChatId}
               onClick={() => {
                 if (!hasPermission("users:sendPassword")) {
                   showToast("У вас нет прав на отправку пароля", "error");

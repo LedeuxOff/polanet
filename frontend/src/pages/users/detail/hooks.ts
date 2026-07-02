@@ -90,7 +90,7 @@ export const useUserDetailPage = () => {
     setError(null);
     try {
       await usersApi.sendPassword(Number(userId));
-      alert("Новый пароль был отправлен на указанный номер телефона");
+      alert("Новый пароль был отправлен в Telegram");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка при отправке пароля");
     } finally {
