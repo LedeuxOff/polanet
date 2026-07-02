@@ -66,9 +66,15 @@ export async function runMigrations() {
       db.exec(sql);
       console.log("  OK");
     } catch (error) {
-      console.error(`  ERROR: ${error}`);
-      db.close();
-      process.exit(1);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      // Игнорируем ошибки "already exists", "duplicate column" и подобные
+      if (errorMessage.includes("already exists") || errorMessage.includes("duplicate column")) {
+        console.log("  SKIPPED (уже существует)");
+      } else {
+        console.error(`  ERROR: ${errorMessage}`);
+        db.close();
+        process.exit(1);
+      }
     }
   }
 

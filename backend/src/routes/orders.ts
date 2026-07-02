@@ -465,11 +465,24 @@ router.delete(
         return res.status(404).json({ error: "Заявка не найдена" });
       }
 
-      // Удаляем заявку (выплаты и история удалятся каскадом)
-      db.delete(orders).where(eq(orders.id, orderId)).run();
+      // Удаляем связанные записи (каскадное удаление)
+      // Сначала удаляем доставки (у них есть foreign key на orders)
+      db.delete(deliveries).where(eq(deliveries.orderId, orderId)).run();
+
+      // Удаляем доходы связанные с заказами
+      db.delete(incomes).where(eq(incomes.orderId, orderId)).run();
+
+      // Удаляем выплаты
+      db.delete(payments).where(eq(payments.orderId, orderId)).run();
+
+      // Удаляем историю
+      db.delete(orderHistory).where(eq(orderHistory.orderId, orderId)).run();
 
       // Запись в историю (перед удалением)
       await logHistory(orderId, userId, "deleted");
+
+      // Удаляем заявку
+      db.delete(orders).where(eq(orders.id, orderId)).run();
 
       res.status(204).send();
     } catch (error) {
