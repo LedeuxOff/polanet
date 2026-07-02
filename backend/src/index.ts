@@ -22,6 +22,7 @@ import systemInfoRoutes from "./routes/systemInfo.js";
 import systemLogsRoutes from "./routes/systemLogs.js";
 import permissionsRoutes from "./routes/permissions.js";
 import telegramRoutes from "./routes/telegram.js";
+import templateRoutes from "./routes/templates.js";
 
 // Импорт обработчика ошибок
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -65,6 +66,7 @@ app.use("/api/system-info", systemInfoRoutes);
 app.use("/api/system-logs", systemLogsRoutes);
 app.use("/api/permissions", permissionsRoutes);
 app.use("/api/telegram", telegramRoutes);
+app.use("/api/templates", templateRoutes);
 
 // Serve built frontend in production (после API роутов!)
 if (isProduction) {

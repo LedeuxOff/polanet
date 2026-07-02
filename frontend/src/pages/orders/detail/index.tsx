@@ -7,7 +7,7 @@ import { OrderPayments } from "./ui/order-payments";
 import { OrderDeliveries } from "./ui/order-deliveries";
 import { OrderHistory } from "./ui/order-history";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronLeft, ChevronUp, MenuIcon, TrashIcon } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronUp, FileText, MenuIcon, TrashIcon } from "lucide-react";
 import { useOrderDetailPage } from "./hooks";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
@@ -22,6 +22,7 @@ export const OrderDetailPage = () => {
   const {
     form,
     handleDelete,
+    handleSaveTemplate,
     onSubmit,
     isNewOrder,
     order,
@@ -31,6 +32,7 @@ export const OrderDetailPage = () => {
     isDeleting,
     orderId,
     setOrder,
+    error,
   } = useOrderDetailPage();
 
   const disabledByStatus =
@@ -140,51 +142,66 @@ export const OrderDetailPage = () => {
             <ChevronUp className="text-white w-5" />
           </div>
 
-          <Button
-            type="button"
-            disabled={isDeleting || isSubmitting}
-            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-            onClick={() => navigate({ to: "/orders" })}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-4">
+              <Button
+                type="button"
+                disabled={isDeleting || isSubmitting}
+                className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+                onClick={() => navigate({ to: "/orders" })}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
 
-          {isMobile && (
-            <Button
-              type="button"
-              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-              onClick={() => setOpen(true)}
-            >
-              <MenuIcon className="w-4 h-4" />
-            </Button>
-          )}
+              {isMobile && (
+                <Button
+                  type="button"
+                  className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+                  onClick={() => setOpen(true)}
+                >
+                  <MenuIcon className="w-4 h-4" />
+                </Button>
+              )}
 
-          <Button
-            type="submit"
-            disabled={isDeleting || isSubmitting}
-            className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600 flex-1"
-          >
-            {isSubmitting ? "Сохранение..." : "Сохранить"}
-          </Button>
+              <Button
+                type="submit"
+                disabled={isDeleting || isSubmitting}
+                className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600 flex-1"
+              >
+                {isSubmitting ? "Сохранение..." : "Сохранить"}
+              </Button>
 
-          {!isNewOrder && order && (
-            <Button
-              type="button"
-              className="rounded-2xl px-3 py-4 bg-red-400 hover:bg-red-500"
-              onClick={handleDelete}
-              disabled={isDeleting || isSubmitting}
-            >
-              <TrashIcon className="w-4 h-4" />
-            </Button>
-          )}
+              {!isNewOrder && order && (
+                <Button
+                  type="button"
+                  className="rounded-2xl px-3 py-4 bg-red-400 hover:bg-red-500"
+                  onClick={handleDelete}
+                  disabled={isDeleting || isSubmitting}
+                >
+                  <TrashIcon className="w-4 h-4" />
+                </Button>
+              )}
 
-          <Button
-            onClick={() => setHideBottomTabbar(true)}
-            type="button"
-            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-          >
-            <ChevronDown className="w-4 h-4" />
-          </Button>
+              <Button
+                onClick={() => setHideBottomTabbar(true)}
+                type="button"
+                className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+              >
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+            </div>
+            {!isNewOrder && order && (
+              <Button
+                type="button"
+                className="flex items-center gap-2 px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+                onClick={handleSaveTemplate}
+                disabled={isDeleting || isSubmitting}
+              >
+                <FileText className="w-4 h-4" />
+                Сохранить шаблон
+              </Button>
+            )}
+          </div>
         </div>
       </form>
     </div>

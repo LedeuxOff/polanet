@@ -427,6 +427,42 @@ export const expenses = sqliteTable("expenses", {
   updatedAt: text("updated_at").notNull(),
 });
 
+// === Templates (Шаблоны заявок) ===
+
+export const templates = sqliteTable("templates", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  // Тип заявки
+  type: text("type", { enum: ["delivery", "pickup"] }).notNull(),
+  // Адрес
+  address: text("address").notNull(),
+  // Плательщик
+  payerLastName: text("payer_last_name").notNull(),
+  payerFirstName: text("payer_first_name").notNull(),
+  payerMiddleName: text("payer_middle_name"),
+  payerPhone: text("payer_phone"),
+  // Приемщик
+  receiverLastName: text("receiver_last_name").notNull(),
+  receiverFirstName: text("receiver_first_name").notNull(),
+  receiverMiddleName: text("receiver_middle_name"),
+  receiverPhone: text("receiver_phone"),
+  // Дата
+  date: text("date").notNull(),
+  // Объем груза (м³)
+  volume: integer("volume"),
+  // Пропуск
+  hasPass: integer("has_pass", { mode: "boolean" }).notNull().default(false),
+  // Комментарий
+  addressComment: text("address_comment"),
+  // Связи
+  clientId: integer("client_id").references(() => clients.id),
+  // Аудит
+  createdById: integer("created_by_id")
+    .references(() => users.id)
+    .notNull(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 // Recipient History table - tracks all recipient changes
 export const recipientHistory = sqliteTable("recipient_history", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -478,6 +514,18 @@ export const expensesRelations = relations(expenses, ({ one }) => ({
   }),
 }));
 
+// Relations for templates
+export const templatesRelations = relations(templates, ({ one }) => ({
+  createdBy: one(users, {
+    fields: [templates.createdById],
+    references: [users.id],
+  }),
+  client: one(clients, {
+    fields: [templates.clientId],
+    references: [clients.id],
+  }),
+}));
+
 // Types
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -513,6 +561,8 @@ export type Permission = typeof permissions.$inferSelect;
 export type NewPermission = typeof permissions.$inferInsert;
 export type RolePermission = typeof rolePermissions.$inferSelect;
 export type NewRolePermission = typeof rolePermissions.$inferInsert;
+export type Template = typeof templates.$inferSelect;
+export type NewTemplate = typeof templates.$inferInsert;
 
 // Отношения для permissions
 export const permissionsRelations = relations(permissions, ({ many }) => ({

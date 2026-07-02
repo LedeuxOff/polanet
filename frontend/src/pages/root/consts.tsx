@@ -1,4 +1,4 @@
-import { BarChartIcon, CalendarIcon, Home, MonitorIcon, SettingsIcon } from "lucide-react";
+import { BarChartIcon, CalendarIcon, FileText, Home, MonitorIcon, SettingsIcon } from "lucide-react";
 
 export interface MenuItem {
   title: string;
@@ -57,6 +57,18 @@ export const menuItems: MenuItem[] = [
         title: "Календарь",
         url: "/calendar",
         permission: "deliveries:list",
+      },
+    ],
+  },
+  {
+    title: "Шаблоны",
+    id: "1.5",
+    icon: FileText,
+    links: [
+      {
+        title: "Мои шаблоны",
+        url: "/templates",
+        permission: "templates:list",
       },
     ],
   },

@@ -4,11 +4,12 @@ import { OrderHeader } from "./ui/order-header";
 import { NewOrderDetails } from "./ui/order-details";
 import { NewOrderClient } from "./ui/order-client";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronLeft, ChevronUp, MenuIcon } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronUp, MenuIcon, Copy } from "lucide-react";
 import { useNewOrderPage } from "./hooks";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
 import { useState } from "react";
+import { TemplateSelector } from "./ui/template-selector";
 
 export const NewOrderDetailPage = () => {
   const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
@@ -16,7 +17,7 @@ export const NewOrderDetailPage = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
-  const { form, onSubmit, isSubmitting } = useNewOrderPage();
+  const { form, onSubmit, isSubmitting, templateSelector } = useNewOrderPage();
 
   return (
     <div className="flex flex-col gap-4 pb-4">
@@ -62,42 +63,65 @@ export const NewOrderDetailPage = () => {
             <ChevronUp className="text-white w-5" />
           </div>
 
-          <Button
-            type="button"
-            disabled={isSubmitting}
-            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-            onClick={() => navigate({ to: "/orders" })}
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-4">
+              <Button
+                type="button"
+                disabled={isSubmitting}
+                className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+                onClick={() => navigate({ to: "/orders" })}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
 
-          {isMobile && (
+              {isMobile && (
+                <Button
+                  type="button"
+                  className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+                  onClick={() => setOpen(true)}
+                >
+                  <MenuIcon className="w-4 h-4" />
+                </Button>
+              )}
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600 flex-1"
+              >
+                {isSubmitting ? "Сохранение..." : "Сохранить"}
+              </Button>
+
+              <Button
+                onClick={() => setHideBottomTabbar(true)}
+                type="button"
+                className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+              >
+                <ChevronDown className="w-4 h-4" />
+              </Button>
+            </div>
+
             <Button
               type="button"
-              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-              onClick={() => setOpen(true)}
+              disabled={isSubmitting}
+              className="flex gap-2 items-center px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+              onClick={() => templateSelector.handleOpenChange(true)}
             >
-              <MenuIcon className="w-4 h-4" />
+              <Copy className="w-4 h-4" /> Использовать шаблон
             </Button>
-          )}
-
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600 flex-1"
-          >
-            {isSubmitting ? "Сохранение..." : "Сохранить"}
-          </Button>
-
-          <Button
-            onClick={() => setHideBottomTabbar(true)}
-            type="button"
-            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-          >
-            <ChevronDown className="w-4 h-4" />
-          </Button>
+          </div>
         </div>
       </form>
+
+      <TemplateSelector
+        isOpen={templateSelector.isOpen}
+        templates={templateSelector.templates}
+        selectedTemplate={templateSelector.selectedTemplate}
+        isLoading={templateSelector.isLoading}
+        onOpenChange={templateSelector.handleOpenChange}
+        onApply={templateSelector.handleApplyTemplate}
+        onSelect={templateSelector.handleSelectTemplate}
+      />
     </div>
   );
 };

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as TransportCardsRouteImport } from './routes/transport-cards'
+import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as SystemLogsRouteImport } from './routes/system-logs'
 import { Route as SystemInfoRouteImport } from './routes/system-info'
 import { Route as RolesRouteImport } from './routes/roles'
@@ -23,6 +24,7 @@ import { Route as BackupsRouteImport } from './routes/backups'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UsersIndexRouteImport } from './routes/users/index'
 import { Route as TransportCardsIndexRouteImport } from './routes/transport-cards/index'
+import { Route as TemplatesIndexRouteImport } from './routes/templates/index'
 import { Route as SystemLogsIndexRouteImport } from './routes/system-logs/index'
 import { Route as SystemInfoIndexRouteImport } from './routes/system-info/index'
 import { Route as RolesIndexRouteImport } from './routes/roles/index'
@@ -55,6 +57,11 @@ const UsersRoute = UsersRouteImport.update({
 const TransportCardsRoute = TransportCardsRouteImport.update({
   id: '/transport-cards',
   path: '/transport-cards',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TemplatesRoute = TemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SystemLogsRoute = SystemLogsRouteImport.update({
@@ -116,6 +123,11 @@ const TransportCardsIndexRoute = TransportCardsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => TransportCardsRoute,
+} as any)
+const TemplatesIndexRoute = TemplatesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TemplatesRoute,
 } as any)
 const SystemLogsIndexRoute = SystemLogsIndexRouteImport.update({
   id: '/',
@@ -244,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/roles': typeof RolesRouteWithChildren
   '/system-info': typeof SystemInfoRouteWithChildren
   '/system-logs': typeof SystemLogsRouteWithChildren
+  '/templates': typeof TemplatesRouteWithChildren
   '/transport-cards': typeof TransportCardsRouteWithChildren
   '/users': typeof UsersRouteWithChildren
   '/cars/$carId': typeof CarsCarIdRoute
@@ -269,6 +282,7 @@ export interface FileRoutesByFullPath {
   '/roles/': typeof RolesIndexRoute
   '/system-info/': typeof SystemInfoIndexRoute
   '/system-logs/': typeof SystemLogsIndexRoute
+  '/templates/': typeof TemplatesIndexRoute
   '/transport-cards/': typeof TransportCardsIndexRoute
   '/users/': typeof UsersIndexRoute
 }
@@ -300,6 +314,7 @@ export interface FileRoutesByTo {
   '/roles': typeof RolesIndexRoute
   '/system-info': typeof SystemInfoIndexRoute
   '/system-logs': typeof SystemLogsIndexRoute
+  '/templates': typeof TemplatesIndexRoute
   '/transport-cards': typeof TransportCardsIndexRoute
   '/users': typeof UsersIndexRoute
 }
@@ -315,6 +330,7 @@ export interface FileRoutesById {
   '/roles': typeof RolesRouteWithChildren
   '/system-info': typeof SystemInfoRouteWithChildren
   '/system-logs': typeof SystemLogsRouteWithChildren
+  '/templates': typeof TemplatesRouteWithChildren
   '/transport-cards': typeof TransportCardsRouteWithChildren
   '/users': typeof UsersRouteWithChildren
   '/cars/$carId': typeof CarsCarIdRoute
@@ -340,6 +356,7 @@ export interface FileRoutesById {
   '/roles/': typeof RolesIndexRoute
   '/system-info/': typeof SystemInfoIndexRoute
   '/system-logs/': typeof SystemLogsIndexRoute
+  '/templates/': typeof TemplatesIndexRoute
   '/transport-cards/': typeof TransportCardsIndexRoute
   '/users/': typeof UsersIndexRoute
 }
@@ -356,6 +373,7 @@ export interface FileRouteTypes {
     | '/roles'
     | '/system-info'
     | '/system-logs'
+    | '/templates'
     | '/transport-cards'
     | '/users'
     | '/cars/$carId'
@@ -381,6 +399,7 @@ export interface FileRouteTypes {
     | '/roles/'
     | '/system-info/'
     | '/system-logs/'
+    | '/templates/'
     | '/transport-cards/'
     | '/users/'
   fileRoutesByTo: FileRoutesByTo
@@ -412,6 +431,7 @@ export interface FileRouteTypes {
     | '/roles'
     | '/system-info'
     | '/system-logs'
+    | '/templates'
     | '/transport-cards'
     | '/users'
   id:
@@ -426,6 +446,7 @@ export interface FileRouteTypes {
     | '/roles'
     | '/system-info'
     | '/system-logs'
+    | '/templates'
     | '/transport-cards'
     | '/users'
     | '/cars/$carId'
@@ -451,6 +472,7 @@ export interface FileRouteTypes {
     | '/roles/'
     | '/system-info/'
     | '/system-logs/'
+    | '/templates/'
     | '/transport-cards/'
     | '/users/'
   fileRoutesById: FileRoutesById
@@ -466,6 +488,7 @@ export interface RootRouteChildren {
   RolesRoute: typeof RolesRouteWithChildren
   SystemInfoRoute: typeof SystemInfoRouteWithChildren
   SystemLogsRoute: typeof SystemLogsRouteWithChildren
+  TemplatesRoute: typeof TemplatesRouteWithChildren
   TransportCardsRoute: typeof TransportCardsRouteWithChildren
   UsersRoute: typeof UsersRouteWithChildren
   ClientsClientIdRoute: typeof ClientsClientIdRoute
@@ -491,6 +514,13 @@ declare module '@tanstack/react-router' {
       path: '/transport-cards'
       fullPath: '/transport-cards'
       preLoaderRoute: typeof TransportCardsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/templates': {
+      id: '/templates'
+      path: '/templates'
+      fullPath: '/templates'
+      preLoaderRoute: typeof TemplatesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/system-logs': {
@@ -576,6 +606,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/transport-cards/'
       preLoaderRoute: typeof TransportCardsIndexRouteImport
       parentRoute: typeof TransportCardsRoute
+    }
+    '/templates/': {
+      id: '/templates/'
+      path: '/'
+      fullPath: '/templates/'
+      preLoaderRoute: typeof TemplatesIndexRouteImport
+      parentRoute: typeof TemplatesRoute
     }
     '/system-logs/': {
       id: '/system-logs/'
@@ -819,6 +856,18 @@ const SystemLogsRouteWithChildren = SystemLogsRoute._addFileChildren(
   SystemLogsRouteChildren,
 )
 
+interface TemplatesRouteChildren {
+  TemplatesIndexRoute: typeof TemplatesIndexRoute
+}
+
+const TemplatesRouteChildren: TemplatesRouteChildren = {
+  TemplatesIndexRoute: TemplatesIndexRoute,
+}
+
+const TemplatesRouteWithChildren = TemplatesRoute._addFileChildren(
+  TemplatesRouteChildren,
+)
+
 interface TransportCardsRouteChildren {
   TransportCardsCardIdRoute: typeof TransportCardsCardIdRoute
   TransportCardsNewRoute: typeof TransportCardsNewRoute
@@ -860,6 +909,7 @@ const rootRouteChildren: RootRouteChildren = {
   RolesRoute: RolesRouteWithChildren,
   SystemInfoRoute: SystemInfoRouteWithChildren,
   SystemLogsRoute: SystemLogsRouteWithChildren,
+  TemplatesRoute: TemplatesRouteWithChildren,
   TransportCardsRoute: TransportCardsRouteWithChildren,
   UsersRoute: UsersRouteWithChildren,
   ClientsClientIdRoute: ClientsClientIdRoute,

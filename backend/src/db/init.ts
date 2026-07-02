@@ -341,6 +341,10 @@ async function initData() {
       // System logs permissions
       { module: "system-logs", code: "system-logs:view", name: "Просмотр системных логов" },
       { module: "system-logs", code: "system-logs:clear", name: "Очистка системных логов" },
+      // Templates permissions
+      { module: "templates", code: "templates:list", name: "Просмотр списка шаблонов" },
+      { module: "templates", code: "templates:create", name: "Создание шаблона" },
+      { module: "templates", code: "templates:delete", name: "Удаление шаблона" },
     ];
 
     const permissionIds: Record<string, number> = {};

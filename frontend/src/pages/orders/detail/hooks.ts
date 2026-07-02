@@ -3,11 +3,14 @@ import { useNavigate, useParams } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ordersApi } from "@/lib/api";
+import { ordersApi, templatesApi } from "@/lib/api";
+import { useToast } from "@/lib/contexts/toast-context";
+import type { CreateTemplateInput } from "@/lib/types/template-types";
 
 export const useOrderDetailPage = () => {
   const { orderId } = useParams({ from: "/orders/$orderId" });
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const isNewOrder = orderId === "new";
 
   const [order, setOrder] = useState<Order | null>(null);
@@ -89,9 +92,42 @@ export const useOrderDetailPage = () => {
     }
   };
 
+  const handleSaveTemplate = async () => {
+    if (!orderId || isNewOrder) return;
+
+    const formData = form.getValues();
+    const templateData: CreateTemplateInput = {
+      type: formData.type,
+      address: formData.address,
+      payerLastName: formData.payerLastName,
+      payerFirstName: formData.payerFirstName,
+      payerMiddleName: formData.payerMiddleName,
+      payerPhone: formData.payerPhone,
+      receiverLastName: formData.receiverLastName,
+      receiverFirstName: formData.receiverFirstName,
+      receiverMiddleName: formData.receiverMiddleName,
+      receiverPhone: formData.receiverPhone,
+      date: formData.date,
+      volume: formData.volume,
+      hasPass: formData.hasPass,
+      addressComment: formData.addressComment,
+      clientId: formData.clientId,
+    };
+
+    try {
+      await templatesApi.saveFromOrder(Number(orderId), templateData);
+      setError(null);
+      showToast("Шаблон успешно сохранен", "success");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ошибка при сохранении шаблона");
+      showToast("Ошибка при сохранении шаблона", "error");
+    }
+  };
+
   return {
     form,
     handleDelete,
+    handleSaveTemplate,
     onSubmit,
     isNewOrder,
     order,

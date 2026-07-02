@@ -9,3 +9,4 @@ export * from "./order-types";
 export * from "./payment-types";
 export * from "./income-types";
 export * from "./expense-types";
+export * from "./template-types";

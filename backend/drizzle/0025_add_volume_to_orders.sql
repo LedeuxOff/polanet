@@ -9,3 +9,6 @@ ALTER TABLE orders ADD COLUMN date text;
 
 -- Копируем данные из date_time в date (берем только дату)
 UPDATE orders SET date = substr(date_time, 1, 10);
+
+-- Удаляем старую колонку date_time
+ALTER TABLE orders DROP COLUMN date_time;

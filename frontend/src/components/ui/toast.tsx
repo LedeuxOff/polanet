@@ -4,12 +4,12 @@ import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 
 const toastVariants = cva(
-  "fixed bottom-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg border transition-all duration-300 transform translate-y-0 opacity-100",
+  "fixed bottom-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-lg border",
   {
     variants: {
       variant: {
         default: "bg-background border-border text-foreground",
-        success: "bg-green-600 text-white border-green-700",
+        success: "bg-green-600 text-white shadow-xl",
         error: "bg-red-600 text-white border-red-700",
         warning: "bg-yellow-500 text-black border-yellow-600",
         info: "bg-blue-600 text-white border-blue-700",
@@ -30,17 +30,39 @@ interface ToastProps extends VariantProps<typeof toastVariants> {
 
 export const Toast = React.forwardRef<HTMLDivElement, ToastProps>(
   ({ id, message, variant, duration = 3000, onClose }, ref) => {
+    const [isVisible, setIsVisible] = React.useState(false);
+
+    React.useEffect(() => {
+      requestAnimationFrame(() => setIsVisible(true));
+    }, []);
+
     React.useEffect(() => {
       const timer = setTimeout(() => {
-        onClose(id);
+        setIsVisible(false);
+        setTimeout(() => onClose(id), 300);
       }, duration);
       return () => clearTimeout(timer);
     }, [id, duration, onClose]);
 
     return (
-      <div ref={ref} className={cn(toastVariants({ variant }))}>
-        <span>{message}</span>
-        <button onClick={() => onClose(id)} className="ml-2 hover:opacity-80 transition-opacity">
+      <div
+        ref={ref}
+        className={cn(
+          toastVariants({ variant }),
+          "rounded-2xl",
+          isVisible
+            ? "animate-[toast-slide-in_0.4s_ease-out]"
+            : "animate-[toast-slide-out_0.3s_ease-out]",
+        )}
+      >
+        <span className="text-sm font-medium">{message}</span>
+        <button
+          onClick={() => {
+            setIsVisible(false);
+            setTimeout(() => onClose(id), 300);
+          }}
+          className="ml-2 hover:opacity-80 transition-opacity"
+        >
           <X className="h-4 w-4" />
         </button>
       </div>
