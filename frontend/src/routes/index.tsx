@@ -36,7 +36,7 @@ function Index() {
         </CardContent>
       </Card>
 
-      <Link to="/users" className="col-span-6">
+      <Link to="/users" className="col-span-12 lg:col-span-6">
         <Card className="rounded-2xl shadow-xl relative overflow-hidden">
           <CardHeader>
             <CardTitle className="">Пользователи</CardTitle>
@@ -55,7 +55,7 @@ function Index() {
         </Card>
       </Link>
 
-      <Link to="/clients" className="col-span-6">
+      <Link to="/clients" className="col-span-12 lg:col-span-6">
         <Card className="rounded-2xl shadow-xl relative overflow-hidden">
           <CardHeader>
             <CardTitle className="">Клиенты</CardTitle>
@@ -74,7 +74,7 @@ function Index() {
         </Card>
       </Link>
 
-      <Link to="/drivers" className="col-span-5">
+      <Link to="/drivers" className="col-span-12 lg:col-span-5">
         <Card className="rounded-2xl shadow-xl relative overflow-hidden">
           <CardHeader>
             <CardTitle className="">Водители</CardTitle>
@@ -93,7 +93,7 @@ function Index() {
         </Card>
       </Link>
 
-      <Link to="/transport-cards" className="col-span-7">
+      <Link to="/transport-cards" className="col-span-12 lg:col-span-7">
         <Card className="rounded-2xl shadow-xl relative overflow-hidden">
           <CardHeader>
             <CardTitle className="">Транспортные карты</CardTitle>
