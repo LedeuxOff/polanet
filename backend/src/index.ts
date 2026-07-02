@@ -7,6 +7,9 @@ import authRoutes from "./routes/auth.js";
 
 // Импорт авто-бэкапа
 import { startAutoBackup } from "./db/auto-backup.js";
+
+// Запуск миграций при старте
+import { runMigrations } from "./db/migrate.js";
 import userRoutes from "./routes/users.js";
 import roleRoutes from "./routes/roles.js";
 import carRoutes from "./routes/cars.js";
@@ -143,7 +146,11 @@ async function setupTelegram() {
   }
 }
 
-setupTelegram();
+// Запуск миграций перед стартом сервера
+runMigrations().catch((error) => {
+  console.error("Критическая ошибка при применении миграций:", error);
+  process.exit(1);
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
