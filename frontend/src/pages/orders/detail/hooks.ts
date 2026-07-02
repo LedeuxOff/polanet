@@ -39,7 +39,8 @@ export const useOrderDetailPage = () => {
           form.setValue("receiverFirstName", data.receiverFirstName);
           form.setValue("receiverMiddleName", data.receiverMiddleName || "");
           form.setValue("receiverPhone", data.receiverPhone || "");
-          form.setValue("dateTime", data.dateTime);
+          form.setValue("date", data.date);
+          form.setValue("volume", data.volume);
           form.setValue("hasPass", data.hasPass);
           form.setValue("addressComment", data.addressComment || "");
           form.setValue("status", data.status);

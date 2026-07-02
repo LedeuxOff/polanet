@@ -45,16 +45,32 @@ export const NewOrderDetails = ({ form, isSubmitting }: Props) => {
         </div>
 
         <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
-          <Label htmlFor="dateTime">Дата и время *</Label>
+          <Label htmlFor="date">Дата *</Label>
           <Input
             className="rounded-2xl"
-            id="dateTime"
-            type="datetime-local"
+            id="date"
+            type="date"
             disabled={isSubmitting}
-            {...form.register("dateTime")}
+            {...form.register("date")}
           />
-          {form.formState.errors.dateTime && (
-            <p className="text-sm text-destructive">{form.formState.errors.dateTime.message}</p>
+          {form.formState.errors.date && (
+            <p className="text-sm text-destructive">{form.formState.errors.date.message}</p>
+          )}
+        </div>
+
+        <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
+          <Label htmlFor="volume">Объем груза (м³)</Label>
+          <Input
+            className="rounded-2xl"
+            id="volume"
+            type="number"
+            step="0.001"
+            min="0"
+            disabled={isSubmitting}
+            {...form.register("volume", { valueAsNumber: true })}
+          />
+          {form.formState.errors.volume && (
+            <p className="text-sm text-destructive">{form.formState.errors.volume.message}</p>
           )}
         </div>
 
@@ -84,7 +100,7 @@ export const NewOrderDetails = ({ form, isSubmitting }: Props) => {
         </div>
       </div>
 
-      {/* Дата и время, адрес и комментарий */}
+      {/* Объем груза, адрес и комментарий */}
       <div className="grid grid-cols-1 gap-4">
         <div className="space-y-2">
           <Label htmlFor="address">Адрес *</Label>

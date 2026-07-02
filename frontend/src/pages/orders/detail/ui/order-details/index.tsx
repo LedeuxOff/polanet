@@ -31,8 +31,8 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
   return (
     <div className="flex flex-col gap-4">
       {/* Тип, статус и дата и время */}
-      <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-3"} gap-4`}>
-        <div className="space-y-2">
+      <div className={`grid grid-cols-4 gap-4`}>
+        <div className="col-span-4 md:col-span-2 space-y-2">
           <Label htmlFor="type">Тип заявки *</Label>
           <Select
             value={form.watch("type")}
@@ -52,21 +52,37 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
           )}
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="dateTime">Дата и время *</Label>
+        <div className="col-span-4 md:col-span-2 space-y-2">
+          <Label htmlFor="date">Дата *</Label>
           <Input
             className="rounded-2xl"
-            id="dateTime"
-            type="datetime-local"
+            id="date"
+            type="date"
             disabled={isSubmitting || disabledByStatus}
-            {...form.register("dateTime")}
+            {...form.register("date")}
           />
-          {form.formState.errors.dateTime && (
-            <p className="text-sm text-destructive">{form.formState.errors.dateTime.message}</p>
+          {form.formState.errors.date && (
+            <p className="text-sm text-destructive">{form.formState.errors.date.message}</p>
           )}
         </div>
 
-        <div className="space-y-2">
+        <div className="col-span-4 md:col-span-2 space-y-2">
+          <Label htmlFor="volume">Объем груза (м³)</Label>
+          <Input
+            className="rounded-2xl"
+            id="volume"
+            type="number"
+            step="0.001"
+            min="0"
+            disabled={isSubmitting || disabledByStatus}
+            {...form.register("volume", { valueAsNumber: true })}
+          />
+          {form.formState.errors.volume && (
+            <p className="text-sm text-destructive">{form.formState.errors.volume.message}</p>
+          )}
+        </div>
+
+        <div className="col-span-4 md:col-span-2 space-y-2">
           <Label htmlFor="status">Статус *</Label>
           <Select
             value={form.watch("status")}
@@ -92,7 +108,7 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
         </div>
       </div>
 
-      {/* Дата и время, адрес и комментарий */}
+      {/* адрес и комментарий */}
       <div className="grid grid-cols-1 gap-4">
         <div className="space-y-2">
           <Label htmlFor="address">Адрес *</Label>

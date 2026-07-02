@@ -94,7 +94,7 @@ router.get(
           orderAddress: orders.address,
           orderType: orders.type,
           orderStatus: orders.status,
-          orderDateTime: orders.dateTime,
+          orderDate: orders.date,
           // Данные доставки
           deliveryDateTime: deliveries.dateTime,
           deliveryStatus: deliveries.status,

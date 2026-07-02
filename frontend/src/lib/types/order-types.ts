@@ -12,7 +12,8 @@ export interface Order {
   receiverFirstName: string;
   receiverMiddleName: string | null;
   receiverPhone: string | null;
-  dateTime: string;
+  date: string;
+  volume: number | null;
   hasPass: boolean;
   addressComment: string | null;
   status: "new" | "in_progress" | "completed" | "cancelled" | "archived" | "draft";
@@ -54,7 +55,8 @@ export interface CreateOrderInput {
   receiverFirstName: string;
   receiverMiddleName?: string;
   receiverPhone?: string;
-  dateTime: string;
+  date: string;
+  volume?: number | null;
   hasPass?: boolean;
   addressComment?: string;
   status?: "new" | "in_progress" | "completed" | "cancelled" | "archived" | "draft";
@@ -72,7 +74,8 @@ export const orderSchema = z.object({
   receiverFirstName: z.string().min(1, "Имя приемщика обязательно"),
   receiverMiddleName: z.string().optional(),
   receiverPhone: z.string().optional(),
-  dateTime: z.string().min(1, "Дата и время обязательны"),
+  date: z.string().min(1, "Дата обязательна"),
+  volume: z.number().optional().nullable(),
   hasPass: z.boolean().default(false),
   addressComment: z.string().optional(),
   status: z.enum(["new", "in_progress", "completed", "cancelled", "archived", "draft"]),
@@ -120,7 +123,8 @@ export const newOrderSchema = z.object({
   receiverFirstName: z.string().min(1, "Имя приемщика обязательно"),
   receiverMiddleName: z.string().optional(),
   receiverPhone: z.string().optional(),
-  dateTime: z.string().min(1, "Дата и время обязательны"),
+  date: z.string().min(1, "Дата обязательна"),
+  volume: z.number().optional().nullable(),
   hasPass: z.boolean().default(false),
   addressComment: z.string().optional(),
   status: z.enum(["new", "in_progress", "completed", "cancelled", "archived", "draft"]),

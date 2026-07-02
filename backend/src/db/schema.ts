@@ -118,8 +118,10 @@ export const orders = sqliteTable("orders", {
   receiverFirstName: text("receiver_first_name").notNull(),
   receiverMiddleName: text("receiver_middle_name"),
   receiverPhone: text("receiver_phone"),
-  // Дата и время
-  dateTime: text("date_time").notNull(),
+  // Дата
+  date: text("date").notNull(),
+  // Объем груза (м³)
+  volume: integer("volume"),
   // Пропуск
   hasPass: integer("has_pass", { mode: "boolean" }).notNull().default(false),
   // Комментарий

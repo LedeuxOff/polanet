@@ -168,7 +168,7 @@ export const quickCreateOrderSchema = z.object({
   receiverLastName: z.string().default(""),
   receiverFirstName: z.string().default(""),
   receiverMiddleName: z.string().optional().nullable(),
-  dateTime: z.string().default(new Date().toISOString()),
+  date: z.string().default(new Date().toISOString().split("T")[0]),
   hasPass: z.boolean().default(false),
   addressComment: z.string().optional().nullable(),
   status: z
@@ -193,8 +193,10 @@ export const createOrderSchema = z.object({
   receiverFirstName: z.string().min(1, "Имя приемщика обязательно").max(100),
   receiverMiddleName: z.string().max(100).optional(),
   receiverPhone: z.string().max(20).optional(),
-  // Дата и время
-  dateTime: z.string().min(1, "Дата и время обязательны"),
+  // Дата
+  date: z.string().min(1, "Дата обязательна"),
+  // Объем груза (м³)
+  volume: z.number().optional().nullable(),
   // Пропуск
   hasPass: z.boolean().default(false),
   // Комментарий
@@ -236,7 +238,8 @@ export const updateOrderSchema = z.object({
   receiverFirstName: z.string().min(1, "Имя приемщика обязательно").max(100).optional(),
   receiverMiddleName: z.string().max(100).optional(),
   receiverPhone: z.string().max(20).optional(),
-  dateTime: z.string().min(1, "Дата и время обязательны").optional(),
+  date: z.string().min(1, "Дата обязательна").optional(),
+  volume: z.number().optional().nullable(),
   hasPass: z.boolean().optional(),
   addressComment: z.string().max(1000).optional(),
   status: z.enum(["new", "in_progress", "completed", "cancelled", "archived", "draft"]).optional(),
