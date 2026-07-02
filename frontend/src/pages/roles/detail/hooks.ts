@@ -71,7 +71,7 @@ export const useRoleDetailPage = (roleId: number) => {
   const onSubmit = async (data: RoleForm) => {
     setIsSubmitting(true);
     try {
-      await rolesApi.update(roleId, data);
+      await rolesApi.update(roleId, { name: data.name, permissions: [] });
       await loadRole();
       alert("Роль успешно обновлена");
       navigate({ to: "/roles" });

@@ -17,7 +17,7 @@ export const useNewRolePage = () => {
     setError(null);
     setIsSubmitting(true);
     try {
-      await rolesApi.create(data);
+      await rolesApi.create({ name: data.name, permissions: [] });
       navigate({ to: "/roles" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка при создании");
