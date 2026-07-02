@@ -54,7 +54,7 @@ export const NewOrderDetailPage = () => {
         </div>
 
         <div
-          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[58px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[58px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
+          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[112px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[112px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
         >
           <div
             onClick={() => setHideBottomTabbar(false)}
