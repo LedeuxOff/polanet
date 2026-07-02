@@ -39,6 +39,8 @@ export const EditUserPage = () => {
     roles,
     isSendingPassword,
     handleSendPassword,
+    isUnbindingTelegram,
+    handleUnbindTelegram,
   } = useUserDetailPage();
 
   // Показываем лоадер пока загружаются данные или permissions
@@ -207,15 +209,28 @@ export const EditUserPage = () => {
                     />
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="col-span-3 space-y-2">
                     <Label htmlFor="telegramChatId">Telegram Chat ID</Label>
-                    <Input
-                      className="rounded-2xl"
-                      id="telegramChatId"
-                      value={user?.telegramChatId || ""}
-                      disabled
-                      placeholder="Не привязан"
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        className="rounded-2xl flex-1"
+                        id="telegramChatId"
+                        value={user?.telegramChatId || ""}
+                        disabled
+                        placeholder="Не привязан"
+                      />
+
+                      {user?.telegramChatId && (
+                        <Button
+                          type="button"
+                          disabled={isUnbindingTelegram}
+                          onClick={handleUnbindTelegram}
+                          className="rounded-2xl bg-red-400 hover:bg-red-500 px-4"
+                        >
+                          {isUnbindingTelegram ? "Отвязываю..." : "Отвязать"}
+                        </Button>
+                      )}
+                    </div>
                   </div>
 
                   <div className="space-y-2">

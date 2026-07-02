@@ -7,7 +7,7 @@ import { requirePermission } from "../middleware/permissions.js";
 import { registerSchema, updateUserSchema } from "../middleware/validators.js";
 import { eq, and, or, count, like } from "drizzle-orm";
 import { generatePassword } from "../utils/password-generator.js";
-import { sendPasswordNotification } from "../services/telegram-service.js";
+import { sendPasswordNotification, sendTelegramMessage } from "../services/telegram-service.js";
 
 const router = Router();
 
@@ -303,6 +303,67 @@ router.post(
       if (error instanceof Error && error.name === "ZodError") {
         return res.status(400).json({ error: "Ошибка валидации", details: error });
       }
+      res.status(500).json({ error: "Ошибка сервера" });
+    }
+  },
+);
+
+// Отвязать Telegram от пользователя
+router.post(
+  "/:id/unbind-telegram",
+  authenticate,
+  requirePermission("users:update"),
+  async (req: AuthRequest, res) => {
+    try {
+      const userId = Number(req.params.id);
+
+      // Получаем пользователя
+      const user = db
+        .select({
+          id: users.id,
+          lastName: users.lastName,
+          firstName: users.firstName,
+          telegramChatId: users.telegramChatId,
+          email: users.email,
+        })
+        .from(users)
+        .where(eq(users.id, userId))
+        .get();
+
+      if (!user) {
+        return res.status(404).json({ error: "Пользователь не найден" });
+      }
+
+      // Если Telegram не привязан
+      if (!user.telegramChatId) {
+        return res.json({ success: true, message: "Telegram не привязан" });
+      }
+
+      const chatIdToNotify = user.telegramChatId;
+
+      // Отвязываем Telegram
+      db.update(users)
+        .set({
+          telegramChatId: null,
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(users.id, userId))
+        .run();
+
+      // Отправляем уведомление на последний привязанный chatId
+      try {
+        const userFio = `${user.lastName} ${user.firstName}`.trim();
+        await sendTelegramMessage(
+          chatIdToNotify,
+          `⚠️ <b>Telegram отвязан от аккаунта PolaNet</b>\n\n👤 ${userFio}\n📧 ${user.email}\n\nВаш Telegram аккаунт отвязан. Если это были не вы, пожалуйста, свяжитесь с поддержкой.`,
+        );
+      } catch (error) {
+        console.error("Ошибка отправки уведомления об отвязке Telegram:", error);
+      }
+
+      res.json({ success: true, message: "Telegram успешно отвязан" });
+    } catch (error) {
+      console.error("Ошибка при отвязке Telegram:", error);
       res.status(500).json({ error: "Ошибка сервера" });
     }
   },

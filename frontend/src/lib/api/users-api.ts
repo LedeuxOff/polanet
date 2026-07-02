@@ -45,4 +45,8 @@ export const usersApi = {
     request<{ success: boolean; message: string }>(`/users/${id}/send-password`, {
       method: "POST",
     }),
+  unbindTelegram: (id: number) =>
+    request<{ success: boolean; message: string }>(`/users/${id}/unbind-telegram`, {
+      method: "POST",
+    }),
 };

@@ -35,6 +35,7 @@ export const useUserDetailPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSendingPassword, setIsSendingPassword] = useState(false);
+  const [isUnbindingTelegram, setIsUnbindingTelegram] = useState(false);
 
   const form = useForm<UserForm>({
     resolver: zodResolver(userSchema),
@@ -97,6 +98,20 @@ export const useUserDetailPage = () => {
     }
   };
 
+  const handleUnbindTelegram = async () => {
+    setIsUnbindingTelegram(true);
+    setError(null);
+    try {
+      await usersApi.unbindTelegram(Number(userId));
+      setUser((prev) => (prev ? { ...prev, telegramChatId: null } : prev));
+      alert("Telegram успешно отвязан");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ошибка при отвязке Telegram");
+    } finally {
+      setIsUnbindingTelegram(false);
+    }
+  };
+
   return {
     isLoading,
     user,
@@ -107,5 +122,7 @@ export const useUserDetailPage = () => {
     roles,
     isSendingPassword,
     handleSendPassword,
+    isUnbindingTelegram,
+    handleUnbindTelegram,
   };
 };

@@ -21,7 +21,7 @@ export type TelegramResult = {
  * @param text - Текст сообщения
  * @returns Результат отправки
  */
-async function sendTelegramMessage(chatId: string, text: string): Promise<TelegramResult> {
+export async function sendTelegramMessage(chatId: string, text: string): Promise<TelegramResult> {
   try {
     if (!TELEGRAM_BOT_TOKEN) {
       throw new Error("TELEGRAM_BOT_TOKEN не настроен в environment variables");
