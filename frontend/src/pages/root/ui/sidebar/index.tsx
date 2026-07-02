@@ -7,7 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Link, useLocation } from "@tanstack/react-router";
-import { ChevronsUpDownIcon, LogOut, UserIcon } from "lucide-react";
+import { ChevronsUpDownIcon, KeyIcon, LogOut, UserIcon } from "lucide-react";
 import { APP_VERSION } from "@/lib/api";
 import { menuItems } from "../../consts";
 import { usePermissions } from "@/lib/contexts/permission-context";
@@ -119,11 +119,22 @@ export const Sidebar = () => {
 
               <Button
                 type="button"
+                asChild
+                className="flex gap-4 bg-blue-400 hover:bg-blue-500 rounded-2xl"
+              >
+                <Link to="/change-password">
+                  <KeyIcon className="h-4 w-4" />
+                  <span>Сменить пароль</span>
+                </Link>
+              </Button>
+
+              <Button
+                type="button"
                 onClick={() => {
                   logout();
                   navigate({ to: "/login" });
                 }}
-                className="flex gap-4 bg-red-500 hover:bg-red-600"
+                className="flex gap-4 bg-red-400 hover:bg-red-500 rounded-2xl"
               >
                 <LogOut className="h-4 w-4" />
                 <span>Выйти</span>

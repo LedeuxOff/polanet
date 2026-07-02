@@ -204,6 +204,22 @@ export async function sendPasswordNotification(
 }
 
 /**
+ * Отправляет уведомление о смене пароля
+ */
+export async function sendPasswordChangedNotification(
+  chatId: string,
+  email: string,
+): Promise<TelegramResult> {
+  const text = `✅ <b>Пароль успешно изменен</b>
+
+📧 Email: ${email}
+
+Ваш пароль для административной панели PolaNet был успешно изменен. Если это были не вы — свяжитесь с администрацией.`;
+
+  return await sendTelegramMessage(chatId, text);
+}
+
+/**
  * Форматирует дату и время в читаемый вид
  */
 function formatDateTime(dateTime: string): string {

@@ -228,7 +228,7 @@ export const EditUserPage = () => {
                         placeholder="Не привязан"
                       />
 
-                      {user?.telegramChatId && !isOwnUser && (
+                      {user?.telegramChatId && (isOwnUser || user?.roleCode === "DEVELOPER") && (
                         <Button
                           type="button"
                           disabled={isUnbindingTelegram}

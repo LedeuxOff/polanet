@@ -9,7 +9,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Link } from "@tanstack/react-router";
-import { LogOut, UserIcon } from "lucide-react";
+import { KeyIcon, LogOut, UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { APP_VERSION } from "@/lib/api";
 import { useRootLayout } from "../../hooks";
@@ -87,19 +87,34 @@ export const TabBar = () => {
           </Accordion>
 
           <div className="py-4 flex flex-col items-center gap-4 w-full">
-            <Button
-              type="button"
-              onClick={() => {
-                logout();
-                navigate({ to: "/login" });
-              }}
-              className="flex gap-4 bg-red-500 hover:bg-red-600 w-full"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Выйти</span>
-            </Button>
+            <div className="flex gap-2 w-full">
+              <Button
+                type="button"
+                asChild
+                className="flex gap-4 bg-blue-400 hover:bg-blue-500 w-full rounded-2xl flex-1"
+              >
+                <Link to="/change-password" onClick={() => setOpen(false)}>
+                  <KeyIcon className="h-4 w-4" />
+                  <span>Сменить пароль</span>
+                </Link>
+              </Button>
 
-            <div className="text-center text-xs text-muted-foreground">v{APP_VERSION}</div>
+              <Button
+                type="button"
+                onClick={() => {
+                  logout();
+                  navigate({ to: "/login" });
+                }}
+                className="flex gap-4 bg-red-400 hover:bg-red-500 w-full rounded-2xl flex-1"
+              >
+                <LogOut className="h-4 w-4" />
+                <span>Выйти</span>
+              </Button>
+            </div>
+
+            <div className="text-center text-white text-xs py-1 bg-blue-400 w-full rounded-2xl">
+              Версия: {APP_VERSION}
+            </div>
           </div>
         </div>
       </DrawerContent>

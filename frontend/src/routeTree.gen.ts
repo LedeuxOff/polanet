@@ -16,6 +16,7 @@ import { Route as SystemInfoRouteImport } from './routes/system-info'
 import { Route as RolesRouteImport } from './routes/roles'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DriversRouteImport } from './routes/drivers'
+import { Route as ChangePasswordRouteImport } from './routes/change-password'
 import { Route as CarsRouteImport } from './routes/cars'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as BackupsRouteImport } from './routes/backups'
@@ -79,6 +80,11 @@ const LoginRoute = LoginRouteImport.update({
 const DriversRoute = DriversRouteImport.update({
   id: '/drivers',
   path: '/drivers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChangePasswordRoute = ChangePasswordRouteImport.update({
+  id: '/change-password',
+  path: '/change-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CarsRoute = CarsRouteImport.update({
@@ -232,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/backups': typeof BackupsRouteWithChildren
   '/calendar': typeof CalendarRoute
   '/cars': typeof CarsRouteWithChildren
+  '/change-password': typeof ChangePasswordRoute
   '/drivers': typeof DriversRouteWithChildren
   '/login': typeof LoginRoute
   '/roles': typeof RolesRouteWithChildren
@@ -268,6 +275,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
+  '/change-password': typeof ChangePasswordRoute
   '/login': typeof LoginRoute
   '/cars/$carId': typeof CarsCarIdRoute
   '/cars/new': typeof CarsNewRoute
@@ -301,6 +309,7 @@ export interface FileRoutesById {
   '/backups': typeof BackupsRouteWithChildren
   '/calendar': typeof CalendarRoute
   '/cars': typeof CarsRouteWithChildren
+  '/change-password': typeof ChangePasswordRoute
   '/drivers': typeof DriversRouteWithChildren
   '/login': typeof LoginRoute
   '/roles': typeof RolesRouteWithChildren
@@ -341,6 +350,7 @@ export interface FileRouteTypes {
     | '/backups'
     | '/calendar'
     | '/cars'
+    | '/change-password'
     | '/drivers'
     | '/login'
     | '/roles'
@@ -377,6 +387,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/calendar'
+    | '/change-password'
     | '/login'
     | '/cars/$carId'
     | '/cars/new'
@@ -409,6 +420,7 @@ export interface FileRouteTypes {
     | '/backups'
     | '/calendar'
     | '/cars'
+    | '/change-password'
     | '/drivers'
     | '/login'
     | '/roles'
@@ -448,6 +460,7 @@ export interface RootRouteChildren {
   BackupsRoute: typeof BackupsRouteWithChildren
   CalendarRoute: typeof CalendarRoute
   CarsRoute: typeof CarsRouteWithChildren
+  ChangePasswordRoute: typeof ChangePasswordRoute
   DriversRoute: typeof DriversRouteWithChildren
   LoginRoute: typeof LoginRoute
   RolesRoute: typeof RolesRouteWithChildren
@@ -513,6 +526,13 @@ declare module '@tanstack/react-router' {
       path: '/drivers'
       fullPath: '/drivers'
       preLoaderRoute: typeof DriversRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/change-password': {
+      id: '/change-password'
+      path: '/change-password'
+      fullPath: '/change-password'
+      preLoaderRoute: typeof ChangePasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cars': {
@@ -834,6 +854,7 @@ const rootRouteChildren: RootRouteChildren = {
   BackupsRoute: BackupsRouteWithChildren,
   CalendarRoute: CalendarRoute,
   CarsRoute: CarsRouteWithChildren,
+  ChangePasswordRoute: ChangePasswordRoute,
   DriversRoute: DriversRouteWithChildren,
   LoginRoute: LoginRoute,
   RolesRoute: RolesRouteWithChildren,
