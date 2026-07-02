@@ -2,6 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useClientsListPage } from "./hooks";
 import { ColumnDef } from "@tanstack/react-table";
 import { Client } from "@/lib/types";
+import { formatPhoneDisplay } from "@/lib/utils/phone";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
@@ -72,7 +73,7 @@ export const ClientsPage = () => {
     {
       accessorKey: "phone",
       header: "Телефон",
-      cell: ({ getValue }) => getValue<string>() || "—",
+      cell: ({ getValue }) => formatPhoneDisplay(getValue<string>() || undefined) || "—",
     },
     {
       accessorKey: "email",

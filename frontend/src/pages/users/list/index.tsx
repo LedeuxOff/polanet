@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { DataTable } from "@/components/ui/table";
 import { User } from "@/lib/types";
+import { formatPhoneDisplay } from "@/lib/utils/phone";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ColumnDef } from "@tanstack/react-table";
 import { useUsersList } from "./hooks";
@@ -70,7 +71,7 @@ export const UsersPage = () => {
     {
       accessorKey: "phone",
       header: "Телефон",
-      cell: ({ getValue }) => getValue<string>() || "—",
+      cell: ({ getValue }) => formatPhoneDisplay(getValue<string>() || undefined) || "—",
     },
     {
       accessorKey: "roleName",
