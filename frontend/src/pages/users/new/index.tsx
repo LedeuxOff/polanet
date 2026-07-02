@@ -63,17 +63,17 @@ export const NewUserPage = () => {
       <Card className="rounded-2xl shadow-xl">
         <CardHeader>
           <div className="flex flex-col gap-4">
-            <CardTitle>Пользователи</CardTitle>
+            <CardTitle>Сотрудники</CardTitle>
 
             {!isMobile && (
               <div className="flex items-center gap-2">
                 <Link to="/users" className="text-sm text-muted-foreground">
-                  <Badge variant="outline">Список пользователей</Badge>
+                  <Badge variant="outline">Список сотрудников</Badge>
                 </Link>
 
                 <span className="w-1 h-1 bg-blue-400 rounded-full" />
 
-                <Badge variant="secondary">Создание пользователя</Badge>
+                <Badge variant="secondary">Создание сотрудника</Badge>
               </div>
             )}
           </div>

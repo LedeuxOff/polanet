@@ -5,7 +5,7 @@ import { users, roles } from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { requirePermission } from "../middleware/permissions.js";
 import { registerSchema, updateUserSchema } from "../middleware/validators.js";
-import { eq, and, or, count, like } from "drizzle-orm";
+import { eq, and, or, not, count, like } from "drizzle-orm";
 import { generatePassword } from "../utils/password-generator.js";
 import { sendPasswordNotification, sendTelegramMessage } from "../services/telegram-service.js";
 
@@ -42,21 +42,36 @@ router.get("/", authenticate, requirePermission("users:list"), (req: AuthRequest
     }
 
     // Фильтр по роли
+    const isDeveloperFilter = roleCode === "DEVELOPER";
     if (roleCode && roleCode !== "all") {
-      whereClause.push(eq(users.roleId, parseInt(roleCode)));
+      if (isDeveloperFilter) {
+        // Для DEVELOPER фильтруем по code роли, а не по id
+        whereClause.push(eq(roles.code, "DEVELOPER"));
+      } else {
+        whereClause.push(eq(users.roleId, parseInt(roleCode)));
+      }
     }
 
-    // Получаем общее количество пользователей с фильтрами
+    // Исключаем пользователей с ролью DEVELOPER (если не запрошен фильтр по разработчикам)
+    const excludeDeveloperCondition = isDeveloperFilter
+      ? eq(roles.code, "DEVELOPER")
+      : not(eq(roles.code, "DEVELOPER"));
     let totalRecords = 0;
     if (whereClause.length > 0) {
       const totalResult = db
         .select({ count: count() })
         .from(users)
-        .where(and(...whereClause))
+        .innerJoin(roles, eq(users.roleId, roles.id))
+        .where(and(...whereClause, excludeDeveloperCondition))
         .get();
       totalRecords = totalResult?.count || 0;
     } else {
-      const totalResult = db.select({ count: count() }).from(users).get();
+      const totalResult = db
+        .select({ count: count() })
+        .from(users)
+        .innerJoin(roles, eq(users.roleId, roles.id))
+        .where(excludeDeveloperCondition)
+        .get();
       totalRecords = totalResult?.count || 0;
     }
     const totalPages = Math.ceil(totalRecords / limit);
@@ -82,8 +97,8 @@ router.get("/", authenticate, requirePermission("users:list"), (req: AuthRequest
           updatedAt: users.updatedAt,
         })
         .from(users)
-        .leftJoin(roles, eq(users.roleId, roles.id))
-        .where(and(...whereClause))
+        .innerJoin(roles, eq(users.roleId, roles.id))
+        .where(and(...whereClause, excludeDeveloperCondition))
         .limit(limit)
         .offset(offset)
         .all();
@@ -105,7 +120,8 @@ router.get("/", authenticate, requirePermission("users:list"), (req: AuthRequest
           updatedAt: users.updatedAt,
         })
         .from(users)
-        .leftJoin(roles, eq(users.roleId, roles.id))
+        .innerJoin(roles, eq(users.roleId, roles.id))
+        .where(excludeDeveloperCondition)
         .limit(limit)
         .offset(offset)
         .all();

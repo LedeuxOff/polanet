@@ -17,6 +17,7 @@ import { Route as SystemInfoRouteImport } from './routes/system-info'
 import { Route as RolesRouteImport } from './routes/roles'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DriversRouteImport } from './routes/drivers'
+import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as ChangePasswordRouteImport } from './routes/change-password'
 import { Route as CarsRouteImport } from './routes/cars'
 import { Route as CalendarRouteImport } from './routes/calendar'
@@ -31,6 +32,7 @@ import { Route as RolesIndexRouteImport } from './routes/roles/index'
 import { Route as OrdersIndexRouteImport } from './routes/orders/index'
 import { Route as MoneyStatisticIndexRouteImport } from './routes/money-statistic/index'
 import { Route as DriversIndexRouteImport } from './routes/drivers/index'
+import { Route as DevelopersIndexRouteImport } from './routes/developers/index'
 import { Route as ClientsIndexRouteImport } from './routes/clients/index'
 import { Route as CarsIndexRouteImport } from './routes/cars/index'
 import { Route as BackupsIndexRouteImport } from './routes/backups/index'
@@ -44,6 +46,8 @@ import { Route as OrdersNewRouteImport } from './routes/orders/new'
 import { Route as OrdersOrderIdRouteImport } from './routes/orders/$orderId'
 import { Route as DriversNewRouteImport } from './routes/drivers/new'
 import { Route as DriversDriverIdRouteImport } from './routes/drivers/$driverId'
+import { Route as DevelopersNewRouteImport } from './routes/developers/new'
+import { Route as DevelopersDeveloperIdRouteImport } from './routes/developers/$developerId'
 import { Route as ClientsNewRouteImport } from './routes/clients/new'
 import { Route as ClientsClientIdRouteImport } from './routes/clients/$clientId'
 import { Route as CarsNewRouteImport } from './routes/cars/new'
@@ -87,6 +91,11 @@ const LoginRoute = LoginRouteImport.update({
 const DriversRoute = DriversRouteImport.update({
   id: '/drivers',
   path: '/drivers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DevelopersRoute = DevelopersRouteImport.update({
+  id: '/developers',
+  path: '/developers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChangePasswordRoute = ChangePasswordRouteImport.update({
@@ -159,6 +168,11 @@ const DriversIndexRoute = DriversIndexRouteImport.update({
   path: '/',
   getParentRoute: () => DriversRoute,
 } as any)
+const DevelopersIndexRoute = DevelopersIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DevelopersRoute,
+} as any)
 const ClientsIndexRoute = ClientsIndexRouteImport.update({
   id: '/clients/',
   path: '/clients/',
@@ -224,6 +238,16 @@ const DriversDriverIdRoute = DriversDriverIdRouteImport.update({
   path: '/$driverId',
   getParentRoute: () => DriversRoute,
 } as any)
+const DevelopersNewRoute = DevelopersNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => DevelopersRoute,
+} as any)
+const DevelopersDeveloperIdRoute = DevelopersDeveloperIdRouteImport.update({
+  id: '/$developerId',
+  path: '/$developerId',
+  getParentRoute: () => DevelopersRoute,
+} as any)
 const ClientsNewRoute = ClientsNewRouteImport.update({
   id: '/clients/new',
   path: '/clients/new',
@@ -251,6 +275,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof CalendarRoute
   '/cars': typeof CarsRouteWithChildren
   '/change-password': typeof ChangePasswordRoute
+  '/developers': typeof DevelopersRouteWithChildren
   '/drivers': typeof DriversRouteWithChildren
   '/login': typeof LoginRoute
   '/roles': typeof RolesRouteWithChildren
@@ -263,6 +288,8 @@ export interface FileRoutesByFullPath {
   '/cars/new': typeof CarsNewRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
   '/clients/new': typeof ClientsNewRoute
+  '/developers/$developerId': typeof DevelopersDeveloperIdRoute
+  '/developers/new': typeof DevelopersNewRoute
   '/drivers/$driverId': typeof DriversDriverIdRoute
   '/drivers/new': typeof DriversNewRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
@@ -276,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/backups/': typeof BackupsIndexRoute
   '/cars/': typeof CarsIndexRoute
   '/clients/': typeof ClientsIndexRoute
+  '/developers/': typeof DevelopersIndexRoute
   '/drivers/': typeof DriversIndexRoute
   '/money-statistic/': typeof MoneyStatisticIndexRoute
   '/orders/': typeof OrdersIndexRoute
@@ -295,6 +323,8 @@ export interface FileRoutesByTo {
   '/cars/new': typeof CarsNewRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
   '/clients/new': typeof ClientsNewRoute
+  '/developers/$developerId': typeof DevelopersDeveloperIdRoute
+  '/developers/new': typeof DevelopersNewRoute
   '/drivers/$driverId': typeof DriversDriverIdRoute
   '/drivers/new': typeof DriversNewRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
@@ -308,6 +338,7 @@ export interface FileRoutesByTo {
   '/backups': typeof BackupsIndexRoute
   '/cars': typeof CarsIndexRoute
   '/clients': typeof ClientsIndexRoute
+  '/developers': typeof DevelopersIndexRoute
   '/drivers': typeof DriversIndexRoute
   '/money-statistic': typeof MoneyStatisticIndexRoute
   '/orders': typeof OrdersIndexRoute
@@ -325,6 +356,7 @@ export interface FileRoutesById {
   '/calendar': typeof CalendarRoute
   '/cars': typeof CarsRouteWithChildren
   '/change-password': typeof ChangePasswordRoute
+  '/developers': typeof DevelopersRouteWithChildren
   '/drivers': typeof DriversRouteWithChildren
   '/login': typeof LoginRoute
   '/roles': typeof RolesRouteWithChildren
@@ -337,6 +369,8 @@ export interface FileRoutesById {
   '/cars/new': typeof CarsNewRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
   '/clients/new': typeof ClientsNewRoute
+  '/developers/$developerId': typeof DevelopersDeveloperIdRoute
+  '/developers/new': typeof DevelopersNewRoute
   '/drivers/$driverId': typeof DriversDriverIdRoute
   '/drivers/new': typeof DriversNewRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
@@ -350,6 +384,7 @@ export interface FileRoutesById {
   '/backups/': typeof BackupsIndexRoute
   '/cars/': typeof CarsIndexRoute
   '/clients/': typeof ClientsIndexRoute
+  '/developers/': typeof DevelopersIndexRoute
   '/drivers/': typeof DriversIndexRoute
   '/money-statistic/': typeof MoneyStatisticIndexRoute
   '/orders/': typeof OrdersIndexRoute
@@ -368,6 +403,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/cars'
     | '/change-password'
+    | '/developers'
     | '/drivers'
     | '/login'
     | '/roles'
@@ -380,6 +416,8 @@ export interface FileRouteTypes {
     | '/cars/new'
     | '/clients/$clientId'
     | '/clients/new'
+    | '/developers/$developerId'
+    | '/developers/new'
     | '/drivers/$driverId'
     | '/drivers/new'
     | '/orders/$orderId'
@@ -393,6 +431,7 @@ export interface FileRouteTypes {
     | '/backups/'
     | '/cars/'
     | '/clients/'
+    | '/developers/'
     | '/drivers/'
     | '/money-statistic/'
     | '/orders/'
@@ -412,6 +451,8 @@ export interface FileRouteTypes {
     | '/cars/new'
     | '/clients/$clientId'
     | '/clients/new'
+    | '/developers/$developerId'
+    | '/developers/new'
     | '/drivers/$driverId'
     | '/drivers/new'
     | '/orders/$orderId'
@@ -425,6 +466,7 @@ export interface FileRouteTypes {
     | '/backups'
     | '/cars'
     | '/clients'
+    | '/developers'
     | '/drivers'
     | '/money-statistic'
     | '/orders'
@@ -441,6 +483,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/cars'
     | '/change-password'
+    | '/developers'
     | '/drivers'
     | '/login'
     | '/roles'
@@ -453,6 +496,8 @@ export interface FileRouteTypes {
     | '/cars/new'
     | '/clients/$clientId'
     | '/clients/new'
+    | '/developers/$developerId'
+    | '/developers/new'
     | '/drivers/$driverId'
     | '/drivers/new'
     | '/orders/$orderId'
@@ -466,6 +511,7 @@ export interface FileRouteTypes {
     | '/backups/'
     | '/cars/'
     | '/clients/'
+    | '/developers/'
     | '/drivers/'
     | '/money-statistic/'
     | '/orders/'
@@ -483,6 +529,7 @@ export interface RootRouteChildren {
   CalendarRoute: typeof CalendarRoute
   CarsRoute: typeof CarsRouteWithChildren
   ChangePasswordRoute: typeof ChangePasswordRoute
+  DevelopersRoute: typeof DevelopersRouteWithChildren
   DriversRoute: typeof DriversRouteWithChildren
   LoginRoute: typeof LoginRoute
   RolesRoute: typeof RolesRouteWithChildren
@@ -556,6 +603,13 @@ declare module '@tanstack/react-router' {
       path: '/drivers'
       fullPath: '/drivers'
       preLoaderRoute: typeof DriversRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/developers': {
+      id: '/developers'
+      path: '/developers'
+      fullPath: '/developers'
+      preLoaderRoute: typeof DevelopersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/change-password': {
@@ -656,6 +710,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DriversIndexRouteImport
       parentRoute: typeof DriversRoute
     }
+    '/developers/': {
+      id: '/developers/'
+      path: '/'
+      fullPath: '/developers/'
+      preLoaderRoute: typeof DevelopersIndexRouteImport
+      parentRoute: typeof DevelopersRoute
+    }
     '/clients/': {
       id: '/clients/'
       path: '/clients'
@@ -747,6 +808,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DriversDriverIdRouteImport
       parentRoute: typeof DriversRoute
     }
+    '/developers/new': {
+      id: '/developers/new'
+      path: '/new'
+      fullPath: '/developers/new'
+      preLoaderRoute: typeof DevelopersNewRouteImport
+      parentRoute: typeof DevelopersRoute
+    }
+    '/developers/$developerId': {
+      id: '/developers/$developerId'
+      path: '/$developerId'
+      fullPath: '/developers/$developerId'
+      preLoaderRoute: typeof DevelopersDeveloperIdRouteImport
+      parentRoute: typeof DevelopersRoute
+    }
     '/clients/new': {
       id: '/clients/new'
       path: '/clients/new'
@@ -802,6 +877,22 @@ const CarsRouteChildren: CarsRouteChildren = {
 }
 
 const CarsRouteWithChildren = CarsRoute._addFileChildren(CarsRouteChildren)
+
+interface DevelopersRouteChildren {
+  DevelopersDeveloperIdRoute: typeof DevelopersDeveloperIdRoute
+  DevelopersNewRoute: typeof DevelopersNewRoute
+  DevelopersIndexRoute: typeof DevelopersIndexRoute
+}
+
+const DevelopersRouteChildren: DevelopersRouteChildren = {
+  DevelopersDeveloperIdRoute: DevelopersDeveloperIdRoute,
+  DevelopersNewRoute: DevelopersNewRoute,
+  DevelopersIndexRoute: DevelopersIndexRoute,
+}
+
+const DevelopersRouteWithChildren = DevelopersRoute._addFileChildren(
+  DevelopersRouteChildren,
+)
 
 interface DriversRouteChildren {
   DriversDriverIdRoute: typeof DriversDriverIdRoute
@@ -904,6 +995,7 @@ const rootRouteChildren: RootRouteChildren = {
   CalendarRoute: CalendarRoute,
   CarsRoute: CarsRouteWithChildren,
   ChangePasswordRoute: ChangePasswordRoute,
+  DevelopersRoute: DevelopersRouteWithChildren,
   DriversRoute: DriversRouteWithChildren,
   LoginRoute: LoginRoute,
   RolesRoute: RolesRouteWithChildren,

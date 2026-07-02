@@ -96,7 +96,7 @@ export const UsersPage = () => {
         <Card className="rounded-2xl shadow-xl">
           <CardHeader>
             <div className="flex flex-col gap-2">
-              <CardTitle>Пользователи</CardTitle>
+              <CardTitle>Сотрудники</CardTitle>
             </div>
           </CardHeader>
         </Card>
@@ -159,33 +159,35 @@ export const UsersPage = () => {
                   <div className="my-1 h-px bg-gray-100" />
 
                   {/* Роли */}
-                  {roles.map((role) => (
-                    <button
-                      key={role.id}
-                      className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
-                        roleCode === role.id.toString()
-                          ? "bg-blue-50 text-blue-600 font-medium"
-                          : "hover:bg-gray-100 text-gray-700"
-                      }`}
-                      onClick={() => {
-                        handleRoleChange(role.id.toString());
-                        setShowRolePopover(false);
-                      }}
-                    >
-                      <span
-                        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
+                  {roles
+                    .filter((role) => role.code !== "DEVELOPER")
+                    .map((role) => (
+                      <button
+                        key={role.id}
+                        className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
                           roleCode === role.id.toString()
-                            ? "border-blue-600 bg-blue-600"
-                            : "border-gray-300"
+                            ? "bg-blue-50 text-blue-600 font-medium"
+                            : "hover:bg-gray-100 text-gray-700"
                         }`}
+                        onClick={() => {
+                          handleRoleChange(role.id.toString());
+                          setShowRolePopover(false);
+                        }}
                       >
-                        {roleCode === role.id.toString() && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                        )}
-                      </span>
-                      {role.name}
-                    </button>
-                  ))}
+                        <span
+                          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
+                            roleCode === role.id.toString()
+                              ? "border-blue-600 bg-blue-600"
+                              : "border-gray-300"
+                          }`}
+                        >
+                          {roleCode === role.id.toString() && (
+                            <span className="h-1.5 w-1.5 rounded-full bg-white" />
+                          )}
+                        </span>
+                        {role.name}
+                      </button>
+                    ))}
                 </div>
                 <Popover.Arrow className="fill-white" />
               </Popover.Content>

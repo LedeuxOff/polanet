@@ -39,8 +39,8 @@ function Index() {
       <Link to="/users" className="col-span-12 lg:col-span-6">
         <Card className="rounded-2xl shadow-xl relative overflow-hidden">
           <CardHeader>
-            <CardTitle className="">Пользователи</CardTitle>
-            <CardDescription className="">Управление пользователями системы</CardDescription>
+            <CardTitle className="">Сотрудники</CardTitle>
+            <CardDescription className="">Управление сотрудниками системы</CardDescription>
           </CardHeader>
 
           <div className="absolute top-3 right-3">

@@ -1,7 +1,6 @@
-import { Link, useNavigate, useParams } from "@tanstack/react-router";
-import { useUserDetailPage } from "./hooks";
+import { Link, useNavigate } from "@tanstack/react-router";
+import { useNewDeveloperPage } from "./hooks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { InputPhone } from "@/components/ui/input-phone";
@@ -12,69 +11,39 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ChevronDown, ChevronLeft, ChevronUp, MenuIcon, Send, TrashIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, ChevronLeft, ChevronUp, MenuIcon } from "lucide-react";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
-import { useAuth } from "@/lib/contexts/auth-context";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 
-export const EditUserPage = () => {
+export const NewDeveloperPage = () => {
   const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
 
   const navigate = useNavigate();
-  const { userId } = useParams({ from: "/users/$userId" });
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
   const { showToast } = useToast();
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
-  const { user: currentUser } = useAuth();
 
-  // Проверяем, просматривает ли пользователь свою собственную карточку
-  const isOwnUser = currentUser?.id === Number(userId);
+  const { form, onSubmit, isSubmitting } = useNewDeveloperPage();
 
-  const {
-    isLoading,
-    user,
-    form,
-    onSubmit,
-    isSubmitting,
-    roles,
-    isSendingPassword,
-    handleSendPassword,
-    isUnbindingTelegram,
-    handleUnbindTelegram,
-    isDeleting,
-    handleDelete,
-  } = useUserDetailPage();
-
-  // Показываем лоадер пока загружаются данные или permissions
-  if (isLoading || isPermissionsLoading) {
+  // Показываем лоадер пока загружаются permissions
+  if (isPermissionsLoading) {
     return (
-      <div className="w-full flex flex-col gap-2">
-        <Card className="rounded-2xl shadow-xl p-0 overflow-hidden">
-          <CardContent className="p-0">
-            <Skeleton className="w-full h-16" />
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl shadow-xl p-0 overflow-hidden">
-          <CardContent className="p-0">
-            <Skeleton className="w-full h-64" />
-          </CardContent>
-        </Card>
-      </div>
-      // <Card className="rounded-2xl shadow-xl">
-      //   <CardContent className="py-8 text-center text-muted-foreground">Загрузка...</CardContent>
-      // </Card>
+      <Card className="rounded-2xl shadow-xl">
+        <CardContent className="py-8 text-center text-muted-foreground">
+          Загрузка прав доступа...
+        </CardContent>
+      </Card>
     );
   }
 
-  // Проверяем права на просмотр деталки
-  if (!hasPermission("users:detail")) {
+  // Проверяем права на создание пользователя
+  if (!hasPermission("users:create")) {
     return (
       <Card className="rounded-2xl shadow-xl">
         <CardContent className="py-8 text-center">
@@ -89,34 +58,22 @@ export const EditUserPage = () => {
     );
   }
 
-  if (!user) {
-    return (
-      <Card className="rounded-2xl shadow-xl">
-        <CardContent className="py-8 text-center text-muted-foreground">
-          Пользователь не найден
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-4">
       <Card className="rounded-2xl shadow-xl">
         <CardHeader>
           <div className="flex flex-col gap-4">
-            <CardTitle>Сотрудники</CardTitle>
+            <CardTitle>Разработчики</CardTitle>
 
             {!isMobile && (
               <div className="flex items-center gap-2">
-                <Link to="/users" className="text-sm text-muted-foreground">
-                  <Badge variant="outline">Список сотрудников</Badge>
+                <Link to="/developers" className="text-sm text-muted-foreground">
+                  <Badge variant="outline">Список разработчиков</Badge>
                 </Link>
 
                 <span className="w-1 h-1 bg-blue-400 rounded-full" />
 
-                <Badge variant="secondary">
-                  {user.firstName} {user.lastName}
-                </Badge>
+                <Badge variant="secondary">Создание разработчика</Badge>
               </div>
             )}
           </div>
@@ -125,14 +82,14 @@ export const EditUserPage = () => {
 
       <form
         onSubmit={form.handleSubmit(async (data) => {
-          if (!hasPermission("users:update")) {
-            showToast("У вас нет прав на редактирование пользователя", "error");
+          if (!hasPermission("users:create")) {
+            showToast("У вас нет прав на создание разработчика", "error");
             return { success: false };
           }
           const result = await onSubmit(data);
           if (result.success) {
-            showToast("Пользователь успешно сохранен", "success");
-            navigate({ to: "/users" });
+            showToast("Разработчик успешно создан", "success");
+            navigate({ to: "/developers" });
           } else if (result.error) {
             showToast(result.error, "error");
           }
@@ -210,35 +167,10 @@ export const EditUserPage = () => {
                       className="rounded-2xl"
                       id="phone"
                       disabled={isSubmitting}
-                      value={form.watch("phone")}
                       onPhoneChange={(value) =>
                         form.setValue("phone", value || "", { shouldValidate: true })
                       }
                     />
-                  </div>
-
-                  <div className="col-span-3 space-y-2">
-                    <Label htmlFor="telegramChatId">Telegram Chat ID</Label>
-                    <div className="flex gap-2">
-                      <Input
-                        className="rounded-2xl flex-1"
-                        id="telegramChatId"
-                        value={user?.telegramChatId || ""}
-                        disabled
-                        placeholder="Не привязан"
-                      />
-
-                      {user?.telegramChatId && (isOwnUser || user?.roleCode === "DEVELOPER") && (
-                        <Button
-                          type="button"
-                          disabled={isUnbindingTelegram}
-                          onClick={handleUnbindTelegram}
-                          className="rounded-2xl bg-red-400 hover:bg-red-500 px-4"
-                        >
-                          {isUnbindingTelegram ? "Отвязываю..." : "Отвязать"}
-                        </Button>
-                      )}
-                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -256,26 +188,14 @@ export const EditUserPage = () => {
                 <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="roleId">Роль *</Label>
-                    <Select
-                      value={String(form.watch("roleId") || "")}
-                      onValueChange={(value) => form.setValue("roleId", Number(value))}
-                    >
-                      <SelectTrigger disabled={isSubmitting} className="rounded-2xl">
+                    <Select value="1" disabled>
+                      <SelectTrigger className="rounded-2xl bg-zinc-100">
                         <SelectValue placeholder="Выберите роль" />
                       </SelectTrigger>
                       <SelectContent>
-                        {roles.map((role) => (
-                          <SelectItem key={role.id} value={String(role.id)}>
-                            {role.name}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="1">Разработчик</SelectItem>
                       </SelectContent>
                     </Select>
-                    {form.formState.errors.roleId && (
-                      <p className="text-sm text-destructive">
-                        {form.formState.errors.roleId.message}
-                      </p>
-                    )}
                   </div>
                 </div>
               </CardContent>
@@ -284,7 +204,7 @@ export const EditUserPage = () => {
         </div>
 
         <div
-          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[112px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[112px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
+          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[58px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[58px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
         >
           <div
             onClick={() => setHideBottomTabbar(false)}
@@ -299,7 +219,7 @@ export const EditUserPage = () => {
                 type="button"
                 disabled={isSubmitting}
                 className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-                onClick={() => navigate({ to: "/users" })}
+                onClick={() => navigate({ to: "/developers" })}
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
@@ -322,17 +242,6 @@ export const EditUserPage = () => {
                 {isSubmitting ? "Сохранение..." : "Сохранить"}
               </Button>
 
-              {user?.roleCode === "DEVELOPER" && !isOwnUser && (
-                <Button
-                  type="button"
-                  disabled={isDeleting}
-                  onClick={handleDelete}
-                  className="px-3 py-4 bg-red-400 hover:bg-red-500 rounded-2xl"
-                >
-                  <TrashIcon className="w-4 h-4" />
-                </Button>
-              )}
-
               <Button
                 onClick={() => setHideBottomTabbar(true)}
                 type="button"
@@ -341,21 +250,6 @@ export const EditUserPage = () => {
                 <ChevronDown className="w-4 h-4" />
               </Button>
             </div>
-            <Button
-              type="button"
-              disabled={isSendingPassword || !user?.telegramChatId}
-              onClick={() => {
-                if (!hasPermission("users:sendPassword")) {
-                  showToast("У вас нет прав на отправку пароля", "error");
-                  return;
-                }
-                handleSendPassword();
-              }}
-              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-            >
-              <Send className="w-4 h-4 mr-2" />
-              {isSendingPassword ? "Отправка..." : "Выслать новый пароль"}
-            </Button>
           </div>
         </div>
       </form>
