@@ -1,13 +1,10 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "@tanstack/react-router";
 import { templatesApi } from "@/lib/api";
 import { Template } from "@/lib/types";
 import { useToast } from "@/lib/contexts/toast-context";
 
 export const useTemplatesListPage = () => {
-  const navigate = useNavigate();
   const { showToast } = useToast();
-
   const [templates, setTemplates] = useState<Template[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");

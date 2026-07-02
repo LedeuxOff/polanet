@@ -1,5 +1,4 @@
 import { useIsMobile } from "@/hooks";
-import { useTabbar } from "@/lib/contexts/tabbar-context";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DAYS_WEEK, HOURS, useCalendar } from "../../hooks";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,8 +40,6 @@ export const CalendarDesktop = () => {
   }, [draggedDelivery]);
 
   const isMobile = useIsMobile();
-  const { setOpen } = useTabbar();
-
   const {
     deliveries,
     isLoading,
@@ -65,6 +62,7 @@ export const CalendarDesktop = () => {
   }, [loadDeliveries]);
 
   // Проверка: можно ли создавать доставку в прошедшую ячейку
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const canCreateInCell = (cellDate: Date): boolean => {
     const now = new Date();
     return cellDate > now;

@@ -37,8 +37,6 @@ export const CompleteDeliveryModal = ({
   showCompleteDialog,
   setShowCompleteDialog,
   form,
-  control,
-  editingDelivery,
   handleSaveComplete,
   handleCancelComplete,
   drivers,

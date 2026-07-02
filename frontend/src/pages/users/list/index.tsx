@@ -80,11 +80,6 @@ export const UsersPage = () => {
     },
   ];
 
-  const getRoleName = (roleId: string | null): string => {
-    const role = roles.find((r) => r.id.toString() === roleId);
-    return role?.name || "—";
-  };
-
   const getRoleFilterLabel = (): string => {
     if (roleCode === "all") return "Все роли";
     const role = roles.find((r) => r.id.toString() === roleCode);

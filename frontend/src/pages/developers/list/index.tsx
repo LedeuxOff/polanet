@@ -7,9 +7,8 @@ import { formatPhoneDisplay } from "@/lib/utils/phone";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { ColumnDef } from "@tanstack/react-table";
 import { useDevelopersList } from "./hooks";
-import { HomeIcon, MenuIcon, PlusIcon, SearchIcon, ChevronUp, ChevronDown } from "lucide-react";
+import { HomeIcon, MenuIcon, SearchIcon, ChevronUp, ChevronDown } from "lucide-react";
 import { usePermissions } from "@/lib/contexts/permission-context";
-import { useToast } from "@/lib/contexts/toast-context";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
 import { useState } from "react";
@@ -19,7 +18,6 @@ export const DevelopersPage = () => {
 
   const navigate = useNavigate();
   const { hasPermission } = usePermissions();
-  const { showToast } = useToast();
   const {
     developers,
     isLoading,

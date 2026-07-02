@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef } from "react";
 
 /**
  * Хук для применения маски телефона к input элементу
@@ -10,7 +10,6 @@ export function usePhoneMask(
   onChange: (value: string | undefined) => void,
 ) {
   const inputRef = useRef<HTMLInputElement>(null);
-  const [isFocused, setIsFocused] = useState(false);
   const lastValueRef = useRef<string>("");
 
   // Форматирует введенные цифры в маску +7 (999) 999-99-99
@@ -136,7 +135,6 @@ export function usePhoneMask(
         const formatted = formatPhone(digits.slice(0, 11));
         e.target.value = formatted;
       }
-      setIsFocused(false);
     },
     [formatPhone, getDigits, onChange],
   );
@@ -149,7 +147,6 @@ export function usePhoneMask(
         // При фокусе показываем только цифры для удобства редактирования
         e.target.value = digits;
       }
-      setIsFocused(true);
     },
     [value, getDigits],
   );

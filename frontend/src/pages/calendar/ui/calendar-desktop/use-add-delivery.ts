@@ -2,7 +2,6 @@ import { carsApi, deliveriesApi, driversApi, ordersApi, usersApi } from "@/lib/a
 import {
   Car,
   CreateDeliveryInput,
-  Delivery,
   DeliveryForm,
   deliverySchema,
   Driver,

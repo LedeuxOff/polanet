@@ -1,11 +1,4 @@
-import {
-  BarChartIcon,
-  CalendarIcon,
-  FileText,
-  Home,
-  MonitorIcon,
-  SettingsIcon,
-} from "lucide-react";
+import { BarChartIcon, FileText, Home, MonitorIcon, SettingsIcon } from "lucide-react";
 
 export interface MenuItem {
   title: string;
