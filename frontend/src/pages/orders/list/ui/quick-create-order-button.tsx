@@ -6,6 +6,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -29,6 +30,7 @@ export function QuickCreateOrderButton() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     clientId: "",
+    volume: "",
   });
 
   const loadClients = async () => {
@@ -53,9 +55,10 @@ export function QuickCreateOrderButton() {
     try {
       const newOrder = await ordersApi.quickCreate({
         clientId: Number(formData.clientId),
+        volume: formData.volume ? parseFloat(formData.volume) : undefined,
       });
       setOpen(false);
-      setFormData({ clientId: "" });
+      setFormData({ clientId: "", volume: "" });
       navigate({
         to: "/orders/$orderId",
         params: { orderId: String(newOrder.id) },
@@ -78,7 +81,7 @@ export function QuickCreateOrderButton() {
             Создать черновик
           </Button>
         </DrawerTrigger>
-        <DrawerContent className="">
+        <DrawerContent className="rounded-2xl">
           <div className="px-2 flex-1 max-h-[90vh] pb-8">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -87,10 +90,10 @@ export function QuickCreateOrderButton() {
                   value={formData.clientId}
                   onValueChange={(value) => setFormData({ ...formData, clientId: value })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="rounded-2xl">
                     <SelectValue placeholder="Выберите клиента" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-2xl shadow-xl">
                     {clients.map((client) => (
                       <SelectItem key={client.id} value={String(client.id)}>
                         {client.type === "legal"
@@ -101,11 +104,31 @@ export function QuickCreateOrderButton() {
                   </SelectContent>
                 </Select>
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="volume">Объем груза (м³)</Label>
+                <Input
+                  className="rounded-2xl"
+                  id="volume"
+                  type="number"
+                  step="0.1"
+                  value={formData.volume}
+                  onChange={(e) => setFormData({ ...formData, volume: e.target.value })}
+                />
+              </div>
               <div className="flex flex-col gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                <Button
+                  className="rounded-2xl"
+                  type="button"
+                  variant="outline"
+                  onClick={() => setOpen(false)}
+                >
                   Отмена
                 </Button>
-                <Button type="submit" disabled={isLoading || !formData.clientId}>
+                <Button
+                  className="rounded-2xl bg-blue-500 hover:bg-blue-600"
+                  type="submit"
+                  disabled={isLoading || !formData.clientId}
+                >
                   {isLoading ? "Создание..." : "Создать"}
                 </Button>
               </div>
@@ -123,7 +146,7 @@ export function QuickCreateOrderButton() {
           Создать черновик
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] !rounded-2xl">
         <DialogHeader>
           <DialogTitle>Создать черновик заявки</DialogTitle>
         </DialogHeader>
@@ -134,10 +157,10 @@ export function QuickCreateOrderButton() {
               value={formData.clientId}
               onValueChange={(value) => setFormData({ ...formData, clientId: value })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="rounded-2xl">
                 <SelectValue placeholder="Выберите клиента" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-2xl shadow-xl">
                 {clients.map((client) => (
                   <SelectItem key={client.id} value={String(client.id)}>
                     {client.type === "legal"
@@ -148,11 +171,31 @@ export function QuickCreateOrderButton() {
               </SelectContent>
             </Select>
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="volume">Объем груза (м³)</Label>
+            <Input
+              id="volume"
+              type="number"
+              step="0.1"
+              className="rounded-2xl"
+              value={formData.volume}
+              onChange={(e) => setFormData({ ...formData, volume: e.target.value })}
+            />
+          </div>
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button
+              className="rounded-2xl"
+              type="button"
+              variant="outline"
+              onClick={() => setOpen(false)}
+            >
               Отмена
             </Button>
-            <Button type="submit" disabled={isLoading || !formData.clientId}>
+            <Button
+              className="rounded-2xl bg-blue-500 hover:bg-blue-600"
+              type="submit"
+              disabled={isLoading || !formData.clientId}
+            >
               {isLoading ? "Создание..." : "Создать"}
             </Button>
           </div>

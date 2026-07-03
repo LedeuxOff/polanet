@@ -52,7 +52,7 @@ export const ordersApi = {
       method: "POST",
       body: JSON.stringify(data),
     }),
-  quickCreate: (data: { clientId: number }) =>
+  quickCreate: (data: { clientId: number; volume?: number }) =>
     request<Order>("/orders/quick", {
       method: "POST",
       body: JSON.stringify(data),

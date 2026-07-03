@@ -171,6 +171,7 @@ export const quickCreateOrderSchema = z.object({
   receiverFirstName: z.string().default(""),
   receiverMiddleName: z.string().optional().nullable(),
   date: z.string().default(new Date().toISOString().split("T")[0]),
+  volume: z.number().optional().nullable(),
   hasPass: z.boolean().default(false),
   addressComment: z.string().optional().nullable(),
   status: z
