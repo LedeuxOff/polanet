@@ -42,19 +42,15 @@ router.get("/", authenticate, requirePermission("users:list"), (req: AuthRequest
     }
 
     // Фильтр по роли
-    const isDeveloperFilter = roleCode === "DEVELOPER";
-    if (roleCode && roleCode !== "all") {
-      if (isDeveloperFilter) {
-        // Для DEVELOPER фильтруем по code роли, а не по id
-        whereClause.push(eq(roles.code, "DEVELOPER"));
-      } else {
-        whereClause.push(eq(users.roleId, parseInt(roleCode)));
-      }
+    const isRoleCodeFilter = roleCode && roleCode !== "all";
+    if (isRoleCodeFilter) {
+      // Фильтруем по code роли, а не по id
+      whereClause.push(eq(roles.code, roleCode));
     }
 
     // Исключаем пользователей с ролью DEVELOPER (если не запрошен фильтр по разработчикам)
-    const excludeDeveloperCondition = isDeveloperFilter
-      ? eq(roles.code, "DEVELOPER")
+    const excludeDeveloperCondition = isRoleCodeFilter
+      ? eq(roles.code, roleCode!)
       : not(eq(roles.code, "DEVELOPER"));
     let totalRecords = 0;
     if (whereClause.length > 0) {
