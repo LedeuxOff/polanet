@@ -41,16 +41,18 @@ export const RootLayout = () => {
   }
 
   return (
-    <div className="bg-zinc-100 shadow-xl">
-      {!isMobile && <Sidebar />}
+    <div className="bg-[url(/layout/bg.jpeg)] bg-cover">
+      <div className="bg-black/40">
+        {!isMobile && <Sidebar />}
 
-      <main
-        className={`flex-1 overflow-auto min-h-screen ${!isMobile ? "ml-[300px] pl-[16px] pr-[16px]" : "pl-[20px] pr-[20px]"} pt-[16px]`}
-      >
-        <Outlet />
-      </main>
+        <main
+          className={`flex-1 overflow-auto min-h-screen ${!isMobile ? "ml-[300px] pl-[16px] pr-[16px]" : "pl-[20px] pr-[20px]"} pt-[16px]`}
+        >
+          <Outlet />
+        </main>
 
-      {isMobile && <TabBar />}
+        {isMobile && <TabBar />}
+      </div>
     </div>
   );
 };
