@@ -14,6 +14,7 @@ import {
   ChevronDownIcon,
   ChevronUp,
   ChevronDown,
+  Settings,
 } from "lucide-react";
 import { PermissionGuard } from "@/lib/components/permission-guard";
 import { usePermissions } from "@/lib/contexts/permission-context";
@@ -22,6 +23,8 @@ import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
 import * as Popover from "@radix-ui/react-popover";
 import { useState } from "react";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const UsersPage = () => {
   const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
@@ -47,8 +50,32 @@ export const UsersPage = () => {
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
   const [showRolePopover, setShowRolePopover] = useState(false);
+  const [showColumnSettings, setShowColumnSettings] = useState(false);
 
-  const columns: ColumnDef<User>[] = [
+  // Column visibility state
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
+    fullName: true,
+    email: true,
+    phone: true,
+    roleName: true,
+  });
+
+  const columnDefinitions: Array<{ key: string; label: string }> = [
+    { key: "fullName", label: "ФИО" },
+    { key: "email", label: "Email" },
+    { key: "phone", label: "Телефон" },
+    { key: "roleName", label: "Роль" },
+  ];
+
+  const handleColumnToggle = (key: string) => {
+    setColumnVisibility((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  };
+
+  // Base column definitions
+  const baseColumns: ColumnDef<User>[] = [
     {
       accessorKey: "fullName",
       header: "ФИО",
@@ -80,6 +107,15 @@ export const UsersPage = () => {
     },
   ];
 
+  // Filter columns based on visibility
+  const columns: ColumnDef<User>[] = baseColumns.filter((col) => {
+    // Type guard to check if column has accessorKey
+    const colWithAccessor = col as { accessorKey?: string };
+    const key = colWithAccessor.accessorKey;
+    if (!key) return true;
+    return columnVisibility[key] !== false;
+  });
+
   const getRoleFilterLabel = (): string => {
     if (roleCode === "all") return "Все роли";
     const role = roles.find((r) => r.id.toString() === roleCode);
@@ -99,6 +135,71 @@ export const UsersPage = () => {
 
         {/* Фильтры */}
         <div className="flex flex-col sm:flex-row gap-3">
+          {/* Кнопка настроек колонок */}
+          {isMobile ? (
+            <Drawer open={showColumnSettings} onOpenChange={setShowColumnSettings}>
+              <DrawerTrigger asChild>
+                <Button variant="outline" className="rounded-xl w-10 h-10 p-0">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent>
+                <div className="px-4 py-4">
+                  <h3 className="text-lg font-semibold mb-4">Столбцы таблицы</h3>
+                  <div className="space-y-3">
+                    {columnDefinitions.map((col) => (
+                      <div key={col.key} className="flex items-center gap-3">
+                        <Checkbox
+                          id={`column-${col.key}`}
+                          checked={columnVisibility[col.key] || false}
+                          onCheckedChange={() => handleColumnToggle(col.key)}
+                        />
+                        <label
+                          htmlFor={`column-${col.key}`}
+                          className="text-sm font-medium cursor-pointer"
+                        >
+                          {col.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </DrawerContent>
+            </Drawer>
+          ) : (
+            <Popover.Root open={showColumnSettings} onOpenChange={setShowColumnSettings}>
+              <Popover.Trigger asChild>
+                <Button variant="outline" className="rounded-xl w-10 h-10 p-0">
+                  <Settings className="h-4 w-4" />
+                </Button>
+              </Popover.Trigger>
+              <Popover.Portal>
+                <Popover.Content
+                  className="z-50 w-56 rounded-xl bg-white border border-gray-200 shadow-lg p-4"
+                  sideOffset={5}
+                  align="start"
+                >
+                  <h3 className="text-sm font-semibold mb-3">Столбцы таблицы</h3>
+                  <div className="space-y-2">
+                    {columnDefinitions.map((col) => (
+                      <div key={col.key} className="flex items-center gap-3">
+                        <Checkbox
+                          id={`column-${col.key}`}
+                          checked={columnVisibility[col.key] || false}
+                          onCheckedChange={() => handleColumnToggle(col.key)}
+                        />
+                        <label htmlFor={`column-${col.key}`} className="text-sm cursor-pointer">
+                          {col.label}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                  <Popover.Arrow className="fill-white" />
+                </Popover.Content>
+              </Popover.Portal>
+            </Popover.Root>
+          )}
+
           {/* Поиск */}
           <div className="relative flex-1">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
