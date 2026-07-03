@@ -2,14 +2,15 @@ import { Router } from "express";
 import { db, sqlite } from "../db/index.js";
 import {
   deliveries,
-  drivers,
+  users,
   cars,
   orders,
   orderHistory,
   incomes,
   clients,
   recipientHistory,
-  users,
+  permissions,
+  rolePermissions,
 } from "../db/schema.js";
 import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
@@ -36,19 +37,6 @@ const usersOldRecipient = sqliteTable("users", {
   middleName: text("middle_name"),
 });
 
-const driversRecipient = sqliteTable("drivers", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  lastName: text("last_name").notNull(),
-  firstName: text("first_name").notNull(),
-  middleName: text("middle_name"),
-});
-
-const driversOldRecipient = sqliteTable("drivers", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  lastName: text("last_name").notNull(),
-  firstName: text("first_name").notNull(),
-  middleName: text("middle_name"),
-});
 import { requirePermission } from "../middleware/permissions.js";
 import {
   createDeliverySchema,
@@ -141,9 +129,9 @@ router.get(
         .orderBy(deliveries.dateTime)
         .all();
 
-      // Для каждой доставки получаем водителя, автомобиль, заказ и клиента
+      // Для каждой доставки получаем сотрудника (водителя), автомобиль, заказ и клиента
       const deliveriesWithDetails = allDeliveries.map((delivery: any) => {
-        const driver = db.select().from(drivers).where(eq(drivers.id, delivery.driverId)).get();
+        const driver = db.select().from(users).where(eq(users.id, delivery.driverId)).get();
         const car = db.select().from(cars).where(eq(cars.id, delivery.carId)).get();
         const order = db.select().from(orders).where(eq(orders.id, delivery.orderId)).get();
 
@@ -209,9 +197,9 @@ router.get(
         .orderBy(desc(deliveries.createdAt))
         .all();
 
-      // Для каждой доставки получаем водителя, автомобиль и доход
+      // Для каждой доставки получаем сотрудника (водителя), автомобиль и доход
       const deliveriesWithDetails = allDeliveries.map((delivery: any) => {
-        const driver = db.select().from(drivers).where(eq(drivers.id, delivery.driverId)).get();
+        const driver = db.select().from(users).where(eq(users.id, delivery.driverId)).get();
         const car = db.select().from(cars).where(eq(cars.id, delivery.carId)).get();
         let income = null;
         if (delivery.incomeId) {
@@ -270,8 +258,8 @@ router.get(
         return res.status(404).json({ error: "Доставка не найдена" });
       }
 
-      // Получаем водителя, автомобиль и доход
-      const driver = db.select().from(drivers).where(eq(drivers.id, delivery.driverId)).get();
+      // Получаем сотрудника (водителя), автомобиль и доход
+      const driver = db.select().from(users).where(eq(users.id, delivery.driverId)).get();
       const car = db.select().from(cars).where(eq(cars.id, delivery.carId)).get();
       let income = null;
       if (delivery.incomeId) {
@@ -317,8 +305,8 @@ router.post(
         ? db.select().from(clients).where(eq(clients.id, order.clientId)).get()
         : null;
 
-      // Получаем информацию о водителе
-      const driverData = db.select().from(drivers).where(eq(drivers.id, data.driverId)).get();
+      // Получаем информацию о сотруднике (водителе)
+      const driverData = db.select().from(users).where(eq(users.id, data.driverId)).get();
 
       // Получаем информацию об автомобиле
       const carData = db.select().from(cars).where(eq(cars.id, data.carId)).get();
@@ -357,9 +345,6 @@ router.post(
       };
 
       // Добавляем поля получателя, если они есть
-      if (data.recipientType) {
-        incomeData.recipientType = data.recipientType;
-      }
       if (data.recipientId) {
         incomeData.recipientId = data.recipientId;
       }
@@ -436,15 +421,8 @@ router.post(
           if (data.notifyDriver) {
             const driverFio =
               `${driverData.lastName} ${driverData.firstName} ${driverData.middleName || ""}`.trim();
-            // Ищем водителя в таблице users
-            const driverUser = db
-              .select({ telegramChatId: users.telegramChatId })
-              .from(users)
-              .where(eq(users.phone, driverData.phone || ""))
-              .get();
-
             // Пытаемся отправить водителю по его telegramChatId, если нет - на общий чат
-            const targetChatId = driverUser?.telegramChatId || process.env.TELEGRAM_CHAT_ID!;
+            const targetChatId = driverData.telegramChatId || process.env.TELEGRAM_CHAT_ID!;
 
             // Получаем адрес и контактные данные из заявки
             const orderAddress = order.address || "";
@@ -529,8 +507,7 @@ router.put(
       }
 
       // Удаляем amount и isPaid из updateData - они обновляются в income
-      const { amount, isPaid, recipientType, recipientId, ...deliveryUpdateData } =
-        updateData as any;
+      const { amount, isPaid, recipientId, ...deliveryUpdateData } = updateData as any;
 
       db.update(deliveries).set(deliveryUpdateData).where(eq(deliveries.id, deliveryId)).run();
 
@@ -549,8 +526,8 @@ router.put(
           .run();
       }
 
-      // Обновляем recipientType и recipientId в связанном income и логируем изменения
-      if ((recipientType !== undefined || recipientId !== undefined) && currentDelivery.incomeId) {
+      // Обновляем recipientId в связанном income и логируем изменения
+      if (recipientId !== undefined && currentDelivery.incomeId) {
         // СНАЧАЛА читаем текущие (старые) значения получателя из income
         const oldIncome = db
           .select()
@@ -559,7 +536,6 @@ router.put(
           .get();
 
         const incomeUpdate: Record<string, unknown> = { updatedAt: now };
-        if (recipientType !== undefined) incomeUpdate.recipientType = recipientType;
         if (recipientId !== undefined) incomeUpdate.recipientId = recipientId;
         db.update(incomes).set(incomeUpdate).where(eq(incomes.id, currentDelivery.incomeId)).run();
 
@@ -576,14 +552,12 @@ router.put(
             deliveryId,
             incomeId: currentDelivery.incomeId,
             userId,
-            recipientType: recipientType ?? null,
             recipientId: recipientId ?? null,
-            oldRecipientType: oldIncome?.recipientType ?? null,
             oldRecipientId: oldIncome?.recipientId ?? null,
             action,
             comment: hasHistory
-              ? `Изменен получатель. ${recipientType !== undefined ? `Тип: ${recipientType}` : ""} ${recipientId !== undefined ? `ID: ${recipientId}` : ""}`
-              : `Получатель назначен. ${recipientType !== undefined ? `Тип: ${recipientType}` : ""} ${recipientId !== undefined ? `ID: ${recipientId}` : ""}`,
+              ? `Изменен получатель. ID: ${recipientId}`
+              : `Получатель назначен. ID: ${recipientId}`,
             createdAt: now,
           })
           .run();
@@ -702,18 +676,16 @@ router.post(
             .where(eq(incomes.id, delivery.incomeId))
             .get();
 
-          if (currentIncome && (currentIncome.recipientType || currentIncome.recipientId)) {
+          if (currentIncome && currentIncome.recipientId) {
             db.insert(recipientHistory)
               .values({
                 deliveryId,
                 incomeId: delivery.incomeId,
                 userId,
-                recipientType: currentIncome.recipientType,
                 recipientId: currentIncome.recipientId,
-                oldRecipientType: null,
                 oldRecipientId: null,
                 action: "created",
-                comment: `Получатель назначен при завершении доставки. ${currentIncome.recipientType ? `Тип: ${currentIncome.recipientType}` : ""} ${currentIncome.recipientId ? `ID: ${currentIncome.recipientId}` : ""}`,
+                comment: `Получатель назначен при завершении доставки. ID: ${currentIncome.recipientId}`,
                 createdAt: now,
               })
               .run();
@@ -770,29 +742,21 @@ router.get(
             rh.delivery_id,
             rh.income_id,
             rh.user_id,
-            rh.recipient_type,
             rh.recipient_id,
-            rh.old_recipient_type,
             rh.old_recipient_id,
             rh.action,
             rh.comment,
             rh.created_at,
             -- Name of user who made the change
             u_changed.last_name || ' ' || u_changed.first_name || (CASE WHEN u_changed.middle_name IS NOT NULL AND u_changed.middle_name != '' THEN ' ' || u_changed.middle_name ELSE '' END) as changed_by_name,
-            -- New recipient name (employee)
+            -- Recipient name (employee)
             u_emp.last_name || ' ' || u_emp.first_name || (CASE WHEN u_emp.middle_name IS NOT NULL AND u_emp.middle_name != '' THEN ' ' || u_emp.middle_name ELSE '' END) as recipient_emp_name,
-            -- New recipient name (driver)
-            d_rec.last_name || ' ' || d_rec.first_name || (CASE WHEN d_rec.middle_name IS NOT NULL AND d_rec.middle_name != '' THEN ' ' || d_rec.middle_name ELSE '' END) as recipient_driver_name,
             -- Old recipient name (employee)
-            u_old_emp.last_name || ' ' || u_old_emp.first_name || (CASE WHEN u_old_emp.middle_name IS NOT NULL AND u_old_emp.middle_name != '' THEN ' ' || u_old_emp.middle_name ELSE '' END) as old_recipient_emp_name,
-            -- Old recipient name (driver)
-            d_old.last_name || ' ' || d_old.first_name || (CASE WHEN d_old.middle_name IS NOT NULL AND d_old.middle_name != '' THEN ' ' || d_old.middle_name ELSE '' END) as old_recipient_driver_name
+            u_old_emp.last_name || ' ' || u_old_emp.first_name || (CASE WHEN u_old_emp.middle_name IS NOT NULL AND u_old_emp.middle_name != '' THEN ' ' || u_old_emp.middle_name ELSE '' END) as old_recipient_emp_name
           FROM recipient_history rh
           LEFT JOIN users u_changed ON rh.user_id = u_changed.id
-          LEFT JOIN users u_emp ON rh.recipient_type = 'employee' AND rh.recipient_id = u_emp.id
-          LEFT JOIN users u_old_emp ON rh.old_recipient_type = 'employee' AND rh.old_recipient_id = u_old_emp.id
-          LEFT JOIN drivers d_rec ON rh.recipient_type = 'driver' AND rh.recipient_id = d_rec.id
-          LEFT JOIN drivers d_old ON rh.old_recipient_type = 'driver' AND rh.old_recipient_id = d_old.id
+          LEFT JOIN users u_emp ON rh.recipient_id = u_emp.id
+          LEFT JOIN users u_old_emp ON rh.old_recipient_id = u_old_emp.id
           WHERE rh.delivery_id = ?
           ORDER BY rh.created_at DESC
         `,
@@ -802,17 +766,13 @@ router.get(
       // Map to plain objects
       const plainHistory = (history || []).map((item: any) => {
         let recipientName = "";
-        if (item.recipient_type === "employee" && item.recipient_emp_name) {
+        if (item.recipient_emp_name) {
           recipientName = item.recipient_emp_name.trim();
-        } else if (item.recipient_type === "driver" && item.recipient_driver_name) {
-          recipientName = item.recipient_driver_name.trim();
         }
 
         let oldRecipientName = "";
-        if (item.old_recipient_type === "employee" && item.old_recipient_emp_name) {
+        if (item.old_recipient_emp_name) {
           oldRecipientName = item.old_recipient_emp_name.trim();
-        } else if (item.old_recipient_type === "driver" && item.old_recipient_driver_name) {
-          oldRecipientName = item.old_recipient_driver_name.trim();
         }
 
         return {
@@ -820,10 +780,8 @@ router.get(
           deliveryId: Number(item.delivery_id),
           incomeId: item.income_id ? Number(item.income_id) : null,
           userId: Number(item.user_id),
-          recipientType: item.recipient_type ?? null,
           recipientId: item.recipient_id ? Number(item.recipient_id) : null,
           recipientName: recipientName || "",
-          oldRecipientType: item.old_recipient_type ?? null,
           oldRecipientId: item.old_recipient_id ? Number(item.old_recipient_id) : null,
           oldRecipientName: oldRecipientName || "",
           action: item.action,

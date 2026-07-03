@@ -27,7 +27,7 @@ export const NewTransportCardPage = () => {
   const { showToast } = useToast();
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
-  const { form, drivers, isSubmitting, onSubmit } = useNewTransportCardPage();
+  const { form, isSubmitting, onSubmit } = useNewTransportCardPage();
 
   if (isPermissionsLoading) {
     return (
@@ -120,27 +120,6 @@ export const NewTransportCardPage = () => {
                     <SelectContent className="rounded-2xl shadow-xl">
                       <SelectItem value="active">Активна</SelectItem>
                       <SelectItem value="inactive">Неактивна</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="driverId">Водитель</Label>
-                  <Select
-                    value={String(form.watch("driverId") || "")}
-                    onValueChange={(value) =>
-                      form.setValue("driverId", value ? Number(value) : null)
-                    }
-                  >
-                    <SelectTrigger disabled={isSubmitting} className="rounded-2xl">
-                      <SelectValue placeholder="Не назначен" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-2xl shadow-xl">
-                      {drivers.map((driver) => (
-                        <SelectItem key={driver.id} value={String(driver.id)}>
-                          {driver.lastName} {driver.firstName} {driver.middleName}
-                        </SelectItem>
-                      ))}
                     </SelectContent>
                   </Select>
                 </div>

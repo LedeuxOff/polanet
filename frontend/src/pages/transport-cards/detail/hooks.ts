@@ -1,6 +1,5 @@
-import { driversApi, transportCardsApi, expensesApi } from "@/lib/api";
+import { transportCardsApi, expensesApi } from "@/lib/api";
 import {
-  Driver,
   TransportCard,
   TransportCardForm,
   transportCardSchema,
@@ -16,7 +15,6 @@ export const useTransportCardDetailPage = () => {
   const navigate = useNavigate();
 
   const [card, setCard] = useState<TransportCard | null>(null);
-  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,18 +34,12 @@ export const useTransportCardDetailPage = () => {
   });
 
   const loadCard = useCallback(() => {
-    driversApi
-      .list({ limit: 1000 })
-      .then((res) => setDrivers(res.data || []))
-      .catch(console.error);
-
     transportCardsApi
       .get(Number(cardId))
       .then((data) => {
         setCard(data);
         form.setValue("cardNumber", data.cardNumber);
         form.setValue("status", data.status);
-        form.setValue("driverId", data.driverId);
       })
       .catch(console.error)
       .finally(() => setIsLoading(false));
@@ -155,7 +147,6 @@ export const useTransportCardDetailPage = () => {
     onSubmit,
     error,
     isSubmitting,
-    drivers,
     expenseAmount,
     setExpenseAmount,
     expenseDateTime,

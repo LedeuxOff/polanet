@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CalendarDelivery, Driver, User } from "@/lib/types";
+import { CalendarDelivery, User } from "@/lib/types";
 import { Dispatch, SetStateAction } from "react";
 import { Control, UseFormReturn } from "react-hook-form";
 import { DeliveryCompleteForm } from "./use-add-delivery";
@@ -28,7 +28,6 @@ interface Props {
   editingDelivery: CalendarDelivery | null;
   handleSaveComplete: (data: DeliveryCompleteForm) => Promise<void>;
   handleCancelComplete: () => void;
-  drivers: Driver[];
   users: User[];
   isChangingRecipient?: boolean;
 }
@@ -39,11 +38,10 @@ export const CompleteDeliveryModal = ({
   form,
   handleSaveComplete,
   handleCancelComplete,
-  drivers,
   users,
   isChangingRecipient = false,
 }: Props) => {
-  const recipientType = form.watch("recipientType");
+  const recipientId = form.watch("recipientId");
 
   // Определяем заголовок и описание в зависимости от контекста
   const title = isChangingRecipient ? "Смена получателя средств" : "Завершение доставки";
@@ -61,64 +59,23 @@ export const CompleteDeliveryModal = ({
         </DialogHeader>
         <form onSubmit={form.handleSubmit(handleSaveComplete)} className="space-y-4">
           <div className="space-y-2">
-            <Label>Тип получателя</Label>
+            <Label>Сотрудник</Label>
             <Select
-              value={form.watch("recipientType") || ""}
-              onValueChange={(value: "employee" | "driver") =>
-                form.setValue("recipientType", value)
-              }
+              value={String(form.watch("recipientId") || "")}
+              onValueChange={(value) => form.setValue("recipientId", Number(value))}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Выберите тип получателя" />
+                <SelectValue placeholder="Выберите сотрудника" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="employee">Сотрудник</SelectItem>
-                <SelectItem value="driver">Водитель</SelectItem>
+                {users.map((user) => (
+                  <SelectItem key={user.id} value={String(user.id)}>
+                    {user.lastName} {user.firstName} {user.middleName}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
-
-          {recipientType === "employee" && (
-            <div className="space-y-2">
-              <Label>Сотрудник</Label>
-              <Select
-                value={String(form.watch("recipientId") || "")}
-                onValueChange={(value) => form.setValue("recipientId", Number(value))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Выберите сотрудника" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map((user) => (
-                    <SelectItem key={user.id} value={String(user.id)}>
-                      {user.lastName} {user.firstName} {user.middleName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          {recipientType === "driver" && (
-            <div className="space-y-2">
-              <Label>Водитель</Label>
-              <Select
-                value={String(form.watch("recipientId") || "")}
-                onValueChange={(value) => form.setValue("recipientId", Number(value))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Выберите водителя" />
-                </SelectTrigger>
-                <SelectContent>
-                  {drivers.map((driver) => (
-                    <SelectItem key={driver.id} value={String(driver.id)}>
-                      {driver.lastName} {driver.firstName} {driver.middleName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
 
           <div className="space-y-2">
             <Label>Комментарий</Label>

@@ -30,7 +30,7 @@ export const rolesApi = {
     return request<Role[]>("/roles");
   },
   get: (id: number) => request<Role>(`/roles/${id}`),
-  create: (data: { name: string; permissions: string[] }) =>
+  create: (data: { code: string; name: string; permissions: string[] }) =>
     request<Role>("/roles", {
       method: "POST",
       body: JSON.stringify(data),

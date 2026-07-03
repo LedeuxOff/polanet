@@ -16,7 +16,6 @@ import { Route as SystemLogsRouteImport } from './routes/system-logs'
 import { Route as SystemInfoRouteImport } from './routes/system-info'
 import { Route as RolesRouteImport } from './routes/roles'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as DriversRouteImport } from './routes/drivers'
 import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as ChangePasswordRouteImport } from './routes/change-password'
 import { Route as CarsRouteImport } from './routes/cars'
@@ -31,7 +30,6 @@ import { Route as SystemInfoIndexRouteImport } from './routes/system-info/index'
 import { Route as RolesIndexRouteImport } from './routes/roles/index'
 import { Route as OrdersIndexRouteImport } from './routes/orders/index'
 import { Route as MoneyStatisticIndexRouteImport } from './routes/money-statistic/index'
-import { Route as DriversIndexRouteImport } from './routes/drivers/index'
 import { Route as DevelopersIndexRouteImport } from './routes/developers/index'
 import { Route as ClientsIndexRouteImport } from './routes/clients/index'
 import { Route as CarsIndexRouteImport } from './routes/cars/index'
@@ -44,8 +42,6 @@ import { Route as RolesNewRouteImport } from './routes/roles/new'
 import { Route as RolesRoleIdRouteImport } from './routes/roles/$roleId'
 import { Route as OrdersNewRouteImport } from './routes/orders/new'
 import { Route as OrdersOrderIdRouteImport } from './routes/orders/$orderId'
-import { Route as DriversNewRouteImport } from './routes/drivers/new'
-import { Route as DriversDriverIdRouteImport } from './routes/drivers/$driverId'
 import { Route as DevelopersNewRouteImport } from './routes/developers/new'
 import { Route as DevelopersDeveloperIdRouteImport } from './routes/developers/$developerId'
 import { Route as ClientsNewRouteImport } from './routes/clients/new'
@@ -86,11 +82,6 @@ const RolesRoute = RolesRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DriversRoute = DriversRouteImport.update({
-  id: '/drivers',
-  path: '/drivers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevelopersRoute = DevelopersRouteImport.update({
@@ -163,11 +154,6 @@ const MoneyStatisticIndexRoute = MoneyStatisticIndexRouteImport.update({
   path: '/money-statistic/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DriversIndexRoute = DriversIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => DriversRoute,
-} as any)
 const DevelopersIndexRoute = DevelopersIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -228,16 +214,6 @@ const OrdersOrderIdRoute = OrdersOrderIdRouteImport.update({
   path: '/orders/$orderId',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DriversNewRoute = DriversNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => DriversRoute,
-} as any)
-const DriversDriverIdRoute = DriversDriverIdRouteImport.update({
-  id: '/$driverId',
-  path: '/$driverId',
-  getParentRoute: () => DriversRoute,
-} as any)
 const DevelopersNewRoute = DevelopersNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -276,7 +252,6 @@ export interface FileRoutesByFullPath {
   '/cars': typeof CarsRouteWithChildren
   '/change-password': typeof ChangePasswordRoute
   '/developers': typeof DevelopersRouteWithChildren
-  '/drivers': typeof DriversRouteWithChildren
   '/login': typeof LoginRoute
   '/roles': typeof RolesRouteWithChildren
   '/system-info': typeof SystemInfoRouteWithChildren
@@ -290,8 +265,6 @@ export interface FileRoutesByFullPath {
   '/clients/new': typeof ClientsNewRoute
   '/developers/$developerId': typeof DevelopersDeveloperIdRoute
   '/developers/new': typeof DevelopersNewRoute
-  '/drivers/$driverId': typeof DriversDriverIdRoute
-  '/drivers/new': typeof DriversNewRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/orders/new': typeof OrdersNewRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
@@ -304,7 +277,6 @@ export interface FileRoutesByFullPath {
   '/cars/': typeof CarsIndexRoute
   '/clients/': typeof ClientsIndexRoute
   '/developers/': typeof DevelopersIndexRoute
-  '/drivers/': typeof DriversIndexRoute
   '/money-statistic/': typeof MoneyStatisticIndexRoute
   '/orders/': typeof OrdersIndexRoute
   '/roles/': typeof RolesIndexRoute
@@ -325,8 +297,6 @@ export interface FileRoutesByTo {
   '/clients/new': typeof ClientsNewRoute
   '/developers/$developerId': typeof DevelopersDeveloperIdRoute
   '/developers/new': typeof DevelopersNewRoute
-  '/drivers/$driverId': typeof DriversDriverIdRoute
-  '/drivers/new': typeof DriversNewRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/orders/new': typeof OrdersNewRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
@@ -339,7 +309,6 @@ export interface FileRoutesByTo {
   '/cars': typeof CarsIndexRoute
   '/clients': typeof ClientsIndexRoute
   '/developers': typeof DevelopersIndexRoute
-  '/drivers': typeof DriversIndexRoute
   '/money-statistic': typeof MoneyStatisticIndexRoute
   '/orders': typeof OrdersIndexRoute
   '/roles': typeof RolesIndexRoute
@@ -357,7 +326,6 @@ export interface FileRoutesById {
   '/cars': typeof CarsRouteWithChildren
   '/change-password': typeof ChangePasswordRoute
   '/developers': typeof DevelopersRouteWithChildren
-  '/drivers': typeof DriversRouteWithChildren
   '/login': typeof LoginRoute
   '/roles': typeof RolesRouteWithChildren
   '/system-info': typeof SystemInfoRouteWithChildren
@@ -371,8 +339,6 @@ export interface FileRoutesById {
   '/clients/new': typeof ClientsNewRoute
   '/developers/$developerId': typeof DevelopersDeveloperIdRoute
   '/developers/new': typeof DevelopersNewRoute
-  '/drivers/$driverId': typeof DriversDriverIdRoute
-  '/drivers/new': typeof DriversNewRoute
   '/orders/$orderId': typeof OrdersOrderIdRoute
   '/orders/new': typeof OrdersNewRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
@@ -385,7 +351,6 @@ export interface FileRoutesById {
   '/cars/': typeof CarsIndexRoute
   '/clients/': typeof ClientsIndexRoute
   '/developers/': typeof DevelopersIndexRoute
-  '/drivers/': typeof DriversIndexRoute
   '/money-statistic/': typeof MoneyStatisticIndexRoute
   '/orders/': typeof OrdersIndexRoute
   '/roles/': typeof RolesIndexRoute
@@ -404,7 +369,6 @@ export interface FileRouteTypes {
     | '/cars'
     | '/change-password'
     | '/developers'
-    | '/drivers'
     | '/login'
     | '/roles'
     | '/system-info'
@@ -418,8 +382,6 @@ export interface FileRouteTypes {
     | '/clients/new'
     | '/developers/$developerId'
     | '/developers/new'
-    | '/drivers/$driverId'
-    | '/drivers/new'
     | '/orders/$orderId'
     | '/orders/new'
     | '/roles/$roleId'
@@ -432,7 +394,6 @@ export interface FileRouteTypes {
     | '/cars/'
     | '/clients/'
     | '/developers/'
-    | '/drivers/'
     | '/money-statistic/'
     | '/orders/'
     | '/roles/'
@@ -453,8 +414,6 @@ export interface FileRouteTypes {
     | '/clients/new'
     | '/developers/$developerId'
     | '/developers/new'
-    | '/drivers/$driverId'
-    | '/drivers/new'
     | '/orders/$orderId'
     | '/orders/new'
     | '/roles/$roleId'
@@ -467,7 +426,6 @@ export interface FileRouteTypes {
     | '/cars'
     | '/clients'
     | '/developers'
-    | '/drivers'
     | '/money-statistic'
     | '/orders'
     | '/roles'
@@ -484,7 +442,6 @@ export interface FileRouteTypes {
     | '/cars'
     | '/change-password'
     | '/developers'
-    | '/drivers'
     | '/login'
     | '/roles'
     | '/system-info'
@@ -498,8 +455,6 @@ export interface FileRouteTypes {
     | '/clients/new'
     | '/developers/$developerId'
     | '/developers/new'
-    | '/drivers/$driverId'
-    | '/drivers/new'
     | '/orders/$orderId'
     | '/orders/new'
     | '/roles/$roleId'
@@ -512,7 +467,6 @@ export interface FileRouteTypes {
     | '/cars/'
     | '/clients/'
     | '/developers/'
-    | '/drivers/'
     | '/money-statistic/'
     | '/orders/'
     | '/roles/'
@@ -530,7 +484,6 @@ export interface RootRouteChildren {
   CarsRoute: typeof CarsRouteWithChildren
   ChangePasswordRoute: typeof ChangePasswordRoute
   DevelopersRoute: typeof DevelopersRouteWithChildren
-  DriversRoute: typeof DriversRouteWithChildren
   LoginRoute: typeof LoginRoute
   RolesRoute: typeof RolesRouteWithChildren
   SystemInfoRoute: typeof SystemInfoRouteWithChildren
@@ -596,13 +549,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/drivers': {
-      id: '/drivers'
-      path: '/drivers'
-      fullPath: '/drivers'
-      preLoaderRoute: typeof DriversRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/developers': {
@@ -703,13 +649,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MoneyStatisticIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/drivers/': {
-      id: '/drivers/'
-      path: '/'
-      fullPath: '/drivers/'
-      preLoaderRoute: typeof DriversIndexRouteImport
-      parentRoute: typeof DriversRoute
-    }
     '/developers/': {
       id: '/developers/'
       path: '/'
@@ -793,20 +732,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/orders/$orderId'
       preLoaderRoute: typeof OrdersOrderIdRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/drivers/new': {
-      id: '/drivers/new'
-      path: '/new'
-      fullPath: '/drivers/new'
-      preLoaderRoute: typeof DriversNewRouteImport
-      parentRoute: typeof DriversRoute
-    }
-    '/drivers/$driverId': {
-      id: '/drivers/$driverId'
-      path: '/$driverId'
-      fullPath: '/drivers/$driverId'
-      preLoaderRoute: typeof DriversDriverIdRouteImport
-      parentRoute: typeof DriversRoute
     }
     '/developers/new': {
       id: '/developers/new'
@@ -893,21 +818,6 @@ const DevelopersRouteChildren: DevelopersRouteChildren = {
 const DevelopersRouteWithChildren = DevelopersRoute._addFileChildren(
   DevelopersRouteChildren,
 )
-
-interface DriversRouteChildren {
-  DriversDriverIdRoute: typeof DriversDriverIdRoute
-  DriversNewRoute: typeof DriversNewRoute
-  DriversIndexRoute: typeof DriversIndexRoute
-}
-
-const DriversRouteChildren: DriversRouteChildren = {
-  DriversDriverIdRoute: DriversDriverIdRoute,
-  DriversNewRoute: DriversNewRoute,
-  DriversIndexRoute: DriversIndexRoute,
-}
-
-const DriversRouteWithChildren =
-  DriversRoute._addFileChildren(DriversRouteChildren)
 
 interface RolesRouteChildren {
   RolesRoleIdRoute: typeof RolesRoleIdRoute
@@ -996,7 +906,6 @@ const rootRouteChildren: RootRouteChildren = {
   CarsRoute: CarsRouteWithChildren,
   ChangePasswordRoute: ChangePasswordRoute,
   DevelopersRoute: DevelopersRouteWithChildren,
-  DriversRoute: DriversRouteWithChildren,
   LoginRoute: LoginRoute,
   RolesRoute: RolesRouteWithChildren,
   SystemInfoRoute: SystemInfoRouteWithChildren,

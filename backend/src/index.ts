@@ -13,10 +13,8 @@ import { runMigrations } from "./db/migrate.js";
 import userRoutes from "./routes/users.js";
 import roleRoutes from "./routes/roles.js";
 import carRoutes from "./routes/cars.js";
-import driverRoutes from "./routes/drivers.js";
 import clientRoutes from "./routes/clients.js";
 import orderRoutes from "./routes/orders.js";
-import transportCardRoutes from "./routes/transportCards.js";
 import deliveryRoutes from "./routes/deliveries.js";
 import incomeRoutes from "./routes/incomes.js";
 import expenseRoutes from "./routes/expenses.js";
@@ -26,6 +24,7 @@ import systemLogsRoutes from "./routes/systemLogs.js";
 import permissionsRoutes from "./routes/permissions.js";
 import telegramRoutes from "./routes/telegram.js";
 import templateRoutes from "./routes/templates.js";
+import transportCardsRoutes from "./routes/transport-cards.js";
 
 // Импорт обработчика ошибок
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -57,10 +56,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/cars", carRoutes);
-app.use("/api/drivers", driverRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/transport-cards", transportCardRoutes);
 app.use("/api/deliveries", deliveryRoutes);
 app.use("/api/incomes", incomeRoutes);
 app.use("/api/expenses", expenseRoutes);
@@ -70,6 +67,7 @@ app.use("/api/system-logs", systemLogsRoutes);
 app.use("/api/permissions", permissionsRoutes);
 app.use("/api/telegram", telegramRoutes);
 app.use("/api/templates", templateRoutes);
+app.use("/api/transport-cards", transportCardsRoutes);
 
 // Serve built frontend in production (после API роутов!)
 if (isProduction) {

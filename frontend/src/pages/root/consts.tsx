@@ -39,11 +39,6 @@ export const menuItems: MenuItem[] = [
         permission: "cars:list",
       },
       {
-        title: "Водители",
-        url: "/drivers",
-        permission: "drivers:list",
-      },
-      {
         title: "Клиенты",
         url: "/clients",
         permission: "clients:list",

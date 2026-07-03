@@ -1,6 +1,5 @@
 import { API_BASE } from "./api-config";
 
-export { driversApi } from "./drivers-api";
 export { transportCardsApi } from "./transport-cards";
 export { authApi } from "./auth-api";
 export { usersApi, type PaginationParams, type PaginationResponse } from "./users-api";

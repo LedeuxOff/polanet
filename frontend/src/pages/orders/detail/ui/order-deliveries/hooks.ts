@@ -1,11 +1,10 @@
-import { carsApi, deliveriesApi, driversApi, ordersApi, usersApi } from "@/lib/api";
+import { carsApi, deliveriesApi, ordersApi, usersApi } from "@/lib/api";
 import {
   Car,
   CreateDeliveryInput,
   Delivery,
   DeliveryForm,
   deliverySchema,
-  Driver,
   Order,
   UpdateDeliveryInput,
   User,
@@ -21,7 +20,7 @@ interface Props {
 
 export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
-  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [drivers, setDrivers] = useState<User[]>([]);
   const [cars, setCars] = useState<Car[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -32,8 +31,8 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
   useEffect(() => {
     Promise.all([
       deliveriesApi.list(Number(orderId)).then(setDeliveries).catch(console.error),
-      driversApi
-        .list({ limit: 1000 })
+      usersApi
+        .list({ roleCode: "DRIVER", limit: 1000 })
         .then((res) => setDrivers(res.data || []))
         .catch(console.error),
       carsApi
@@ -56,7 +55,6 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
       isPaymentBeforeUnloading: false,
       notifyClient: false,
       notifyDriver: false,
-      recipientType: undefined,
       recipientId: undefined,
     },
   });
@@ -79,7 +77,6 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
       isPaymentBeforeUnloading: delivery.isPaymentBeforeUnloading,
       notifyClient: delivery.notifyClient,
       notifyDriver: delivery.notifyDriver,
-      recipientType: delivery.recipientType || undefined,
       recipientId: delivery.recipientId || undefined,
     });
   };
@@ -112,7 +109,6 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
       isPaymentBeforeUnloading: delivery.isPaymentBeforeUnloading,
       notifyClient: delivery.notifyClient,
       notifyDriver: delivery.notifyDriver,
-      recipientType: delivery.recipientType || undefined,
       recipientId: delivery.recipientId || undefined,
     });
   };
@@ -150,7 +146,6 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
           isPaymentBeforeUnloading: data.isPaymentBeforeUnloading,
           notifyClient: data.notifyClient,
           notifyDriver: data.notifyDriver,
-          recipientType: data.recipientType,
           recipientId: data.recipientId,
         };
         await deliveriesApi.update(editingDelivery.id, updateData);
@@ -173,7 +168,6 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
           isPaymentBeforeUnloading: data.isPaymentBeforeUnloading,
           notifyClient: data.notifyClient,
           notifyDriver: data.notifyDriver,
-          recipientType: data.recipientType,
           recipientId: data.recipientId,
         };
         await deliveriesApi.create(createData);

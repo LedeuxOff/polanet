@@ -1,10 +1,11 @@
-import { usersApi } from "@/lib/api";
+import { usersApi, transportCardsApi } from "@/lib/api";
 import { rolesApi } from "@/lib/api/roles-api";
 import { User, UserForm, userSchema } from "@/lib/types";
 import { Role } from "@/lib/types/role-types";
+import { TransportCard } from "@/lib/types/transport-card-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { cleanPhone } from "@/lib/utils/phone";
 
@@ -39,6 +40,12 @@ export const useUserDetailPage = () => {
   const [isUnbindingTelegram, setIsUnbindingTelegram] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Transport card state
+  const [availableCards, setAvailableCards] = useState<TransportCard[]>([]);
+  const [isFetchingCards, setIsFetchingCards] = useState(false);
+  const [isAttachingCard, setIsAttachingCard] = useState(false);
+  const [isDetachingCard, setIsDetachingCard] = useState(false);
+
   const form = useForm<UserForm>({
     resolver: zodResolver(userSchema),
   });
@@ -61,6 +68,45 @@ export const useUserDetailPage = () => {
       form.setValue("roleId", user.roleId);
     }
   }, [user, form.setValue]);
+
+  // Load available cards (not attached to any user)
+  const loadAvailableCards = useCallback(async () => {
+    try {
+      const [cardsResponse, usersResponse] = await Promise.all([
+        transportCardsApi.list({ limit: 1000 }),
+        usersApi.list({ limit: 10000 }),
+      ]);
+
+      // Get all card IDs that are attached to any user
+      const attachedCardIds = new Set(
+        usersResponse.data
+          .filter((u) => u.transportCardId !== null && u.transportCardId !== undefined)
+          .map((u) => u.transportCardId as number),
+      );
+
+      // Filter out cards that are already attached to users
+      const available = cardsResponse.data.filter((card) => !attachedCardIds.has(card.id));
+
+      setAvailableCards(available);
+    } catch (err) {
+      console.error("Failed to load available cards:", err);
+    }
+  }, []);
+
+  // Refresh current user data from the server
+  const refreshUser = useCallback(async () => {
+    try {
+      const response = await usersApi.get(Number(userId));
+      setUser(response);
+    } catch (err) {
+      console.error("Failed to refresh user:", err);
+    }
+  }, [userId]);
+
+  // Load available cards on mount
+  useEffect(() => {
+    loadAvailableCards();
+  }, [loadAvailableCards]);
 
   const onSubmit = async (data: UserForm): Promise<{ success: boolean; error?: string }> => {
     setError(null);
@@ -130,6 +176,42 @@ export const useUserDetailPage = () => {
     }
   };
 
+  const handleAttachCard = async (cardId: number) => {
+    if (!user) return;
+    setIsAttachingCard(true);
+    setError(null);
+    try {
+      // Update user with transportCardId
+      await usersApi.update(user.id, { transportCardId: cardId });
+      // Refresh user data from server
+      await refreshUser();
+      // Reload available cards to update the list
+      await loadAvailableCards();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ошибка при привязке карты");
+    } finally {
+      setIsAttachingCard(false);
+    }
+  };
+
+  const handleDetachCard = async () => {
+    if (!user) return;
+    setIsDetachingCard(true);
+    setError(null);
+    try {
+      // Update user to remove transportCardId
+      await usersApi.update(user.id, { transportCardId: null });
+      // Refresh user data from server
+      await refreshUser();
+      // Reload available cards to update the list
+      await loadAvailableCards();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ошибка при отвязке карты");
+    } finally {
+      setIsDetachingCard(false);
+    }
+  };
+
   return {
     isLoading,
     user,
@@ -144,5 +226,12 @@ export const useUserDetailPage = () => {
     handleUnbindTelegram,
     isDeleting,
     handleDelete,
+    // Transport card
+    availableCards,
+    isFetchingCards,
+    isAttachingCard,
+    isDetachingCard,
+    handleAttachCard,
+    handleDetachCard,
   };
 };

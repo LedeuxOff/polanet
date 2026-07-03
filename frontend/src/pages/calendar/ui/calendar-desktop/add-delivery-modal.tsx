@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Car, CalendarDelivery, DeliveryForm, Driver, Order, User } from "@/lib/types";
+import { Car, CalendarDelivery, DeliveryForm, Order, User } from "@/lib/types";
 import { Dispatch, SetStateAction, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { CheckCircleIcon, Edit3Icon } from "lucide-react";
@@ -32,7 +32,7 @@ interface Props {
   handleSaveDelivery: (data: DeliveryForm) => Promise<void>;
   handleCompleteDelivery: () => Promise<void>;
   handleChangeRecipient: () => void;
-  drivers: Driver[];
+  drivers: User[];
   cars: Car[];
   availableOrders: Order[];
   handleCancelDelivery: () => void;
@@ -77,12 +77,6 @@ export const AddDeliveryModal = ({
   const deliveryIsPaid = editingDelivery?.income?.isPaid ?? false;
   const formIsPaid = form.watch("isPaid");
   const isPaid = isEditing ? deliveryIsPaid : formIsPaid;
-
-  // Получаем recipientType и recipientId из income для существующих доставок
-  const recipientType =
-    isEditing && editingDelivery?.income?.recipientType != null
-      ? editingDelivery.income.recipientType
-      : form.watch("recipientType") || "";
 
   // Получаем recipientId из income для существующих доставок
   const recipientId =
@@ -273,68 +267,24 @@ export const AddDeliveryModal = ({
               <Label className="text-base font-semibold">Получатель средств</Label>
 
               <div className="space-y-2">
-                <Label>Тип получателя *</Label>
+                <Label>Сотрудник *</Label>
                 <Select
-                  value={recipientType || ""}
-                  onValueChange={(value: "employee" | "driver") =>
-                    form.setValue("recipientType", value)
-                  }
+                  value={String(recipientId || "")}
+                  onValueChange={(value) => form.setValue("recipientId", Number(value))}
                   {...selectProps}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Выберите тип получателя" />
+                    <SelectValue placeholder="Выберите сотрудника" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="employee">Сотрудник</SelectItem>
-                    <SelectItem value="driver">Водитель</SelectItem>
+                    {users.map((user) => (
+                      <SelectItem key={user.id} value={String(user.id)}>
+                        {user.lastName} {user.firstName} {user.middleName || ""}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
-
-              {/* Поле выбора сотрудника/водителя в зависимости от типа */}
-              {recipientType === "employee" && (
-                <div className="space-y-2">
-                  <Label>Сотрудник *</Label>
-                  <Select
-                    value={String(recipientId || "")}
-                    onValueChange={(value) => form.setValue("recipientId", Number(value))}
-                    {...selectProps}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите сотрудника" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {users.map((user) => (
-                        <SelectItem key={user.id} value={String(user.id)}>
-                          {user.lastName} {user.firstName} {user.middleName || ""}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              {recipientType === "driver" && (
-                <div className="space-y-2">
-                  <Label>Водитель *</Label>
-                  <Select
-                    value={String(recipientId || "")}
-                    onValueChange={(value) => form.setValue("recipientId", Number(value))}
-                    {...selectProps}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите водителя" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {drivers.map((driver) => (
-                        <SelectItem key={driver.id} value={String(driver.id)}>
-                          {driver.lastName} {driver.firstName} {driver.middleName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
             </div>
           )}
 

@@ -74,26 +74,7 @@ function Index() {
         </Card>
       </Link>
 
-      <Link to="/drivers" className="col-span-12 lg:col-span-5">
-        <Card className="rounded-2xl shadow-xl relative overflow-hidden">
-          <CardHeader>
-            <CardTitle className="">Водители</CardTitle>
-            <CardDescription className="">Управление водителями</CardDescription>
-          </CardHeader>
-
-          <div className="absolute top-3 right-3">
-            <div className="relative flex h-20 w-20 items-center justify-center">
-              <div className="absolute inset-0 rounded-full bg-purple-300/30 animate-[pulse-ring-expand_2s_ease-in-out_infinite]" />
-              <div className="absolute inset-0 rounded-full bg-purple-300/20 animate-[pulse-ring-expand_2s_ease-in-out_infinite_1s]" />
-              <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full bg-purple-300/10">
-                <CarIcon className="h-10 w-10 text-purple-300" />
-              </div>
-            </div>
-          </div>
-        </Card>
-      </Link>
-
-      <Link to="/transport-cards" className="col-span-12 lg:col-span-7">
+      <Link to="/transport-cards" className="col-span-12 lg:col-span-5">
         <Card className="rounded-2xl shadow-xl relative overflow-hidden">
           <CardHeader>
             <CardTitle className="">Транспортные карты</CardTitle>

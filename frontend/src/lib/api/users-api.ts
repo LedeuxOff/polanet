@@ -35,7 +35,7 @@ export const usersApi = {
       method: "POST",
       body: JSON.stringify(data),
     }),
-  update: (id: number, data: Partial<RegisterInput>) =>
+  update: (id: number, data: Partial<RegisterInput> & { transportCardId?: number | null }) =>
     request<User>(`/users/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),

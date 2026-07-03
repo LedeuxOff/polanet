@@ -1,7 +1,7 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import { db } from "../db/index.js";
-import { users, roles } from "../db/schema.js";
+import { users, roles, transportCards } from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { requirePermission } from "../middleware/permissions.js";
 import { registerSchema, updateUserSchema } from "../middleware/validators.js";
@@ -93,11 +93,14 @@ router.get("/", authenticate, requirePermission("users:list"), (req: AuthRequest
           roleCode: roles.code,
           roleName: roles.name,
           telegramChatId: users.telegramChatId,
+          transportCardId: users.transportCardId,
+          transportCard: transportCards.cardNumber,
           createdAt: users.createdAt,
           updatedAt: users.updatedAt,
         })
         .from(users)
         .innerJoin(roles, eq(users.roleId, roles.id))
+        .leftJoin(transportCards, eq(users.transportCardId, transportCards.id))
         .where(and(...whereClause, excludeDeveloperCondition))
         .limit(limit)
         .offset(offset)
@@ -116,11 +119,14 @@ router.get("/", authenticate, requirePermission("users:list"), (req: AuthRequest
           roleCode: roles.code,
           roleName: roles.name,
           telegramChatId: users.telegramChatId,
+          transportCardId: users.transportCardId,
+          transportCard: transportCards.cardNumber,
           createdAt: users.createdAt,
           updatedAt: users.updatedAt,
         })
         .from(users)
         .innerJoin(roles, eq(users.roleId, roles.id))
+        .leftJoin(transportCards, eq(users.transportCardId, transportCards.id))
         .where(excludeDeveloperCondition)
         .limit(limit)
         .offset(offset)
@@ -158,11 +164,15 @@ router.get("/:id", authenticate, requirePermission("users:detail"), (req: AuthRe
         roleCode: roles.code,
         roleName: roles.name,
         telegramChatId: users.telegramChatId,
+        transportCardId: users.transportCardId,
+        transportCardNumber: transportCards.cardNumber,
+        transportCardStatus: transportCards.status,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
       })
       .from(users)
       .leftJoin(roles, eq(users.roleId, roles.id))
+      .leftJoin(transportCards, eq(users.transportCardId, transportCards.id))
       .where(eq(users.id, Number(req.params.id)))
       .get();
 
@@ -210,6 +220,7 @@ router.post("/", authenticate, requirePermission("users:create"), async (req: Au
         phone: data.phone,
         passwordHash,
         roleId: data.roleId,
+        transportCardId: data.transportCardId || null,
       })
       .run();
 

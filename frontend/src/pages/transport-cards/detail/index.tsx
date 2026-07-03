@@ -35,7 +35,6 @@ export const TransportCardDetailPage = () => {
     form,
     onSubmit,
     isSubmitting,
-    drivers,
     expenseAmount,
     setExpenseAmount,
     expenseDateTime,
@@ -123,12 +122,7 @@ export const TransportCardDetailPage = () => {
                 <CardTitle>Основная информация</CardTitle>
               </CardHeader>
               <CardContent>
-                <TransportCardMainInfo
-                  isSubmitting={isSubmitting}
-                  form={form}
-                  card={card}
-                  drivers={drivers}
-                />
+                <TransportCardMainInfo isSubmitting={isSubmitting} form={form} card={card} />
               </CardContent>
             </Card>
           </div>

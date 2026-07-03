@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { useToast } from "@/lib/contexts/toast-context";
 
 const loginSchema = z.object({
   email: z.string().email("Неверный формат email"),
@@ -27,6 +28,7 @@ function LoginPage() {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const search = useSearch({ from: "/login" });
+  const { showToast } = useToast();
   const [error, setError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -51,7 +53,9 @@ function LoginPage() {
       await login(data.email, data.password);
       navigate({ to: search.redirect || "/" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка входа");
+      const errorMessage = err instanceof Error ? err.message : "Ошибка входа";
+      setError(errorMessage);
+      showToast(errorMessage, "error");
     } finally {
       setIsSubmitting(false);
     }

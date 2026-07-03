@@ -44,6 +44,7 @@ router.get("/", authenticate, requirePermission("incomes:list"), async (req: Aut
         paymentDate: incomes.paymentDate,
         createdAt: incomes.createdAt,
         updatedAt: incomes.updatedAt,
+        recipientId: incomes.recipientId,
         // Данные заявки
         orderAddress: orders.address,
         orderType: orders.type,
@@ -90,6 +91,7 @@ router.get(
           paymentDate: incomes.paymentDate,
           createdAt: incomes.createdAt,
           updatedAt: incomes.updatedAt,
+          recipientId: incomes.recipientId,
           // Данные заявки
           orderAddress: orders.address,
           orderType: orders.type,
@@ -157,20 +159,24 @@ router.post(
           .where(eq(deliveries.id, data.deliveryId));
       }
 
-      const result = await db
-        .insert(incomes)
-        .values({
-          incomeType: data.incomeType,
-          paymentMethod: data.paymentMethod,
-          isPaid: data.isPaid || false,
-          orderId: data.orderId,
-          deliveryId: data.deliveryId || null,
-          amount: data.amount,
-          paymentDate: data.paymentDate,
-          createdAt: now,
-          updatedAt: now,
-        })
-        .run();
+      const incomeValues: any = {
+        incomeType: data.incomeType,
+        paymentMethod: data.paymentMethod,
+        isPaid: data.isPaid || false,
+        orderId: data.orderId,
+        deliveryId: data.deliveryId || null,
+        amount: data.amount,
+        paymentDate: data.paymentDate,
+        createdAt: now,
+        updatedAt: now,
+      };
+
+      // Добавляем recipientId если есть
+      if (data.recipientId !== undefined) {
+        incomeValues.recipientId = data.recipientId;
+      }
+
+      const result = await db.insert(incomes).values(incomeValues).run();
 
       const newIncome = await db
         .select()

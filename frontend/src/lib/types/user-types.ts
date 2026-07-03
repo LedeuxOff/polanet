@@ -12,6 +12,9 @@ export interface User {
   roleCode: string;
   roleName: string;
   telegramChatId: string | null;
+  transportCardId: number | null;
+  transportCardNumber?: string | null;
+  transportCardStatus?: string | null;
   createdAt: string;
   updatedAt: string;
 }

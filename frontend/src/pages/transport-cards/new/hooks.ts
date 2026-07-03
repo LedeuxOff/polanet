@@ -1,13 +1,12 @@
-import { driversApi, transportCardsApi } from "@/lib/api";
-import { Driver, NewTransportCardForm, newTransportCardSchema } from "@/lib/types";
+import { transportCardsApi } from "@/lib/api";
+import { NewTransportCardForm, newTransportCardSchema } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 export const useNewTransportCardPage = () => {
   const navigate = useNavigate();
-  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,13 +16,6 @@ export const useNewTransportCardPage = () => {
       status: "active",
     },
   });
-
-  useEffect(() => {
-    driversApi
-      .list({ limit: 1000 })
-      .then((res) => setDrivers(res.data || []))
-      .catch(console.error);
-  }, []);
 
   const onSubmit = async (data: NewTransportCardForm) => {
     setError(null);
@@ -40,7 +32,6 @@ export const useNewTransportCardPage = () => {
 
   return {
     form,
-    drivers,
     isSubmitting,
     error,
     onSubmit,

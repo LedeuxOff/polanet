@@ -53,28 +53,14 @@ export const TransportCardsPage = () => {
       cell: ({ row }) => <span>{row.getValue("cardNumber")}</span>,
     },
     {
-      accessorKey: "driver",
-      header: "Водитель",
-      cell: ({ row }) => {
-        const driver = row.original.driver;
-        return driver ? (
-          <span className="text-sm">
-            {driver.lastName} {driver.firstName} {driver.middleName}
-          </span>
-        ) : (
-          <span className="text-sm text-muted-foreground">Не назначен</span>
-        );
-      },
+      accessorKey: "status",
+      header: "Статус",
+      cell: ({ row }) => getStatusBadge(row.original.status),
     },
     {
       accessorKey: "totalExpenses",
       header: "Общие расходы",
       cell: ({ getValue }) => `${getValue<number>()} ₽`,
-    },
-    {
-      accessorKey: "status",
-      header: "Статус",
-      cell: ({ row }) => getStatusBadge(row.original.status),
     },
   ];
 

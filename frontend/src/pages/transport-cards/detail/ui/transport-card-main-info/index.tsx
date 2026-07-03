@@ -7,17 +7,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Driver, TransportCard, TransportCardForm } from "@/lib/types";
+import { TransportCard, TransportCardForm } from "@/lib/types";
 import { UseFormReturn } from "react-hook-form";
 
 interface Props {
   isSubmitting: boolean;
   form: UseFormReturn<TransportCardForm>;
   card: TransportCard | null;
-  drivers: Driver[];
 }
 
-export const TransportCardMainInfo = ({ isSubmitting, form, card, drivers }: Props) => {
+export const TransportCardMainInfo = ({ isSubmitting, form, card }: Props) => {
   return (
     <div className="flex flex-col gap-4">
       <div className="space-y-2">
@@ -47,25 +46,6 @@ export const TransportCardMainInfo = ({ isSubmitting, form, card, drivers }: Pro
           <SelectContent className="rounded-2xl shadow-xl">
             <SelectItem value="active">Активна</SelectItem>
             <SelectItem value="inactive">Неактивна</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="driverId">Водитель</Label>
-        <Select
-          value={String(form.watch("driverId") || "")}
-          onValueChange={(value) => form.setValue("driverId", value ? Number(value) : null)}
-        >
-          <SelectTrigger disabled={isSubmitting} className="rounded-2xl">
-            <SelectValue placeholder="Не назначен" />
-          </SelectTrigger>
-          <SelectContent className="rounded-2xl shadow-xl">
-            {drivers.map((driver) => (
-              <SelectItem key={driver.id} value={String(driver.id)}>
-                {driver.lastName} {driver.firstName} {driver.middleName}
-              </SelectItem>
-            ))}
           </SelectContent>
         </Select>
       </div>

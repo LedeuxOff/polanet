@@ -13,6 +13,7 @@ export const registerSchema = z.object({
   email: z.string().email("Неверный формат email"),
   phone: z.string().optional(),
   roleId: z.number().int().positive("Роль обязательна"),
+  transportCardId: z.number().int().positive().optional().nullable(),
 });
 
 export const updateUserSchema = z.object({
@@ -23,6 +24,7 @@ export const updateUserSchema = z.object({
   email: z.string().email("Неверный формат email").optional(),
   phone: z.string().optional(),
   roleId: z.number().int().positive("Роль обязательна").optional(),
+  transportCardId: z.number().int().positive().optional().nullable(),
 });
 
 export const createRoleSchema = z.object({

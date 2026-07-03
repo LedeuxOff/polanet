@@ -51,25 +51,15 @@ describe("newTransportCardSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("should coerce driverId to number", () => {
+  it("should not include employeeId in the schema", () => {
     const result = newTransportCardSchema.safeParse({
       cardNumber: "1234567890123456",
-      driverId: "123",
     });
 
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.driverId).toBe(123);
+      expect("employeeId" in result.data).toBe(false);
     }
-  });
-
-  it("should allow null driverId", () => {
-    const result = newTransportCardSchema.safeParse({
-      cardNumber: "1234567890123456",
-      driverId: null,
-    });
-
-    expect(result.success).toBe(true);
   });
 
   it("should fail with invalid status", () => {
@@ -88,38 +78,25 @@ describe("transportCardSchema", () => {
     const result = transportCardSchema.safeParse({
       cardNumber: "1234567890123456",
       status: "active",
-      driverId: 1,
     });
 
     expect(result.success).toBe(true);
   });
 
   it("should allow optional cardNumber", () => {
-    const result = transportCardSchema.safeParse({
-      driverId: 1,
-    });
+    const result = transportCardSchema.safeParse({});
 
     expect(result.success).toBe(true);
   });
 
-  it("should coerce driverId to number", () => {
+  it("should not include employeeId in the schema", () => {
     const result = transportCardSchema.safeParse({
       cardNumber: "1234567890123456",
-      driverId: "456",
     });
 
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.driverId).toBe(456);
+      expect("employeeId" in result.data).toBe(false);
     }
-  });
-
-  it("should allow null driverId", () => {
-    const result = transportCardSchema.safeParse({
-      cardNumber: "1234567890123456",
-      driverId: null,
-    });
-
-    expect(result.success).toBe(true);
   });
 });

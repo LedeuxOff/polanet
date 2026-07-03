@@ -30,6 +30,14 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Неверный email или пароль" });
     }
 
+    // Загружаем информацию о роли пользователя
+    const userRole = db.select().from(roles).where(eq(roles.id, user.roleId!)).get();
+
+    // Проверяем, есть ли у пользователя доступ к административной панели
+    if (userRole?.code === "DRIVER") {
+      return res.status(403).json({ error: "У вас нет доступа в административную панель" });
+    }
+
     const token = generateToken({
       id: user.id,
       email: user.email,
@@ -45,6 +53,7 @@ router.post("/login", async (req, res) => {
         firstName: user.firstName,
         middleName: user.middleName,
         roleId: user.roleId,
+        roleCode: userRole?.code,
       },
     });
   } catch (error) {

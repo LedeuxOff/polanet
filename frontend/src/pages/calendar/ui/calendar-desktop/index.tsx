@@ -467,7 +467,6 @@ export const CalendarDesktop = () => {
         editingDelivery={editingDelivery}
         handleSaveComplete={handleSaveComplete}
         handleCancelComplete={handleCancelComplete}
-        drivers={drivers}
         users={users}
         isChangingRecipient={isChangingRecipient}
       />
