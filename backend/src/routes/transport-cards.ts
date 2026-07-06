@@ -1,11 +1,6 @@
 import { Router } from "express";
 import { db } from "../db/index.js";
-import {
-  transportCards,
-  transportCardExpenses,
-  transportCardHistory,
-  users,
-} from "../db/schema.js";
+import { transportCards, expenses, transportCardHistory, users } from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { requirePermission } from "../middleware/permissions.js";
 import { eq, and, desc, like, count } from "drizzle-orm";
@@ -62,26 +57,26 @@ router.get(
         .limit(limit)
         .offset(offset);
 
-      // Для каждой карты получаем расходы и общую сумму
+      // Для каждой карты получаем расходы и общую сумму из таблицы expenses
       const cardsWithExpenses = await Promise.all(
         cards.map(async (card) => {
-          const expenses = await db
+          const cardExpenses = await db
             .select({
-              id: transportCardExpenses.id,
-              cardId: transportCardExpenses.cardId,
-              amount: transportCardExpenses.amount,
-              paymentDate: transportCardExpenses.paymentDate,
-              createdAt: transportCardExpenses.createdAt,
+              id: expenses.id,
+              cardId: expenses.transportCardId,
+              amount: expenses.amount,
+              paymentDate: expenses.dateTime,
+              createdAt: expenses.createdAt,
             })
-            .from(transportCardExpenses)
-            .where(eq(transportCardExpenses.cardId, card.id))
-            .orderBy(desc(transportCardExpenses.createdAt));
+            .from(expenses)
+            .where(eq(expenses.transportCardId, card.id))
+            .orderBy(desc(expenses.createdAt));
 
-          const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+          const totalExpenses = cardExpenses.reduce((sum, expense) => sum + expense.amount, 0);
 
           return {
             ...card,
-            expenses,
+            expenses: cardExpenses,
             totalExpenses,
           };
         }),
@@ -127,20 +122,20 @@ router.get(
         return res.status(404).json({ error: "Транспортная карта не найдена" });
       }
 
-      // Получаем расходы
-      const expenses = await db
+      // Получаем расходы из единой таблицы expenses
+      const cardExpenses = await db
         .select({
-          id: transportCardExpenses.id,
-          cardId: transportCardExpenses.cardId,
-          amount: transportCardExpenses.amount,
-          paymentDate: transportCardExpenses.paymentDate,
-          createdAt: transportCardExpenses.createdAt,
+          id: expenses.id,
+          cardId: expenses.transportCardId,
+          amount: expenses.amount,
+          paymentDate: expenses.dateTime,
+          createdAt: expenses.createdAt,
         })
-        .from(transportCardExpenses)
-        .where(eq(transportCardExpenses.cardId, Number(id)))
-        .orderBy(desc(transportCardExpenses.createdAt));
+        .from(expenses)
+        .where(eq(expenses.transportCardId, Number(id)))
+        .orderBy(desc(expenses.createdAt));
 
-      const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+      const totalExpenses = cardExpenses.reduce((sum, expense) => sum + expense.amount, 0);
 
       // Получаем историю изменений
       const history = await db
@@ -164,7 +159,7 @@ router.get(
 
       res.json({
         ...card[0],
-        expenses,
+        expenses: cardExpenses,
         totalExpenses,
         history,
       });
@@ -301,7 +296,7 @@ router.delete(
   },
 );
 
-// Добавление расхода на карту
+// Добавление расхода на карту (через единую таблицу expenses)
 router.post(
   "/:cardId/expenses",
   authenticate,
@@ -309,7 +304,7 @@ router.post(
   async (req: AuthRequest, res) => {
     try {
       const { cardId } = req.params;
-      const { amount, paymentDate } = req.body;
+      const { amount, paymentDate, paymentType = "cash" } = req.body;
 
       if (!amount || !paymentDate) {
         return res.status(400).json({ error: "Сумма и дата обязательны" });
@@ -327,12 +322,17 @@ router.post(
       }
 
       const [newExpense] = await db
-        .insert(transportCardExpenses)
+        .insert(expenses)
         .values({
-          cardId: Number(cardId),
+          expenseType: "fuel",
+          paymentType,
+          transportCardId: Number(cardId),
+          driverId: null,
+          dateTime: paymentDate,
           amount,
-          paymentDate,
+          comment: null,
           createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         })
         .returning();
 
@@ -354,7 +354,7 @@ router.post(
   },
 );
 
-// Удаление расхода
+// Удаление расхода (через единую таблицу expenses)
 router.delete(
   "/:cardId/expenses/:expenseId",
   authenticate,
@@ -363,28 +363,30 @@ router.delete(
     try {
       const { expenseId } = req.params;
 
-      // Получаем расход перед удалением
+      // Получаем расход перед удалением из таблицы expenses
       const [deletedExpense] = await db
         .select()
-        .from(transportCardExpenses)
-        .where(eq(transportCardExpenses.id, Number(expenseId)))
+        .from(expenses)
+        .where(eq(expenses.id, Number(expenseId)))
         .limit(1);
 
       if (!deletedExpense) {
         return res.status(404).json({ error: "Расход не найден" });
       }
 
-      await db.delete(transportCardExpenses).where(eq(transportCardExpenses.id, Number(expenseId)));
+      await db.delete(expenses).where(eq(expenses.id, Number(expenseId)));
 
       // Запись в историю
-      await db.insert(transportCardHistory).values({
-        cardId: deletedExpense.cardId,
-        userId: req.userId!,
-        action: "expense_removed",
-        fieldName: "expense",
-        oldValue: `${deletedExpense.amount} руб. | ${deletedExpense.paymentDate}`,
-        createdAt: new Date().toISOString(),
-      });
+      if (deletedExpense.transportCardId) {
+        await db.insert(transportCardHistory).values({
+          cardId: deletedExpense.transportCardId,
+          userId: req.userId!,
+          action: "expense_removed",
+          fieldName: "expense",
+          oldValue: `${deletedExpense.amount} руб. | ${deletedExpense.dateTime}`,
+          createdAt: new Date().toISOString(),
+        });
+      }
 
       res.json({ message: "Расход успешно удалён" });
     } catch (error) {

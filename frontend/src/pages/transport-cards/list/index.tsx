@@ -1,23 +1,35 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useTransportCardsListPage } from "./hooks";
 import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ChevronDown, ChevronUp, HomeIcon, MenuIcon, SearchIcon } from "lucide-react";
 import { PermissionGuard } from "@/lib/components/permission-guard";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
-import { useIsMobile } from "@/hooks";
-import { useTabbar } from "@/lib/contexts/tabbar-context";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { DataTableSearchFilter } from "@/components/data-table/data-table-search-filter";
+import { BottomBar } from "@/components/bottom-bar";
+
+const getStatusBadge = (status: string) => {
+  if (status === "active") {
+    return (
+      <Badge className="bg-green-200 text-green-700 border border-green-300 dark:bg-green-200 dark:text-green-700">
+        Активна
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="secondary" className="bg-red-200 text-red-700 border border-red-300">
+      Неактивна
+    </Badge>
+  );
+};
 
 export const TransportCardsPage = () => {
-  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
-
   const navigate = useNavigate();
+  const { hasPermission } = usePermissions();
+  const { showToast } = useToast();
+
   const {
     cards,
     isLoading,
@@ -30,21 +42,6 @@ export const TransportCardsPage = () => {
     handleLimitChange,
     handleSearchChange,
   } = useTransportCardsListPage();
-  const { hasPermission } = usePermissions();
-  const { showToast } = useToast();
-  const isMobile = useIsMobile();
-  const { setOpen } = useTabbar();
-
-  const getStatusBadge = (status: string) => {
-    if (status === "active") {
-      return <Badge className="bg-green-600">Активна</Badge>;
-    }
-    return (
-      <Badge variant="outline" className="text-muted-foreground">
-        Неактивна
-      </Badge>
-    );
-  };
 
   const columns: ColumnDef<(typeof cards)[0]>[] = [
     {
@@ -67,23 +64,14 @@ export const TransportCardsPage = () => {
   return (
     <PermissionGuard permission="transport-cards:list">
       <div className="flex flex-col gap-4">
-        <Card className="rounded-2xl shadow-xl">
+        <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
           <CardHeader>
             <CardTitle>Транспортные карты</CardTitle>
           </CardHeader>
         </Card>
 
         {/* Search */}
-        <div className="relative flex-1">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Поиск по номеру карты"
-            value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className="pl-10 rounded-xl"
-          />
-        </div>
+        <DataTableSearchFilter search={search} handleSearchChange={handleSearchChange} />
 
         {isLoading ? (
           <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
@@ -103,57 +91,15 @@ export const TransportCardsPage = () => {
           />
         )}
 
-        <div
-          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[58px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[58px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
-        >
-          <div
-            onClick={() => setHideBottomTabbar(false)}
-            className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
-          >
-            <ChevronUp className="text-white w-5" />
-          </div>
-
-          <Link to="/">
-            <Button
-              type="button"
-              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-            >
-              <HomeIcon className="w-4 h-4" />
-            </Button>
-          </Link>
-
-          {isMobile && (
-            <Button
-              type="button"
-              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-              onClick={() => setOpen(true)}
-            >
-              <MenuIcon className="w-4 h-4" />
-            </Button>
-          )}
-
-          <Button
-            type="button"
-            className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600"
-            onClick={() => {
-              if (!hasPermission("transport-cards:create")) {
-                showToast("У вас нет прав на создание карты", "error");
-                return;
-              }
-              navigate({ to: "/transport-cards/new" });
-            }}
-          >
-            Создать
-          </Button>
-
-          <Button
-            onClick={() => setHideBottomTabbar(true)}
-            type="button"
-            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-          >
-            <ChevronDown className="w-4 h-4" />
-          </Button>
-        </div>
+        <BottomBar
+          onCreate={() => {
+            if (!hasPermission("transport-cards:create")) {
+              showToast("У вас нет прав на создание карты", "error");
+              return;
+            }
+            navigate({ to: "/transport-cards/new" });
+          }}
+        />
       </div>
     </PermissionGuard>
   );

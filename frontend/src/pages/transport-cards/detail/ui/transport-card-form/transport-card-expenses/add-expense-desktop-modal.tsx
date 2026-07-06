@@ -45,7 +45,7 @@ export const AddExpenseDesktopModal = ({
 }: Props) => {
   return (
     <Dialog open={showExpenseDialog} onOpenChange={setShowExpenseDialog}>
-      <DialogContent>
+      <DialogContent className="dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
         <DialogHeader>
           <DialogTitle>Добавить расход</DialogTitle>
         </DialogHeader>
@@ -57,10 +57,10 @@ export const AddExpenseDesktopModal = ({
               value={expensePaymentType}
               onValueChange={(value: ExpensePaymentType) => setExpensePaymentType(value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                 <SelectValue placeholder="Выберите тип оплаты" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                 <SelectItem value="cash">Наличные</SelectItem>
                 <SelectItem value="bank_transfer">Безналичные</SelectItem>
               </SelectContent>
@@ -71,6 +71,7 @@ export const AddExpenseDesktopModal = ({
           <div className="space-y-2">
             <Label htmlFor="expenseAmount">Сумма расхода (₽)</Label>
             <Input
+              className="dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               id="expenseAmount"
               type="number"
               value={expenseAmount}
@@ -83,6 +84,7 @@ export const AddExpenseDesktopModal = ({
           <div className="space-y-2">
             <Label htmlFor="expenseDateTime">Дата и время</Label>
             <Input
+              className="dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               id="expenseDateTime"
               type="datetime-local"
               value={expenseDateTime}
@@ -91,10 +93,18 @@ export const AddExpenseDesktopModal = ({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setShowExpenseDialog(false)}>
+          <Button
+            variant="outline"
+            onClick={() => setShowExpenseDialog(false)}
+            className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+          >
             Отмена
           </Button>
-          <Button onClick={handleAddExpense} disabled={isAddingExpense || !expenseAmount}>
+          <Button
+            className="rounded-2xl dark:bg-blue-600/40 dark:hover:bg-blue-600/30 dark:text-white"
+            onClick={handleAddExpense}
+            disabled={isAddingExpense || !expenseAmount}
+          >
             {isAddingExpense ? "Добавление..." : "Добавить"}
           </Button>
         </DialogFooter>

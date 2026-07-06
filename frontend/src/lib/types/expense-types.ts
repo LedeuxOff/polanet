@@ -21,7 +21,7 @@ export interface Expense {
   paymentType: ExpensePaymentType;
   transportCardId: number | null;
   driverId: number | null;
-  dateTime: string;
+  paymentDate: string;
   amount: number;
   comment: string | null;
   createdAt: string;
