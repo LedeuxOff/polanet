@@ -70,18 +70,18 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="w-full">
-      <Card className="p-0 rounded-2xl shadow-xl overflow-hidden">
+      <Card className="p-0 rounded-2xl shadow-xl overflow-hidden dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
         <CardContent className="p-0">
           <div className="rounded-md w-full">
             <div className="w-full overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="bg-muted">
+                <thead className="dark:bg-zinc-200/10 dark:backdrop-blur-xl">
                   {table.getHeaderGroups().map((headerGroup) => (
-                    <tr key={headerGroup.id} className="border-b">
+                    <tr key={headerGroup.id} className="border-b dark:border-white/20">
                       {headerGroup.headers.map((header) => (
                         <th
                           key={header.id}
-                          className="h-10 px-4 text-left align-middle font-medium text-muted-foreground whitespace-nowrap min-w-[100px] text-sm border-r last:border-r-0"
+                          className="h-10 px-4 text-left align-middle font-medium text-muted-foreground dark:text-white whitespace-nowrap min-w-[100px] text-sm border-r dark:border-white/20 last:border-r-0"
                         >
                           {header.isPlaceholder
                             ? null
@@ -96,13 +96,13 @@ export function DataTable<TData, TValue>({
                     table.getRowModel().rows.map((row) => (
                       <tr
                         key={row.id}
-                        className="border-b transition-colors hover:bg-muted/50 cursor-pointer"
+                        className="border-b dark:border-white/20 transition-colors hover:bg-muted/50 dark:hover:bg-white/20 cursor-pointer"
                         onClick={() => onRowClick?.(row.original)}
                       >
                         {row.getVisibleCells().map((cell) => (
                           <td
                             key={cell.id}
-                            className="p-3 align-middle whitespace-nowrap text-sm border-r last:border-r-0"
+                            className="p-3 align-middle whitespace-nowrap text-sm border-r dark:border-white/20 last:border-r-0"
                           >
                             {flexRender(cell.column.columnDef.cell, cell.getContext())}
                           </td>
@@ -117,8 +117,8 @@ export function DataTable<TData, TValue>({
                     </tr>
                   )}
                   {hasServerPagination && !!totalRecords && totalRecords > 0 && (
-                    <tr className="transition-colors hover:bg-muted/50 cursor-pointer">
-                      <td className="p-3 align-middle whitespace-nowrap text-sm border-r last:border-r-0 font-medium">
+                    <tr className="transition-colors hover:bg-muted/50 dark:hover:bg-white/20 cursor-pointer">
+                      <td className="p-3 align-middle whitespace-nowrap text-sm border-r dark:border-white/20 last:border-r-0 font-medium">
                         Общее кол-во записей:
                       </td>
                       <td className="p-3 align-middle whitespace-nowrap text-sm border-r last:border-r-0 font-medium">
@@ -135,21 +135,21 @@ export function DataTable<TData, TValue>({
 
       {/* Пагинация */}
       {hasServerPagination && (
-        <Card className="rounded-2xl shadow-xl my-4">
+        <Card className="rounded-2xl shadow-xl my-4 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
           <CardContent className="py-2 px-4">
             <div className="flex flex-col-reverse sm:flex-row gap-3 justify-between">
               {onLimitChange && (
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground dark:text-zinc-100">
                     <span>Кол-во записей:</span>
                     <Select
                       value={String(limit)}
                       onValueChange={(value) => onLimitChange(Number(value))}
                     >
-                      <SelectTrigger className="w-auto pl-4 gap-2 rounded-2xl">
+                      <SelectTrigger className="w-auto pl-4 gap-2 rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                         <SelectValue placeholder="Выбрать" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-2xl shadow-xl">
+                      <SelectContent className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                         {pageOptions.map((option) => (
                           <SelectItem key={option} value={String(option)}>
                             {option}
@@ -162,7 +162,7 @@ export function DataTable<TData, TValue>({
               )}
 
               <div className="flex items-center justify-between sm:justify-center gap-2">
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-muted-foreground dark:text-zinc-100">
                   Страница {currentPage} из {totalPages || 1}
                 </span>
 
@@ -174,7 +174,7 @@ export function DataTable<TData, TValue>({
                     disabled={isFirstPage}
                     aria-label="Первая страница"
                     title="Первая страница"
-                    className="rounded-full"
+                    className="rounded-full dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                   >
                     <ChevronsLeftIcon className="h-4 w-4" />
                   </Button>
@@ -186,7 +186,7 @@ export function DataTable<TData, TValue>({
                     disabled={isFirstPage}
                     aria-label="Предыдущая страница"
                     title="Предыдущая страница"
-                    className="rounded-full"
+                    className="rounded-full dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                   >
                     <ChevronLeftIcon className="h-4 w-4" />
                   </Button>
@@ -198,7 +198,7 @@ export function DataTable<TData, TValue>({
                     disabled={isLastPage}
                     aria-label="Следующая страница"
                     title="Следующая страница"
-                    className="rounded-full"
+                    className="rounded-full dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                   >
                     <ChevronRightIcon className="h-4 w-4" />
                   </Button>
@@ -210,7 +210,7 @@ export function DataTable<TData, TValue>({
                     disabled={isLastPage}
                     aria-label="Последняя страница"
                     title="Последняя страница"
-                    className="rounded-full"
+                    className="rounded-full dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                   >
                     <ChevronsRightIcon className="h-4 w-4" />
                   </Button>

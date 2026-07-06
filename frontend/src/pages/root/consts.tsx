@@ -96,7 +96,7 @@ export const menuItems: MenuItem[] = [
     ],
   },
   {
-    title: "Системные настройки",
+    title: "Система",
     id: "4",
     icon: SettingsIcon,
     links: [

@@ -1,35 +1,24 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { DataTable } from "@/components/ui/table";
 import { User } from "@/lib/types";
 import { formatPhoneDisplay } from "@/lib/utils/phone";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { ColumnDef } from "@tanstack/react-table";
 import { useUsersList } from "./hooks";
-import {
-  HomeIcon,
-  MenuIcon,
-  SearchIcon,
-  ChevronDownIcon,
-  ChevronUp,
-  ChevronDown,
-  Settings,
-} from "lucide-react";
 import { PermissionGuard } from "@/lib/components/permission-guard";
+import { useState } from "react";
+import { DataTableColumnSetting } from "@/components/data-table-column-setting";
+import { DataTableSearchFilter } from "@/components/data-table-search-filter";
+import { UsersPageRoleFilter } from "./ui/role-filter";
+import { BottomBar } from "@/components/bottom-bar";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
-import { useIsMobile } from "@/hooks";
-import { useTabbar } from "@/lib/contexts/tabbar-context";
-import * as Popover from "@radix-ui/react-popover";
-import { useState } from "react";
-import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
-import { Checkbox } from "@/components/ui/checkbox";
+import { UsersListPageHead } from "./ui/users-list-head";
 
 export const UsersPage = () => {
-  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
-
   const navigate = useNavigate();
+  const { hasPermission } = usePermissions();
+  const { showToast } = useToast();
+
   const {
     users,
     isLoading,
@@ -45,11 +34,7 @@ export const UsersPage = () => {
     handleSearchChange,
     handleRoleChange,
   } = useUsersList();
-  const { hasPermission } = usePermissions();
-  const { showToast } = useToast();
-  const isMobile = useIsMobile();
-  const { setOpen } = useTabbar();
-  const [showRolePopover, setShowRolePopover] = useState(false);
+
   const [showColumnSettings, setShowColumnSettings] = useState(false);
 
   // Column visibility state
@@ -116,180 +101,31 @@ export const UsersPage = () => {
     return columnVisibility[key] !== false;
   });
 
-  const getRoleFilterLabel = (): string => {
-    if (roleCode === "all") return "Все роли";
-    const role = roles.find((r) => r.id.toString() === roleCode);
-    return role?.name || "Все роли";
-  };
-
   return (
     <PermissionGuard permission="users:list">
       <div className="flex flex-col gap-4">
-        <Card className="rounded-2xl shadow-xl">
-          <CardHeader>
-            <div className="flex flex-col gap-2">
-              <CardTitle>Сотрудники</CardTitle>
-            </div>
-          </CardHeader>
-        </Card>
+        <UsersListPageHead />
 
         {/* Фильтры */}
         <div className="flex flex-col sm:flex-row gap-3">
           {/* Кнопка настроек колонок */}
-          {isMobile ? (
-            <Drawer open={showColumnSettings} onOpenChange={setShowColumnSettings}>
-              <DrawerTrigger asChild>
-                <Button variant="outline" className="rounded-xl w-10 h-10 p-0">
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </DrawerTrigger>
-              <DrawerContent>
-                <div className="px-4 py-4">
-                  <h3 className="text-lg font-semibold mb-4">Столбцы таблицы</h3>
-                  <div className="space-y-3">
-                    {columnDefinitions.map((col) => (
-                      <div key={col.key} className="flex items-center gap-3">
-                        <Checkbox
-                          id={`column-${col.key}`}
-                          checked={columnVisibility[col.key] || false}
-                          onCheckedChange={() => handleColumnToggle(col.key)}
-                        />
-                        <label
-                          htmlFor={`column-${col.key}`}
-                          className="text-sm font-medium cursor-pointer"
-                        >
-                          {col.label}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </DrawerContent>
-            </Drawer>
-          ) : (
-            <Popover.Root open={showColumnSettings} onOpenChange={setShowColumnSettings}>
-              <Popover.Trigger asChild>
-                <Button variant="outline" className="rounded-xl w-10 h-10 p-0">
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </Popover.Trigger>
-              <Popover.Portal>
-                <Popover.Content
-                  className="z-50 w-56 rounded-xl bg-white border border-gray-200 shadow-lg p-4"
-                  sideOffset={5}
-                  align="start"
-                >
-                  <h3 className="text-sm font-semibold mb-3">Столбцы таблицы</h3>
-                  <div className="space-y-2">
-                    {columnDefinitions.map((col) => (
-                      <div key={col.key} className="flex items-center gap-3">
-                        <Checkbox
-                          id={`column-${col.key}`}
-                          checked={columnVisibility[col.key] || false}
-                          onCheckedChange={() => handleColumnToggle(col.key)}
-                        />
-                        <label htmlFor={`column-${col.key}`} className="text-sm cursor-pointer">
-                          {col.label}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                  <Popover.Arrow className="fill-white" />
-                </Popover.Content>
-              </Popover.Portal>
-            </Popover.Root>
-          )}
+          <DataTableColumnSetting
+            columnDefinitions={columnDefinitions}
+            columnVisibility={columnVisibility}
+            handleColumnToggle={handleColumnToggle}
+            showColumnSettings={showColumnSettings}
+            setShowColumnSettings={setShowColumnSettings}
+          />
 
           {/* Поиск */}
-          <div className="relative flex-1">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Поиск по ФИО, email или телефону..."
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-9 rounded-xl"
-            />
-          </div>
+          <DataTableSearchFilter search={search} handleSearchChange={handleSearchChange} />
 
           {/* Фильтр по роли */}
-          <Popover.Root open={showRolePopover} onOpenChange={setShowRolePopover}>
-            <Popover.Trigger asChild>
-              <Button
-                variant="outline"
-                className="rounded-xl flex items-center gap-2 min-w-[180px]"
-              >
-                <span className="truncate">{getRoleFilterLabel()}</span>
-                <ChevronDownIcon className="h-4 w-4 ml-auto shrink-0" />
-              </Button>
-            </Popover.Trigger>
-            <Popover.Portal>
-              <Popover.Content
-                className="z-50 w-64 rounded-xl bg-white border border-gray-200 shadow-lg p-1"
-                sideOffset={5}
-                align="end"
-              >
-                <div className="flex flex-col">
-                  {/* Все роли */}
-                  <button
-                    className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
-                      roleCode === "all"
-                        ? "bg-blue-50 text-blue-600 font-medium"
-                        : "hover:bg-gray-100 text-gray-700"
-                    }`}
-                    onClick={() => {
-                      handleRoleChange("all");
-                      setShowRolePopover(false);
-                    }}
-                  >
-                    <span
-                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
-                        roleCode === "all" ? "border-blue-600 bg-blue-600" : "border-gray-300"
-                      }`}
-                    >
-                      {roleCode === "all" && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
-                    </span>
-                    Все роли
-                  </button>
-
-                  {/* Разделитель */}
-                  <div className="my-1 h-px bg-gray-100" />
-
-                  {/* Роли */}
-                  {roles
-                    .filter((role) => role.code !== "DEVELOPER")
-                    .map((role) => (
-                      <button
-                        key={role.id}
-                        className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
-                          roleCode === role.id.toString()
-                            ? "bg-blue-50 text-blue-600 font-medium"
-                            : "hover:bg-gray-100 text-gray-700"
-                        }`}
-                        onClick={() => {
-                          handleRoleChange(role.id.toString());
-                          setShowRolePopover(false);
-                        }}
-                      >
-                        <span
-                          className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
-                            roleCode === role.id.toString()
-                              ? "border-blue-600 bg-blue-600"
-                              : "border-gray-300"
-                          }`}
-                        >
-                          {roleCode === role.id.toString() && (
-                            <span className="h-1.5 w-1.5 rounded-full bg-white" />
-                          )}
-                        </span>
-                        {role.name}
-                      </button>
-                    ))}
-                </div>
-                <Popover.Arrow className="fill-white" />
-              </Popover.Content>
-            </Popover.Portal>
-          </Popover.Root>
+          <UsersPageRoleFilter
+            roleCode={roleCode}
+            roles={roles}
+            handleRoleChange={handleRoleChange}
+          />
         </div>
 
         {isLoading ? (
@@ -312,57 +148,15 @@ export const UsersPage = () => {
           />
         )}
 
-        <div
-          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-14" : "bottom-2") : hideBottomTabbar ? "-bottom-14" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
-        >
-          <div
-            onClick={() => setHideBottomTabbar(false)}
-            className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
-          >
-            <ChevronUp className="text-white w-5" />
-          </div>
-
-          <Link to="/">
-            <Button
-              type="button"
-              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-            >
-              <HomeIcon className="w-4 h-4" />
-            </Button>
-          </Link>
-
-          {isMobile && (
-            <Button
-              type="button"
-              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-              onClick={() => setOpen(true)}
-            >
-              <MenuIcon className="w-4 h-4" />
-            </Button>
-          )}
-
-          <Button
-            type="button"
-            className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600"
-            onClick={() => {
-              if (!hasPermission("users:create")) {
-                showToast("У вас нет прав на создание пользователя", "error");
-                return;
-              }
-              navigate({ to: "/users/new" });
-            }}
-          >
-            Создать
-          </Button>
-
-          <Button
-            onClick={() => setHideBottomTabbar(true)}
-            type="button"
-            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-          >
-            <ChevronDown className="w-4 h-4" />
-          </Button>
-        </div>
+        <BottomBar
+          onCreate={() => {
+            if (!hasPermission("users:create")) {
+              showToast("У вас нет прав на создание пользователя", "error");
+              return;
+            }
+            navigate({ to: "/users/new" });
+          }}
+        />
       </div>
     </PermissionGuard>
   );

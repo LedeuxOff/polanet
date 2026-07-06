@@ -24,22 +24,22 @@ function Index() {
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-12">
-      <Card className="col-span-12 rounded-2xl shadow-xl">
+      <Card className="col-span-12 rounded-2xl shadow-xl bg-white/10 backdrop-blur-xl border border-white/20">
         <CardHeader>
-          <CardTitle>Добро пожаловать</CardTitle>
+          <CardTitle className="text-slate-100">Добро пожаловать</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">
-            Рады видеть вас снова, {user?.firstName || "Гость"}!
-          </p>
+          <p className="text-slate-200">Рады видеть вас снова, {user?.firstName || "Гость"}!</p>
         </CardContent>
       </Card>
 
       <Link to="/users" className="col-span-12 lg:col-span-12">
-        <Card className="rounded-2xl shadow-xl relative overflow-hidden">
+        <Card className="rounded-2xl shadow-xl relative overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20">
           <CardHeader>
-            <CardTitle className="">Сотрудники</CardTitle>
-            <CardDescription className="">Управление сотрудниками системы</CardDescription>
+            <CardTitle className="text-slate-100">Сотрудники</CardTitle>
+            <CardDescription className="text-slate-200">
+              Управление сотрудниками системы
+            </CardDescription>
           </CardHeader>
 
           <div className="absolute top-3 right-3">
@@ -55,10 +55,10 @@ function Index() {
       </Link>
 
       <Link to="/clients" className="col-span-12 lg:col-span-5">
-        <Card className="rounded-2xl shadow-xl relative overflow-hidden">
+        <Card className="rounded-2xl shadow-xl relative overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20">
           <CardHeader>
-            <CardTitle className="">Клиенты</CardTitle>
-            <CardDescription className="">Просмотр клиентов</CardDescription>
+            <CardTitle className="text-slate-100">Клиенты</CardTitle>
+            <CardDescription className="text-slate-200">Просмотр клиентов</CardDescription>
           </CardHeader>
 
           <div className="absolute top-3 right-3">
@@ -74,10 +74,12 @@ function Index() {
       </Link>
 
       <Link to="/transport-cards" className="col-span-12 lg:col-span-7">
-        <Card className="rounded-2xl shadow-xl relative overflow-hidden">
+        <Card className="rounded-2xl shadow-xl relative overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20">
           <CardHeader>
-            <CardTitle className="">Транспортные карты</CardTitle>
-            <CardDescription className="">Управление транспортными картами</CardDescription>
+            <CardTitle className="text-slate-100">Транспортные карты</CardTitle>
+            <CardDescription className="text-slate-200">
+              Управление транспортными картами
+            </CardDescription>
           </CardHeader>
 
           <div className="absolute top-3 right-3">
@@ -93,11 +95,11 @@ function Index() {
       </Link>
 
       <Link to="/calendar" className="col-span-12">
-        <Card className="rounded-2xl shadow-xl relative overflow-hidden">
+        <Card className="rounded-2xl shadow-xl relative overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20">
           <CardHeader>
-            <CardTitle className="">Календарь доставок</CardTitle>
-            <CardDescription className="max-w-[80%]">
-              Многофункциональный календарь с возможностью просмотра предстоящик доставок, а так же
+            <CardTitle className="text-slate-100">Календарь доставок</CardTitle>
+            <CardDescription className="text-slate-200 max-w-[80%]">
+              Многофункциональный календарь с возможностью просмотра предстоящих доставок, а так же
               их создание и редактирование
             </CardDescription>
           </CardHeader>
@@ -116,11 +118,11 @@ function Index() {
 
       {isMobile && (
         <div
-          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 shadow-xl`}
         >
           <Button
             type="button"
-            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900 flex gap-2"
+            className="px-3 py-4 rounded-2xl flex gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20"
             onClick={() => setOpen(true)}
           >
             <MenuIcon className="w-4 h-4" /> Меню

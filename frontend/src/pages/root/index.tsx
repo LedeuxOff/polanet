@@ -41,8 +41,8 @@ export const RootLayout = () => {
   }
 
   return (
-    <div className="bg-[url(/layout/bg.jpeg)] bg-cover">
-      <div className="bg-black/40">
+    <div className="bg-zinc-100 dark:bg-[url(/layout/bg.jpeg)] bg-cover">
+      <div className="dark:bg-black/40">
         {!isMobile && <Sidebar />}
 
         <main

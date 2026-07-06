@@ -4,6 +4,7 @@ import { routeTree } from "./routeTree.gen";
 import { AuthProvider } from "./lib/contexts/auth-context";
 import { PermissionProvider } from "./lib/contexts/permission-context";
 import { ToastProvider } from "./lib/contexts/toast-context";
+import { ThemeProvider } from "./lib/contexts/theme-context";
 import "./styles/globals.css";
 import { TabbarProvider } from "./lib/contexts/tabbar-context";
 
@@ -21,9 +22,11 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <AuthProvider>
     <PermissionProvider>
       <ToastProvider>
-        <TabbarProvider>
-          <RouterProvider router={router} />
-        </TabbarProvider>
+        <ThemeProvider>
+          <TabbarProvider>
+            <RouterProvider router={router} />
+          </TabbarProvider>
+        </ThemeProvider>
       </ToastProvider>
     </PermissionProvider>
   </AuthProvider>,
