@@ -3,8 +3,8 @@ import { useNewUserPage } from "./hooks";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
 import { BottomBar } from "@/components/bottom-bar";
-import { PermissionsLoader } from "@/components/loaders/permissions-loader";
-import { NoAccessScreen } from "@/components/no-access";
+import { PermissionsLoader } from "@/components/screens/loaders/permissions-loader";
+import { NoAccessScreen } from "@/components/screens/no-access";
 import { NewUserPageHead } from "./ui/new-user-page-head";
 import { NewUserPageForm } from "./ui/new-user-page-form";
 
@@ -46,7 +46,7 @@ export const NewUserPage = () => {
 
         <BottomBar
           saveLabel={isSubmitting ? "Сохранение..." : "Сохранить"}
-          saveDisabled={isSubmitting}
+          isSumitting={isSubmitting}
           onBack={() => navigate({ to: "/users" })}
         />
       </form>

@@ -1,10 +1,10 @@
 import { Settings } from "lucide-react";
-import { Button } from "../ui/button";
-import { Drawer, DrawerContent, DrawerTrigger } from "../ui/drawer";
-import { Checkbox } from "../ui/checkbox";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { Dispatch, SetStateAction } from "react";
+import { useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface DataTableColumnSettingProps {
   columnDefinitions: {
@@ -13,17 +13,15 @@ interface DataTableColumnSettingProps {
   }[];
   columnVisibility: Record<string, boolean>;
   handleColumnToggle: (key: string) => void;
-  showColumnSettings: boolean;
-  setShowColumnSettings: Dispatch<SetStateAction<boolean>>;
 }
 
 export const DataTableColumnSetting = ({
   columnDefinitions,
   columnVisibility,
   handleColumnToggle,
-  showColumnSettings,
-  setShowColumnSettings,
 }: DataTableColumnSettingProps) => {
+  const [showColumnSettings, setShowColumnSettings] = useState(false);
+
   const isMobile = useIsMobile();
 
   if (isMobile) {

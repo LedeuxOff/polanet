@@ -3,7 +3,7 @@ import { TrashIcon } from "lucide-react";
 
 interface Props {
   disabled?: boolean;
-  handleDelete: () => Promise<void>;
+  handleDelete: (() => Promise<void>) | (() => void);
 }
 
 export const BottomBarDeleteButton = ({ disabled, handleDelete }: Props) => {

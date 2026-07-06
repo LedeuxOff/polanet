@@ -4,13 +4,13 @@ import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useState } from "react";
-import { PageError } from "../../../components/error";
+import { PageError } from "../../../components/screens/error";
 import { UserPageHead } from "./ui/user-page-head";
 import { UserPageTabs } from "./ui/user-page-tabs";
 import { UserPageDetailsTab } from "./ui/user-page-details-tab";
 import { UserPageTransportCardTab } from "./ui/user-page-card-tab";
-import { PermissionsLoader } from "@/components/loaders/permissions-loader";
-import { NoAccessScreen } from "@/components/no-access";
+import { PermissionsLoader } from "@/components/screens/loaders/permissions-loader";
+import { NoAccessScreen } from "@/components/screens/no-access";
 import { BottomBar } from "@/components/bottom-bar";
 
 export const EditUserPage = () => {
@@ -114,7 +114,7 @@ export const EditUserPage = () => {
         </div>
 
         <BottomBar
-          saveDisabled={isSubmitting}
+          isSumitting={isSubmitting}
           onBack={() => navigate({ to: "/users" })}
           // Удаление
           showDeleteButton={user?.roleCode === "DEVELOPER" && !isOwnUser}

@@ -6,8 +6,8 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useUsersList } from "./hooks";
 import { PermissionGuard } from "@/lib/components/permission-guard";
 import { useState } from "react";
-import { DataTableColumnSetting } from "@/components/data-table-column-setting";
-import { DataTableSearchFilter } from "@/components/data-table-search-filter";
+import { DataTableColumnSetting } from "@/components/data-table/data-table-column-setting";
+import { DataTableSearchFilter } from "@/components/data-table/data-table-search-filter";
 import { UsersPageRoleFilter } from "./ui/role-filter";
 import { BottomBar } from "@/components/bottom-bar";
 import { usePermissions } from "@/lib/contexts/permission-context";
@@ -34,8 +34,6 @@ export const UsersPage = () => {
     handleSearchChange,
     handleRoleChange,
   } = useUsersList();
-
-  const [showColumnSettings, setShowColumnSettings] = useState(false);
 
   // Column visibility state
   const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>({
@@ -113,12 +111,14 @@ export const UsersPage = () => {
             columnDefinitions={columnDefinitions}
             columnVisibility={columnVisibility}
             handleColumnToggle={handleColumnToggle}
-            showColumnSettings={showColumnSettings}
-            setShowColumnSettings={setShowColumnSettings}
           />
 
           {/* Поиск */}
-          <DataTableSearchFilter search={search} handleSearchChange={handleSearchChange} />
+          <DataTableSearchFilter
+            search={search}
+            handleSearchChange={handleSearchChange}
+            placeholder="Поиск по ФИО, email или телефону..."
+          />
 
           {/* Фильтр по роли */}
           <UsersPageRoleFilter

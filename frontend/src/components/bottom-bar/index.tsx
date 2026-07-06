@@ -10,14 +10,14 @@ import { BottomBarSendPasswordButton } from "./bottom-bar-send-password-button";
 import { BottomBarCreateButton } from "./bottom-bar-create-button";
 
 interface Props {
-  saveDisabled?: boolean;
+  isSumitting?: boolean;
   onBack?: () => void;
   saveLabel?: string;
   // Создание
   onCreate?: () => void;
   // Удаление
   showDeleteButton?: boolean;
-  handleDelete?: () => Promise<void>;
+  handleDelete?: (() => Promise<void>) | (() => void);
   isDeleting?: boolean;
   // Отправка пароля
   handleSendPassword?: () => Promise<void>;
@@ -26,7 +26,7 @@ interface Props {
 }
 
 export const BottomBar = ({
-  saveDisabled,
+  isSumitting,
   onBack,
   saveLabel,
   // Создание
@@ -57,14 +57,14 @@ export const BottomBar = ({
 
       <div className="flex flex-col gap-4">
         <div className="flex gap-4">
-          {onBack && <BottomBarBackButton disabled={saveDisabled} onClick={onBack} />}
+          {onBack && <BottomBarBackButton disabled={isSumitting} onClick={onBack} />}
 
           {isMobile && <BottomBarMobileMenu />}
 
           {onCreate ? (
             <BottomBarCreateButton onCreate={onCreate} />
           ) : (
-            <BottomBarSaveButton saveLabel={saveLabel} disabled={saveDisabled} />
+            <BottomBarSaveButton saveLabel={saveLabel} disabled={isSumitting} />
           )}
 
           {showDeleteButton && handleDelete && (

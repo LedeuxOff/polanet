@@ -1,5 +1,5 @@
+import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "@tanstack/react-router";
-import { Card, CardContent } from "../ui/card";
 import { BanIcon } from "lucide-react";
 
 export const NoAccessScreen = () => {
