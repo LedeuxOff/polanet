@@ -1,31 +1,18 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useClientsListPage } from "./hooks";
 import { ColumnDef } from "@tanstack/react-table";
 import { Client } from "@/lib/types";
 import { formatPhoneDisplay } from "@/lib/utils/phone";
-import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
-import {
-  HomeIcon,
-  MenuIcon,
-  SearchIcon,
-  ChevronDownIcon,
-  ChevronUp,
-  ChevronDown,
-} from "lucide-react";
 import { PermissionGuard } from "@/lib/components/permission-guard";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
-import { useIsMobile } from "@/hooks";
-import { useTabbar } from "@/lib/contexts/tabbar-context";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useState } from "react";
+import { DataTableSearchFilter } from "@/components/data-table/data-table-search-filter";
+import { ClientsTypeFilter } from "./ui/clients-type-filter";
+import { BottomBar } from "@/components/bottom-bar";
 
 export const ClientsPage = () => {
-  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
-
   const navigate = useNavigate();
   const {
     clients,
@@ -44,9 +31,6 @@ export const ClientsPage = () => {
   } = useClientsListPage();
   const { hasPermission } = usePermissions();
   const { showToast } = useToast();
-  const isMobile = useIsMobile();
-  const { setOpen } = useTabbar();
-  const [showTypePopover, setShowTypePopover] = useState(false);
 
   const columns: ColumnDef<Client>[] = [
     {
@@ -85,7 +69,7 @@ export const ClientsPage = () => {
   return (
     <PermissionGuard permission="clients:list">
       <div className="flex flex-col gap-4">
-        <Card className="rounded-2xl shadow-xl">
+        <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
           <CardHeader>
             <CardTitle>Клиенты</CardTitle>
           </CardHeader>
@@ -93,48 +77,13 @@ export const ClientsPage = () => {
 
         {/* Search and filter */}
         <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Поиск по наименованию, телефону или email"
-              value={search}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-10 rounded-xl"
-            />
-          </div>
-          <Popover open={showTypePopover} onOpenChange={setShowTypePopover}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="rounded-xl flex items-center gap-2 min-w-[180px]"
-              >
-                {getTypeFilterLabel()}
-                <ChevronDownIcon className="h-4 w-4 ml-auto" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[180px] p-2" align="end">
-              <div className="flex flex-col gap-1">
-                {[
-                  { value: "all", label: "Все" },
-                  { value: "individual", label: "Физ. лицо" },
-                  { value: "legal", label: "Юр. лицо" },
-                ].map((option) => (
-                  <Button
-                    key={option.value}
-                    variant={clientType === option.value ? "secondary" : "ghost"}
-                    className={`justify-start ${clientType === option.value ? "font-medium" : ""}`}
-                    onClick={() => {
-                      handleTypeChange(option.value);
-                      setShowTypePopover(false);
-                    }}
-                  >
-                    {option.label}
-                  </Button>
-                ))}
-              </div>
-            </PopoverContent>
-          </Popover>
+          <DataTableSearchFilter search={search} handleSearchChange={handleSearchChange} />
+
+          <ClientsTypeFilter
+            clientType={clientType}
+            handleTypeChange={handleTypeChange}
+            getTypeFilterLabel={getTypeFilterLabel}
+          />
         </div>
 
         {isLoading ? (
@@ -152,57 +101,15 @@ export const ClientsPage = () => {
           />
         )}
 
-        <div
-          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[58px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[58px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
-        >
-          <div
-            onClick={() => setHideBottomTabbar(false)}
-            className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
-          >
-            <ChevronUp className="text-white w-5" />
-          </div>
-
-          <Link to="/">
-            <Button
-              type="button"
-              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-            >
-              <HomeIcon className="w-4 h-4" />
-            </Button>
-          </Link>
-
-          {isMobile && (
-            <Button
-              type="button"
-              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
-              onClick={() => setOpen(true)}
-            >
-              <MenuIcon className="w-4 h-4" />
-            </Button>
-          )}
-
-          <Button
-            type="button"
-            className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600"
-            onClick={() => {
-              if (!hasPermission("clients:create")) {
-                showToast("У вас нет прав на создание клиента", "error");
-                return;
-              }
-              navigate({ to: "/clients/new" });
-            }}
-          >
-            Создать
-          </Button>
-
-          <Button
-            onClick={() => setHideBottomTabbar(true)}
-            type="button"
-            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-          >
-            <ChevronDown className="w-4 h-4" />
-          </Button>
-        </div>
+        <BottomBar
+          onCreate={() => {
+            if (!hasPermission("clients:create")) {
+              showToast("У вас нет прав на создание клиента", "error");
+              return;
+            }
+            navigate({ to: "/clients/new" });
+          }}
+        />
       </div>
     </PermissionGuard>
   );

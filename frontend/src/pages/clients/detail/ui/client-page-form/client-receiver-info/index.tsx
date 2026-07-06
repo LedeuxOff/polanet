@@ -15,7 +15,7 @@ export const ClientReceiverInfo = ({ form, isSubmitting }: Props) => {
   const isMobile = useIsMobile();
 
   return (
-    <Card className="rounded-2xl shadow-xl">
+    <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
       <CardHeader>
         <CardTitle>Приемщик</CardTitle>
       </CardHeader>
@@ -25,7 +25,7 @@ export const ClientReceiverInfo = ({ form, isSubmitting }: Props) => {
             <div className="space-y-2">
               <Label htmlFor="receiverLastName">Фамилия</Label>
               <Input
-                className="rounded-2xl"
+                className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                 id="receiverLastName"
                 disabled={isSubmitting}
                 {...form.register("receiverLastName")}
@@ -35,7 +35,7 @@ export const ClientReceiverInfo = ({ form, isSubmitting }: Props) => {
             <div className="space-y-2">
               <Label htmlFor="receiverFirstName">Имя</Label>
               <Input
-                className="rounded-2xl"
+                className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                 id="receiverFirstName"
                 disabled={isSubmitting}
                 {...form.register("receiverFirstName")}
@@ -45,7 +45,7 @@ export const ClientReceiverInfo = ({ form, isSubmitting }: Props) => {
             <div className="space-y-2">
               <Label htmlFor="receiverMiddleName">Отчество</Label>
               <Input
-                className="rounded-2xl"
+                className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                 id="receiverMiddleName"
                 disabled={isSubmitting}
                 {...form.register("receiverMiddleName")}
@@ -56,7 +56,7 @@ export const ClientReceiverInfo = ({ form, isSubmitting }: Props) => {
           <div className="space-y-2">
             <Label htmlFor="receiverPhone">Телефон</Label>
             <InputPhone
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               id="receiverPhone"
               disabled={isSubmitting}
               value={form.watch("receiverPhone")}

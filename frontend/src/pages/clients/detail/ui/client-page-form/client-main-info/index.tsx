@@ -25,7 +25,7 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
   const isMobile = useIsMobile();
 
   return (
-    <Card className="rounded-2xl shadow-xl">
+    <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
       <CardHeader>
         <CardTitle>Основная информация</CardTitle>
       </CardHeader>
@@ -40,10 +40,13 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
               form.setValue("type", value);
             }}
           >
-            <SelectTrigger disabled={isSubmitting} className="rounded-2xl">
+            <SelectTrigger
+              disabled={isSubmitting}
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+            >
               <SelectValue placeholder="Выберите тип" />
             </SelectTrigger>
-            <SelectContent className="rounded-2xl shadow-xl">
+            <SelectContent className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
               <SelectItem value="individual">Физическое лицо</SelectItem>
               <SelectItem value="legal">Юридическое лицо</SelectItem>
             </SelectContent>
@@ -59,7 +62,7 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
               <div className="space-y-2">
                 <Label htmlFor="lastName">Фамилия</Label>
                 <Input
-                  className="rounded-2xl"
+                  className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                   id="lastName"
                   disabled={isSubmitting}
                   {...form.register("lastName")}
@@ -74,7 +77,7 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
               <div className="space-y-2">
                 <Label htmlFor="firstName">Имя</Label>
                 <Input
-                  className="rounded-2xl"
+                  className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                   id="firstName"
                   disabled={isSubmitting}
                   {...form.register("firstName")}
@@ -89,7 +92,7 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
               <div className="space-y-2">
                 <Label htmlFor="middleName">Отчество</Label>
                 <Input
-                  className="rounded-2xl"
+                  className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                   id="middleName"
                   disabled={isSubmitting}
                   {...form.register("middleName")}
@@ -101,7 +104,7 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
           <div className="space-y-2 mt-2">
             <Label htmlFor="organizationName">Название организации</Label>
             <Input
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               id="organizationName"
               disabled={isSubmitting}
               {...form.register("organizationName")}
@@ -118,7 +121,7 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
           <div className="space-y-2">
             <Label htmlFor="phone">Телефон</Label>
             <InputPhone
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               id="phone"
               disabled={isSubmitting}
               value={form.watch("phone")}
@@ -131,7 +134,7 @@ export const ClientMainInfo = ({ form, clientType, setClientType, isSubmitting }
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               id="email"
               type="email"
               disabled={isSubmitting}

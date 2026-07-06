@@ -15,7 +15,7 @@ export const ClientPayerInfo = ({ form, isSubmitting }: Props) => {
   const isMobile = useIsMobile();
 
   return (
-    <Card className="rounded-2xl shadow-xl">
+    <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
       <CardHeader>
         <CardTitle>Плательщик</CardTitle>
       </CardHeader>
@@ -25,7 +25,7 @@ export const ClientPayerInfo = ({ form, isSubmitting }: Props) => {
             <div className="space-y-2">
               <Label htmlFor="payerLastName">Фамилия</Label>
               <Input
-                className="rounded-2xl"
+                className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                 id="payerLastName"
                 disabled={isSubmitting}
                 {...form.register("payerLastName")}
@@ -35,7 +35,7 @@ export const ClientPayerInfo = ({ form, isSubmitting }: Props) => {
             <div className="space-y-2">
               <Label htmlFor="payerFirstName">Имя</Label>
               <Input
-                className="rounded-2xl"
+                className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                 id="payerFirstName"
                 disabled={isSubmitting}
                 {...form.register("payerFirstName")}
@@ -45,7 +45,7 @@ export const ClientPayerInfo = ({ form, isSubmitting }: Props) => {
             <div className="space-y-2">
               <Label htmlFor="payerMiddleName">Отчество</Label>
               <Input
-                className="rounded-2xl"
+                className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                 id="payerMiddleName"
                 disabled={isSubmitting}
                 {...form.register("payerMiddleName")}
@@ -56,7 +56,7 @@ export const ClientPayerInfo = ({ form, isSubmitting }: Props) => {
           <div className="space-y-2">
             <Label htmlFor="payerPhone">Телефон</Label>
             <InputPhone
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               id="payerPhone"
               disabled={isSubmitting}
               value={form.watch("payerPhone")}
