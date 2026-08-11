@@ -13,6 +13,7 @@ interface Props {
   isSumitting?: boolean;
   onBack?: () => void;
   saveLabel?: string;
+  hideSaveButton?: boolean;
   // Создание
   onCreate?: () => void;
   // Удаление
@@ -29,6 +30,7 @@ export const BottomBar = ({
   isSumitting,
   onBack,
   saveLabel,
+  hideSaveButton,
   // Создание
   onCreate,
   // Удаление
@@ -61,10 +63,14 @@ export const BottomBar = ({
 
           {isMobile && <BottomBarMobileMenu />}
 
-          {onCreate ? (
-            <BottomBarCreateButton onCreate={onCreate} />
-          ) : (
-            <BottomBarSaveButton saveLabel={saveLabel} disabled={isSumitting} />
+          {!hideSaveButton && (
+            <>
+              {onCreate ? (
+                <BottomBarCreateButton onCreate={onCreate} />
+              ) : (
+                <BottomBarSaveButton saveLabel={saveLabel} disabled={isSumitting} />
+              )}
+            </>
           )}
 
           {showDeleteButton && handleDelete && (

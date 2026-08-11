@@ -1,29 +1,19 @@
-import { useIsMobile } from "@/hooks";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DAYS_WEEK, HOURS, useCalendar } from "../../hooks";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  ChevronLeft,
-  ChevronRight,
-  HomeIcon,
-  PlusIcon,
-  BanIcon,
-  ChevronUp,
-  ChevronDown,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, PlusIcon, BanIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CalendarDelivery } from "@/lib/types";
 import { deliveriesApi } from "@/lib/api";
 import { DeliveryBlock } from "./delivery-block";
-import { Link } from "@tanstack/react-router";
 import { useAddDelivery } from "./use-add-delivery";
 import { AddDeliveryModal } from "./add-delivery-modal";
 import { CompleteDeliveryModal } from "./complete-delivery-modal";
+import { BottomBar } from "@/components/bottom-bar";
 
 // Desktop версия календаря
 export const CalendarDesktop = () => {
-  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [deliveryData, setDeliveryData] = useState<{
     selectedDate: Date;
@@ -39,7 +29,6 @@ export const CalendarDesktop = () => {
     draggedDeliveryRef.current = draggedDelivery;
   }, [draggedDelivery]);
 
-  const isMobile = useIsMobile();
   const {
     deliveries,
     isLoading,
@@ -233,7 +222,7 @@ export const CalendarDesktop = () => {
     <div className="flex flex-col gap-4 max-h-[100vh]">
       {/* Верхняя панель с навигацией */}
       <div className="flex-shrink-0">
-        <Card className="rounded-2xl shadow-xl">
+        <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
           <CardHeader>
             {/* Заголовок с навигацией */}
             <div className="flex items-center justify-between flex-wrap gap-2">
@@ -243,24 +232,27 @@ export const CalendarDesktop = () => {
                   variant="outline"
                   size="sm"
                   onClick={handleCurrent}
-                  className="bg-blue-500 rounded-2xl text-white shadow-none hover:bg-blue-600 hover:text-white"
+                  className="bg-blue-500 rounded-2xl text-white shadow-none hover:bg-blue-600 hover:text-white dark:bg-blue-600/60 dark:backdrop-blur-xl dark:border dark:border-white/20"
                 >
                   Сегодня
                 </Button>
                 <div className="flex items-center gap-1">
                   <Button
-                    className="rounded-2xl"
+                    className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                     variant="outline"
                     size="icon"
                     onClick={handlePrevWeek}
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <Button className="rounded-2xl" variant="outline">
+                  <Button
+                    className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                    variant="outline"
+                  >
                     {formatWeekRange}
                   </Button>
                   <Button
-                    className="rounded-2xl"
+                    className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                     variant="outline"
                     size="icon"
                     onClick={handleNextWeek}
@@ -281,10 +273,10 @@ export const CalendarDesktop = () => {
       {/* Календарь с прокруткой */}
       {!isLoading && !calendarError && (
         <div className="flex-1 flex flex-col max-h-[calc(100vh-140px)]">
-          <div className="border rounded-2xl shadow-xl overflow-hidden bg-white flex-1 flex flex-col">
+          <div className="border rounded-2xl shadow-xl overflow-hidden bg-white flex-1 flex flex-col dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
             {/* Шапка с днями недели (фиксированная) */}
-            <div className="grid grid-cols-[70px_repeat(7,1fr)] border-b bg-zinc-50 flex-shrink-0 sticky top-0 z-10">
-              <div className="py-2 text-center text-xs font-medium text-muted-foreground border-r whitespace-nowrap">
+            <div className="grid grid-cols-[70px_repeat(7,1fr)] border-b bg-zinc-50 flex-shrink-0 sticky top-0 z-10 dark:bg-white/10 dark:backdrop-blur-xl dark:border-white/20">
+              <div className="py-2 text-center text-xs font-medium text-muted-foreground border-r whitespace-nowrap dark:text-zinc-100 dark:border-white/20">
                 Время
               </div>
               {DAYS_WEEK.map((day, dayIndex) => {
@@ -307,9 +299,9 @@ export const CalendarDesktop = () => {
                   <div
                     key={day}
                     className={cn(
-                      "p-3 text-center text-sm font-medium border-r",
-                      isToday && "bg-blue-50 text-blue-600",
-                      !isToday && isWeekend && "bg-red-100",
+                      "p-3 text-center text-sm font-medium border-r dark:border-white/20",
+                      isToday && "bg-blue-50 text-blue-600 dark:bg-blue-600/40 dark:text-zinc-100",
+                      !isToday && isWeekend && "bg-red-100 dark:bg-red-600/60",
                     )}
                   >
                     <div>{day}</div>
@@ -324,10 +316,10 @@ export const CalendarDesktop = () => {
               {HOURS.map((hour) => (
                 <div
                   key={hour}
-                  className="grid grid-cols-[70px_repeat(7,1fr)] border-b hover:bg-zinc-50 transition-colors"
+                  className="grid grid-cols-[70px_repeat(7,1fr)] border-b hover:bg-zinc-50 dark:hover:bg-white/10 transition-colors dark:border-white/30"
                 >
                   {/* Ячейка времени (фиксированная колонка) */}
-                  <div className="p-2 text-center text-xs text-muted-foreground border-r bg-zinc-50 whitespace-nowrap sticky left-0 z-20">
+                  <div className="p-2 text-center text-xs text-muted-foreground border-r bg-zinc-50 whitespace-nowrap sticky dark:text-zinc-100 left-0 z-20 dark:bg-white/10 dark:backdrop-blur-xl dark:border-white/20">
                     {hour.toString().padStart(2, "0")}:00
                   </div>
                   {/* Ячейки дней */}
@@ -361,16 +353,16 @@ export const CalendarDesktop = () => {
                       <div
                         key={dayIndex}
                         className={cn(
-                          "p-1 border-r min-h-[60px] relative group",
+                          "p-1 border-r min-h-[60px] relative group dark:border-white/20",
                           isDragOver && canDrop && "bg-blue-200 transition-colors",
                           !hasDelivery &&
                             !isPast &&
                             !isDragging &&
-                            "hover:bg-blue-50 transition-colors cursor-pointer",
+                            "hover:bg-blue-50 dark:hover:bg-white/10 transition-colors cursor-pointer",
                           !hasDelivery &&
                             isPast &&
                             !isDragging &&
-                            "hover:bg-zinc-50 transition-colors",
+                            "hover:bg-zinc-50 dark:hover:bg-white/10 transition-colors",
                         )}
                         onClick={() => {
                           if (!hasDelivery && !isPast && !isDragging) {
@@ -407,9 +399,9 @@ export const CalendarDesktop = () => {
                             }}
                           >
                             {isPast ? (
-                              <BanIcon className="h-12 w-12 text-gray-400/40" />
+                              <BanIcon className="h-8 w-8 text-gray-400/40 dark:text-white/30" />
                             ) : (
-                              <PlusIcon className="h-12 w-12 text-gray-400/40" />
+                              <PlusIcon className="h-8 w-8 text-gray-400/40 dark:text-white/30" />
                             )}
                           </div>
                         )}
@@ -471,30 +463,7 @@ export const CalendarDesktop = () => {
         isChangingRecipient={isChangingRecipient}
       />
 
-      <div
-        className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[58px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[58px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
-      >
-        <div
-          onClick={() => setHideBottomTabbar(false)}
-          className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
-        >
-          <ChevronUp className="text-white w-5" />
-        </div>
-
-        <Link to="/">
-          <Button type="button" className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600">
-            <HomeIcon className="w-4 h-4" />
-          </Button>
-        </Link>
-
-        <Button
-          onClick={() => setHideBottomTabbar(true)}
-          type="button"
-          className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-        >
-          <ChevronDown className="w-4 h-4" />
-        </Button>
-      </div>
+      <BottomBar hideSaveButton />
     </div>
   );
 };

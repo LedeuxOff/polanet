@@ -26,18 +26,20 @@ function Index() {
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-12">
       <Card className="col-span-12 rounded-2xl shadow-xl bg-white/10 backdrop-blur-xl border border-white/20">
         <CardHeader>
-          <CardTitle className="text-slate-100">Добро пожаловать</CardTitle>
+          <CardTitle className="dark:text-slate-100">Добро пожаловать</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-slate-200">Рады видеть вас снова, {user?.firstName || "Гость"}!</p>
+          <p className="dark:text-slate-200">
+            Рады видеть вас снова, {user?.firstName || "Гость"}!
+          </p>
         </CardContent>
       </Card>
 
       <Link to="/users" className="col-span-12 lg:col-span-12">
         <Card className="rounded-2xl shadow-xl relative overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20">
           <CardHeader>
-            <CardTitle className="text-slate-100">Сотрудники</CardTitle>
-            <CardDescription className="text-slate-200">
+            <CardTitle className="dark:text-slate-100">Сотрудники</CardTitle>
+            <CardDescription className="dark:text-slate-200">
               Управление сотрудниками системы
             </CardDescription>
           </CardHeader>
@@ -57,8 +59,8 @@ function Index() {
       <Link to="/clients" className="col-span-12 lg:col-span-5">
         <Card className="rounded-2xl shadow-xl relative overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20">
           <CardHeader>
-            <CardTitle className="text-slate-100">Клиенты</CardTitle>
-            <CardDescription className="text-slate-200">Просмотр клиентов</CardDescription>
+            <CardTitle className="dark:text-slate-100">Клиенты</CardTitle>
+            <CardDescription className="dark:text-slate-200">Просмотр клиентов</CardDescription>
           </CardHeader>
 
           <div className="absolute top-3 right-3">
@@ -76,8 +78,8 @@ function Index() {
       <Link to="/transport-cards" className="col-span-12 lg:col-span-7">
         <Card className="rounded-2xl shadow-xl relative overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20">
           <CardHeader>
-            <CardTitle className="text-slate-100">Транспортные карты</CardTitle>
-            <CardDescription className="text-slate-200">
+            <CardTitle className="dark:text-slate-100">Транспортные карты</CardTitle>
+            <CardDescription className="dark:text-slate-200">
               Управление транспортными картами
             </CardDescription>
           </CardHeader>
@@ -97,8 +99,8 @@ function Index() {
       <Link to="/calendar" className="col-span-12">
         <Card className="rounded-2xl shadow-xl relative overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20">
           <CardHeader>
-            <CardTitle className="text-slate-100">Календарь доставок</CardTitle>
-            <CardDescription className="text-slate-200 max-w-[80%]">
+            <CardTitle className="dark:text-slate-100">Календарь доставок</CardTitle>
+            <CardDescription className="dark:text-slate-200 max-w-[80%]">
               Многофункциональный календарь с возможностью просмотра предстоящих доставок, а так же
               их создание и редактирование
             </CardDescription>
