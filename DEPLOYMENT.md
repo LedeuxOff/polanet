@@ -1,453 +1,329 @@
-# Polanet Deployment Guide
+# Инструкция по деплою Polanet
 
-This guide explains how to deploy the Polanet application to Selectel infrastructure.
+Актуальная инструкция по развёртыванию проекта на облачном сервере (Ubuntu) и последующим обновлениям.
 
-## Quick Start
+## Архитектура
 
-For a fast deployment, follow these steps:
+```
+┌──────────┐     ┌──────────────┐     ┌──────────────┐
+│  Browser  │────▶│   Nginx      │────▶│   Node.js    │
+│           │     │ (80 / 443)   │     │ (PM2 :3000)  │
+└──────────┘     └──────────────┘     └──────────────┘
+                     │                    │
+                     │              ┌──────────────┐
+                     └─────────────▶│   SQLite     │
+                                    │ (polanet.db) │
+                                    └──────────────┘
+```
 
-1. **Prepare the server**
+**Стек:**
 
-   ```bash
-   # Update system and install dependencies
-   sudo apt update && sudo apt upgrade -y
-   sudo apt install -y nodejs docker docker-compose nginx git certbot python3-certbot-nginx
-   ```
-
-2. **Clone and configure**
-
-   ```bash
-   mkdir -p /home/deploy/polanet && cd /home/deploy/polanet
-   git clone https://your-repo-url.git .
-   cp backend/.env.example backend/.env.production
-   # Edit backend/.env.production with your secrets
-   ```
-
-3. **Get Telegram Bot Token (optional)**
-   - Message @BotFather on Telegram
-   - Use `/newbot` to create a bot
-   - Save the token
-
-4. **Deploy**
-
-   ```bash
-   # Get your chat ID from @userinfobot
-   sudo certbot --nginx -d admin-polanet.ru
-   docker compose up -d
-   ```
-
-5. **Verify**
-   ```bash
-   curl http://localhost:3000/api/health
-   ```
-
-For detailed instructions, continue reading this guide.
+- Frontend: React 18 + Vite + TanStack Router (отдаётся Nginx как статика)
+- Backend: Express.js + TypeScript (управляется через PM2)
+- DB: SQLite + Drizzle ORM
+- Reverse Proxy: Nginx + Let's Encrypt SSL
 
 ---
 
-This guide explains how to deploy the Polanet application to Selectel infrastructure.
-
-## Architecture
-
-```
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   User      │────▶│   Nginx     │────▶│   Backend   │
-│             │     │  (Port 80/  │     │  (Port 3000)│
-│             │     │   443)      │     │             │
-└─────────────┘     └─────────────┘     └─────────────┘
-                                              │
-                                              ▼
-                                        ┌─────────────┐
-                                        │   SQLite    │
-                                        │  (polanet.  │
-                                        │    db)      │
-                                        └─────────────┘
-```
-
-## Prerequisites
-
-### Selectel Project Setup
-
-1. **Create a VPS in Selectel Control Panel**
-   - Recommended: 2 vCPU, 4GB RAM, 60GB SSD
-   - OS: Ubuntu 22.04 LTS or Debian 12
-   - Location: Moscow (for lowest latency)
-
-2. **Configure DNS in Selectel**
-   - Add A record: `admin-polanet.ru` → `YOUR_VPS_IP`
-   - Add A record: `www.admin-polanet.ru` → `YOUR_VPS_IP` (optional)
-
-3. **Create a user for deployment**
-   ```bash
-   sudo adduser deploy
-   sudo usermod -aG sudo deploy
-   ```
-
-### Required Software on VPS
+## 1. Подготовка сервера
 
 ```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
+# Обновление системы
+apt update && apt upgrade -y
 
-# Install Node.js 20 LTS
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
+# Установка Node.js 20 LTS (NodeSource)
+curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 
-# Install Docker and Docker Compose
-curl -fsSL https://get.docker.com | sh
-sudo usermod -aG docker deploy
+# ВАЖНО: Удалите системный npm, чтобы избежать конфликта зависимостей
+apt remove -y npm
 
-# Install Nginx
-sudo apt install -y nginx
+# Установка Node.js, Git и Nginx
+apt install -y nodejs git nginx
 
-# Install Git
-sudo apt install -y git
-
-# Install curl (for healthchecks)
-sudo apt install -y curl
+# Проверка версий
+node -v   # v20.x.x
+npm -v    # 10.x.x
+nginx -v  # 1.x.x
 ```
 
-## Deployment Options
+---
 
-### Option 1: Docker Compose (Recommended)
-
-1. **Clone the repository**
-
-   ```bash
-   ssh deploy@admin-polanet.ru
-   mkdir -p /home/deploy/polanet
-   cd /home/deploy/polanet
-   git clone https://your-repo-url.git .
-   ```
-
-2. **Configure environment variables**
-
-   ```bash
-   # Create .env file in project root
-   cat > .env << EOF
-   JWT_SECRET=your-super-secret-jwt-key-change-this
-   SMS_API_KEY=zAmaZKSynfOXAhA7X6WuUZkN14SIe4SxHE1GQ1Gl6EF3MEoshS6MGhY9VooI
-   TELEGRAM_BOT_TOKEN=your-telegram-bot-token
-   TELEGRAM_CHAT_ID=your-telegram-chat-id
-   TELEGRAM_BOT_USERNAME=your-bot-username
-   TELEGRAM_WEBHOOK_URL=https://admin-polanet.ru/api/telegram/webhook
-   EOF
-   ```
-
-3. **Configure SSL certificates**
-
-   ```bash
-   # Create SSL directory
-   mkdir -p /home/deploy/polanet/nginx/ssl
-
-   # Obtain SSL certificate (Let's Encrypt)
-   sudo apt install -y certbot python3-certbot-nginx
-   sudo certbot --nginx -d admin-polanet.ru -d www.admin-polanet.ru
-   ```
-
-4. **Update Nginx config for SSL**
-   Edit `nginx/nginx.conf` and uncomment SSL sections.
-
-5. **Start with Docker Compose**
-
-   ```bash
-   docker compose up -d
-   ```
-
-6. **Create systemd service for auto-restart**
-
-   ```bash
-   cat > /etc/systemd/system/polanet.service << EOF
-   [Unit]
-   Description=Polanet Application
-   After=docker.service
-   Requires=docker.service
-
-   [Service]
-   Type=oneshot
-   RemainAfterExit=yes
-   WorkingDirectory=/home/deploy/polanet
-   ExecStart=/usr/bin/docker compose up -d
-   ExecStop=/usr/bin/docker compose down
-   Restart=no
-
-   [Install]
-   WantedBy=multi-user.target
-   EOF
-
-   sudo systemctl daemon-reload
-   sudo systemctl enable polanet
-   ```
-
-### Option 2: Manual Deployment (Without Docker)
-
-1. **Clone and setup**
-
-   ```bash
-   ssh deploy@admin-polanet.ru
-   mkdir -p /home/deploy/polanet
-   cd /home/deploy/polanet
-   git clone https://your-repo-url.git .
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   cd /home/deploy/polanet/backend
-   npm ci --production
-
-   cd /home/deploy/polanet/frontend
-   npm ci
-   npm run build
-   ```
-
-3. **Configure Nginx**
-
-   ```bash
-   sudo cp /home/deploy/polanet/nginx/nginx.conf /etc/nginx/nginx.conf
-   sudo nginx -t
-   sudo systemctl restart nginx
-   ```
-
-4. **Create systemd service**
-
-   ```bash
-   cat > /etc/systemd/system/polanet-backend.service << EOF
-   [Unit]
-   Description=Polanet Backend API
-   After=network.target
-
-   [Service]
-   Type=simple
-   User=deploy
-   WorkingDirectory=/home/deploy/polanet/backend
-   ExecStart=/usr/bin/node dist/index.js
-   Environment=NODE_ENV=production
-   EnvironmentFile=/home/deploy/polanet/backend/.env
-   Restart=always
-   RestartSec=10
-
-   [Install]
-   WantedBy=multi-user.target
-   EOF
-
-   sudo systemctl daemon-reload
-   sudo systemctl enable polanet-backend
-   sudo systemctl start polanet-backend
-   ```
-
-## Environment Variables
-
-### Backend (.env.production)
-
-| Variable                | Description                        | Example                                         |
-| ----------------------- | ---------------------------------- | ----------------------------------------------- |
-| `PORT`                  | Backend server port                | `3000`                                          |
-| `JWT_SECRET`            | Secret key for JWT tokens          | Generate with `openssl rand -base64 32`         |
-| `AUTO_BACKUP`           | Enable auto backup                 | `true`                                          |
-| `AUTO_BACKUP_INTERVAL`  | Backup interval in ms              | `3600000` (1 hour)                              |
-| `AUTO_BACKUP_MAX_COUNT` | Max backups to keep                | `24`                                            |
-| `SMS_API_KEY`           | SMS service API key                | From smsgorod.ru                                |
-| `TELEGRAM_BOT_TOKEN`    | Telegram Bot API token             | From @BotFather                                 |
-| `TELEGRAM_CHAT_ID`      | Telegram chat ID for notifications | From @userinfobot                               |
-| `TELEGRAM_BOT_USERNAME` | Telegram bot username              | From @BotFather                                 |
-| `TELEGRAM_WEBHOOK_URL`  | Telegram webhook URL               | `https://admin-polanet.ru/api/telegram/webhook` |
-| `CORS_ORIGIN`           | Allowed origin                     | `https://admin-polanet.ru`                      |
-| `LOG_LEVEL`             | Logging level                      | `error`                                         |
-
-## Telegram Bot Setup
-
-To enable Telegram notifications for deliveries, orders, and system events:
-
-1. **Create a Telegram Bot**
-   - Open Telegram and search for @BotFather
-   - Use `/newbot` command and follow instructions
-   - Save the bot token (e.g., `123456789:ABCdefGHIjklMNOpqrsTUVwxyz`)
-
-2. **Get Your Chat ID**
-   - Search for @userinfobot in Telegram
-   - Start the bot and get your chat ID (e.g., `123456789`)
-
-3. **Configure Environment Variables**
-   - Add the following to `.env` or `docker-compose.yml`:
-
-   ```bash
-   TELEGRAM_BOT_TOKEN=your-bot-token
-   TELEGRAM_CHAT_ID=your-chat-id
-   TELEGRAM_BOT_USERNAME=your-bot-username
-   TELEGRAM_WEBHOOK_URL=https://admin-polanet.ru/api/telegram/webhook
-   ```
-
-4. **Set Webhook**
-   - The application will automatically set the webhook on startup
-   - Verify webhook is set: `curl https://admin-polanet.ru/api/telegram/webhook`
-
-## SSL Certificate Setup
+## 2. Загрузка проекта
 
 ```bash
-# Install Certbot
-sudo apt install -y certbot python3-certbot-nginx
+mkdir -p /home/deploy/polanet
+cd /home/deploy/polanet
 
-# Obtain certificate
-sudo certbot --nginx -d admin-polanet.ru -d www.admin-polanet.ru
+# Вариант А: Через Git
+git clone <URL_РЕПОЗИТОРИЯ> .
 
-# Auto-renewal is configured by default
-# Test renewal with:
-sudo certbot renew --dry-run
+# Вариант Б: Через scp с локальной машины
+# scp -r ./polanet/* deploy@<IP_СЕРВЕРА>:/home/deploy/polanet/
 ```
 
-## Database Management
+---
 
-### Initial Setup
+## 3. Сборка фронтенда
+
+```bash
+cd /home/deploy/polanet/frontend
+npm ci
+npm run build
+
+# Проверка
+ls dist/index.html
+```
+
+---
+
+## 4. Настройка и сборка бэкенда
 
 ```bash
 cd /home/deploy/polanet/backend
+
+# Установка зависимостей (полная, т.к. нужна TypeScript для сборки)
+npm ci
+
+# Сборка
+npm run build
+
+# Создание .env файла
+openssl rand -base64 32  # Скопируйте результат
+```
+
+Создайте файл `.env`:
+
+```bash
+cat > .env << 'EOF'
+PORT=3000
+NODE_ENV=production
+JWT_SECRET=ВСТАВЬ_СГЕНЕРИРОВАННЫЙ_КЛЮЧ
+CORS_ORIGIN=https://admin-polanet.ru
+DATABASE_PATH=./data/polanet.db
+AUTO_BACKUP=true
+AUTO_BACKUP_INTERVAL=3600000
+AUTO_BACKUP_MAX_COUNT=24
+LOG_LEVEL=error
+# TELEGRAM_BOT_TOKEN=
+# TELEGRAM_CHAT_ID=
+# TELEGRAM_WEBHOOK_URL=https://admin-polanet.ru/api/telegram/webhook
+EOF
+```
+
+---
+
+## 5. База данных
+
+```bash
+cd /home/deploy/polanet/backend
+
+# Применение миграций
 npm run db:migrate
+
+# Заполнение начальными данными (ролями, правами, админом)
 npm run db:seed
 ```
 
-### Backup Database
+---
+
+## 6. Запуск бэкенда (PM2)
 
 ```bash
-cd /home/deploy/polanet/backend
-npm run db:backup
+# Установка PM2
+npm install -g pm2
+
+# Запуск приложения
+pm2 start dist/index.js --name polanet-backend
+
+# Сохранение списка процессов и настройка автозагрузки
+pm2 save
+pm2 startup  # Выполните команду, которую он выведет
 ```
 
-### Restore Database
-
-```bash
-cd /home/deploy/polanet/backend
-npm run db:restore <backup_filename>
-```
-
-### List Backups
-
-```bash
-cd /home/deploy/polanet/backend
-npm run db:backup:list
-```
-
-## Monitoring and Logs
-
-### Check Backend Status
-
-```bash
-sudo systemctl status polanet-backend
-# or with Docker:
-docker ps | grep polanet
-```
-
-### View Logs
-
-```bash
-# Systemd logs
-sudo journalctl -u polanet-backend -f
-
-# Docker logs
-docker logs -f polanet-backend
-
-# Nginx logs
-sudo tail -f /var/log/nginx/access.log
-sudo tail -f /var/log/nginx/error.log
-```
-
-### Health Check
+Проверка:
 
 ```bash
 curl http://localhost:3000/api/health
+# Ожидаемый ответ: {"status":"ok","timestamp":"..."}
 ```
 
-## Security Recommendations
+---
 
-1. **Firewall Configuration**
+## 7. Настройка Nginx (HTTP)
 
-   ```bash
-   sudo ufw allow 22/tcp    # SSH
-   sudo ufw allow 80/tcp    # HTTP
-   sudo ufw allow 443/tcp   # HTTPS
-   sudo ufw enable
-   ```
-
-2. **SSH Hardening**
-
-   ```bash
-   # Edit /etc/ssh/sshd_config
-   PermitRootLogin no
-   PasswordAuthentication no
-   PubkeyAuthentication yes
-   ```
-
-3. **Regular Updates**
-
-   ```bash
-   sudo apt update && sudo apt upgrade -y
-   ```
-
-4. **JWT Secret**
-   - Generate a strong secret: `openssl rand -base64 32`
-   - Store in `.env` file, NOT in git
-
-## Troubleshooting
-
-### Backend not starting
+Создайте конфигурацию без SSL (для первичной проверки и Certbot):
 
 ```bash
-# Check logs
-sudo journalctl -u polanet-backend -n 50
+rm -f /etc/nginx/sites-enabled/default
+cat > /etc/nginx/sites-available/admin-polanet.ru.conf << 'NGINX'
+server {
+    listen 80;
+    listen [::]:80;
+    server_name admin-polanet.ru;
 
-# Check if port is in use
-sudo lsof -i :3000
+    # API прокси
+    location /api/ {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+
+    # Статика фронтенда
+    root /home/deploy/polanet/frontend/dist;
+    index index.html;
+
+    # SPA fallback
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+NGINX
+
+ln -sf /etc/nginx/sites-available/admin-polanet.ru.conf /etc/nginx/sites-enabled/
+nginx -t && systemctl restart nginx
 ```
 
-### Nginx 502 Bad Gateway
+---
+
+## 8. Настройка DNS (Selectel)
+
+1. Узнай IP сервера: `curl -4 ifconfig.me`
+2. В панели Selectel перейди в **DNS → Доменные зоны → Добавить зону** → `admin-polanet.ru`
+3. Добавь A-запись:
+   - Тип: `A`
+   - Имя: `@` (или `admin-polanet.ru`)
+   - Значение: `<IP_СЕРВЕРА>`
+   - TTL: `3600`
+4. В разделе **Домены** нажми три точки → **Изменить DNS-серверы**:
+   - `a.ns.selectel.ru`
+   - `b.ns.selectel.ru`
+   - `c.ns.selectel.ru`
+   - `d.ns.selectel.ru`
+5. Подожди 5-10 минут и проверь:
+   ```bash
+   dig admin-polanet.ru +short
+   # Должно вернуть IP сервера
+   ```
+
+---
+
+## 9. SSL-сертификат (Certbot)
 
 ```bash
-# Check if backend is running
+apt install -y certbot python3-certbot-nginx
+certbot --nginx -d admin-polanet.ru
+```
+
+Certbot автоматически обновит конфиг Nginx, добавит SSL и настроит редирект HTTP → HTTPS.
+
+---
+
+## 🔄 Пересборка и обновление проекта
+
+Когда код обновлён (через `git pull` или загрузку файлов):
+
+```bash
+# 1. Обновить код на сервере
+cd /home/deploy/polanet
+git pull  # или загрузи новые файлы
+
+# 2. Пересобрать фронтенд
+cd frontend
+npm ci && npm run build
+
+# 3. Пересобрать бэкенд
+cd ../backend
+npm ci && npm run build
+
+# 4. Применить новые миграции (если есть)
+npm run db:migrate
+
+# 5. Перезапустить бэкенд
+pm2 restart polanet-backend
+
+# 6. Проверить
+curl -k https://admin-polanet.ru/api/health
+```
+
+**Быстрый скрипт обновления** (можно сохранить как `update.sh`):
+
+```bash
+#!/bin/bash
+set -e
+cd /home/deploy/polanet
+git pull
+cd frontend && npm ci && npm run build
+cd ../backend && npm ci && npm run build && npm run db:migrate
+pm2 restart polanet-backend
+echo "✅ Обновление завершено!"
+```
+
+---
+
+## Полезные команды
+
+| Команда                       | Описание                        |
+| ----------------------------- | ------------------------------- |
+| `pm2 status`                  | Статус процессов бэкенда        |
+| `pm2 logs polanet-backend`    | Логи бэкенда в реальном времени |
+| `pm2 restart polanet-backend` | Перезапуск бэкенда              |
+| `pm2 reload polanet-backend`  | Zero-downtime перезапуск        |
+| `nginx -t`                    | Проверка конфига Nginx          |
+| `systemctl restart nginx`     | Перезапуск Nginx                |
+| `npm run db:backup`           | Создание бэкапа БД              |
+| `npm run db:backup:list`      | Список бэкапов                  |
+| `certbot renew --dry-run`     | Проверка автообновления SSL     |
+
+---
+
+## Тестовые данные (после seed)
+
+| Роль          | Email                | Пароль |
+| ------------- | -------------------- | ------ |
+| Администратор | `admin@test.com`     | `test` |
+| Разработчик   | `developer@test.com` | `test` |
+
+⚠️ **Важно:** после первого входа обязательно смените пароли и удалите тестовые аккаунты!
+
+---
+
+## Устранение неполадок
+
+### `npm ci --production` падает с ошибкой `husky: not found`
+
+Используй `npm ci` без флага `--production` для сборки, так как `tsc` является dev-зависимостью. Для продакшена можно очистить `node_modules` после сборки:
+
+```bash
+npm ci && npm run build
+rm -rf node_modules && npm ci --omit=dev --ignore-scripts
+```
+
+### Nginx ошибка `unknown directive "proxy_next_timeout"`
+
+Директива `proxy_next_timeout` не поддерживается в стандартном Nginx. Удали её из конфига:
+
+```bash
+sed -i '/proxy_next_timeout/d' /etc/nginx/sites-enabled/admin-polanet.ru.conf
+nginx -t && systemctl restart nginx
+```
+
+### Certbot: `DNS problem: SERVFAIL`
+
+Домен не привязан к IP сервера. Проверь A-запись в DNS-зоне и делегирование через NS-серверы регистратора.
+
+### Бэкенд не отвечает (502 Bad Gateway)
+
+```bash
+# Проверь, запущен ли PM2
+pm2 status
+# Проверь порт
 curl http://localhost:3000/api/health
-
-# Restart backend
-sudo systemctl restart polanet-backend
+# Перезапусти при необходимости
+pm2 restart polanet-backend
 ```
-
-### Database locked errors
-
-```bash
-# Check SQLite file permissions
-ls -la /home/deploy/polanet/backend/data/
-
-# Fix permissions
-chmod 755 /home/deploy/polanet/backend/data
-chmod 644 /home/deploy/polanet/backend/data/polanet.db
-```
-
-## Rollback Procedure
-
-1. **Stop current version**
-
-   ```bash
-   docker compose down
-   # or
-   sudo systemctl stop polanet-backend
-   ```
-
-2. **Checkout previous version**
-
-   ```bash
-   git checkout <previous-commit>
-   ```
-
-3. **Redeploy**
-   ```bash
-   docker compose up -d
-   # or
-   npm run build
-   sudo systemctl start polanet-backend
-   ```
-
-## Support
-
-For issues, check:
-
-- Backend logs: `sudo journalctl -u polanet-backend`
-- Nginx logs: `/var/log/nginx/error.log`
-- Database: `/home/deploy/polanet/backend/data/`
