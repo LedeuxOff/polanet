@@ -67,7 +67,7 @@ export const useMoneyStatistic = () => {
     // Суммируем расходы по месяцам
     expenses.forEach((expense) => {
       try {
-        const date = new Date(expense.dateTime);
+        const date = new Date(expense.paymentDate);
         const monthIndex = date.getMonth();
         const candle = data.find((d) => d.monthIndex === monthIndex);
         if (candle) {
