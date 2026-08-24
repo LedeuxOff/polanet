@@ -21,7 +21,7 @@ export type TelegramResult = {
  * @param text - Текст сообщения
  * @returns Результат отправки
  */
-async function sendTelegramMessage(chatId: string, text: string): Promise<TelegramResult> {
+export async function sendTelegramMessage(chatId: string, text: string): Promise<TelegramResult> {
   try {
     if (!TELEGRAM_BOT_TOKEN) {
       throw new Error("TELEGRAM_BOT_TOKEN не настроен в environment variables");
@@ -199,6 +199,22 @@ export async function sendPasswordNotification(
 🔐 Пароль: <b>${password}</b>
 
 Пожалуйста, сохраните этот пароль в безопасном месте.`;
+
+  return await sendTelegramMessage(chatId, text);
+}
+
+/**
+ * Отправляет уведомление о смене пароля
+ */
+export async function sendPasswordChangedNotification(
+  chatId: string,
+  email: string,
+): Promise<TelegramResult> {
+  const text = `✅ <b>Пароль успешно изменен</b>
+
+📧 Email: ${email}
+
+Ваш пароль для административной панели PolaNet был успешно изменен. Если это были не вы — свяжитесь с администрацией.`;
 
   return await sendTelegramMessage(chatId, text);
 }

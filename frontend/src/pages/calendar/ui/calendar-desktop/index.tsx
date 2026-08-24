@@ -1,18 +1,16 @@
-import { useIsMobile } from "@/hooks";
-import { useTabbar } from "@/lib/contexts/tabbar-context";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DAYS_WEEK, HOURS, useCalendar } from "../../hooks";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, HomeIcon, MenuIcon, PlusIcon, BanIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, PlusIcon, BanIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CalendarDelivery } from "@/lib/types";
 import { deliveriesApi } from "@/lib/api";
 import { DeliveryBlock } from "./delivery-block";
-import { Link } from "@tanstack/react-router";
 import { useAddDelivery } from "./use-add-delivery";
 import { AddDeliveryModal } from "./add-delivery-modal";
 import { CompleteDeliveryModal } from "./complete-delivery-modal";
+import { BottomBar } from "@/components/bottom-bar";
 
 // Desktop версия календаря
 export const CalendarDesktop = () => {
@@ -30,9 +28,6 @@ export const CalendarDesktop = () => {
   useEffect(() => {
     draggedDeliveryRef.current = draggedDelivery;
   }, [draggedDelivery]);
-
-  const isMobile = useIsMobile();
-  const { setOpen } = useTabbar();
 
   const {
     deliveries,
@@ -56,6 +51,7 @@ export const CalendarDesktop = () => {
   }, [loadDeliveries]);
 
   // Проверка: можно ли создавать доставку в прошедшую ячейку
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const canCreateInCell = (cellDate: Date): boolean => {
     const now = new Date();
     return cellDate > now;
@@ -223,185 +219,214 @@ export const CalendarDesktop = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <Card>
-        <CardHeader>
-          {/* Заголовок с навигацией */}
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <CardTitle>Календарь доставок</CardTitle>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCurrent}
-                className="bg-blue-500 text-white shadow-none hover:bg-blue-600 hover:text-white"
-              >
-                Сегодня
-              </Button>
-              <div className="flex items-center gap-1">
-                <Button variant="outline" size="icon" onClick={handlePrevWeek}>
-                  <ChevronLeft className="h-4 w-4" />
+    <div className="flex flex-col gap-4 max-h-[100vh]">
+      {/* Верхняя панель с навигацией */}
+      <div className="flex-shrink-0">
+        <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
+          <CardHeader>
+            {/* Заголовок с навигацией */}
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <CardTitle>Календарь доставок</CardTitle>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCurrent}
+                  className="bg-blue-500 rounded-2xl text-white shadow-none hover:bg-blue-600 hover:text-white dark:bg-blue-600/60 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                >
+                  Сегодня
                 </Button>
-                <Button variant="outline">{formatWeekRange}</Button>
-                <Button variant="outline" size="icon" onClick={handleNextWeek}>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                    variant="outline"
+                    size="icon"
+                    onClick={handlePrevWeek}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                    variant="outline"
+                  >
+                    {formatWeekRange}
+                  </Button>
+                  <Button
+                    className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                    variant="outline"
+                    size="icon"
+                    onClick={handleNextWeek}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-        </CardHeader>
-      </Card>
+          </CardHeader>
+        </Card>
+      </div>
 
+      {/* Загрузка и ошибки */}
       {isLoading && <div className="text-center py-8">Загрузка...</div>}
       {calendarError && <div className="text-center py-8 text-red-500">{calendarError}</div>}
 
+      {/* Календарь с прокруткой */}
       {!isLoading && !calendarError && (
-        <div className="border rounded-lg overflow-hidden bg-white">
-          {/* Шапка с днями недели */}
-          <div className="grid grid-cols-[70px_repeat(7,1fr)] border-b bg-zinc-50">
-            <div className="py-2 text-center text-xs font-medium text-muted-foreground border-r whitespace-nowrap">
-              Время
-            </div>
-            {DAYS_WEEK.map((day, dayIndex) => {
-              // Вычисляем дату для этого дня
-              const date = new Date(selectedDate);
-              const currentDay = date.getDay() === 0 ? 6 : date.getDay() - 1;
-              const targetDay = DAYS_WEEK.indexOf(day);
-              const diff = targetDay - currentDay;
-              const dayDate = new Date(date);
-              dayDate.setDate(date.getDate() + diff);
-
-              const today = new Date();
-              const isToday =
-                dayDate.getDate() === today.getDate() &&
-                dayDate.getMonth() === today.getMonth() &&
-                dayDate.getFullYear() === today.getFullYear();
-              const isWeekend = dayIndex === 5 || dayIndex === 6; // Сб, Вс
-
-              return (
-                <div
-                  key={day}
-                  className={cn(
-                    "p-3 text-center text-sm font-medium border-r",
-                    isToday && "bg-blue-50 text-blue-600",
-                    !isToday && isWeekend && "bg-red-100",
-                  )}
-                >
-                  <div>{day}</div>
-                  <div className={cn("text-lg", isToday && "font-bold")}>{dayDate.getDate()}</div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Часы с доставками */}
-          {HOURS.map((hour) => (
-            <div
-              key={hour}
-              className="grid grid-cols-[70px_repeat(7,1fr)] border-b hover:bg-zinc-50 transition-colors"
-            >
-              {/* Ячейка времени */}
-              <div className="p-2 text-center text-xs text-muted-foreground border-r bg-zinc-50 whitespace-nowrap">
-                {hour.toString().padStart(2, "0")}:00
+        <div className="flex-1 flex flex-col max-h-[calc(100vh-140px)]">
+          <div className="border rounded-2xl shadow-xl overflow-hidden bg-white flex-1 flex flex-col dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
+            {/* Шапка с днями недели (фиксированная) */}
+            <div className="grid grid-cols-[70px_repeat(7,1fr)] border-b bg-zinc-50 flex-shrink-0 sticky top-0 z-10 dark:bg-white/10 dark:backdrop-blur-xl dark:border-white/20">
+              <div className="py-2 text-center text-xs font-medium text-muted-foreground border-r whitespace-nowrap dark:text-zinc-100 dark:border-white/20">
+                Время
               </div>
-              {/* Ячейки дней */}
-              {DAYS_WEEK.map((_, dayIndex) => {
-                const dayDeliveries = getDeliveriesForDay(dayIndex);
-                const hourDeliveries = dayDeliveries.filter((d) => {
-                  const h = new Date(d.dateTime).getHours();
-                  return h === hour;
-                });
-
-                // Вычисляем дату для этой ячейки
+              {DAYS_WEEK.map((day, dayIndex) => {
+                // Вычисляем дату для этого дня
                 const date = new Date(selectedDate);
                 const currentDay = date.getDay() === 0 ? 6 : date.getDay() - 1;
-                const targetDay = DAYS_WEEK.indexOf(DAYS_WEEK[dayIndex]);
+                const targetDay = DAYS_WEEK.indexOf(day);
                 const diff = targetDay - currentDay;
-                const cellDate = new Date(date);
-                cellDate.setDate(date.getDate() + diff);
-                cellDate.setHours(hour, 0, 0, 0);
+                const dayDate = new Date(date);
+                dayDate.setDate(date.getDate() + diff);
 
-                const now = new Date();
-                const isPast = cellDate <= now;
-                const canDrop = !isPast;
-                const hasDelivery = hourDeliveries.length > 0;
-
-                const isDragOver =
-                  isDragging && dragOverCell?.dayIndex === dayIndex && dragOverCell?.hour === hour;
+                const today = new Date();
+                const isToday =
+                  dayDate.getDate() === today.getDate() &&
+                  dayDate.getMonth() === today.getMonth() &&
+                  dayDate.getFullYear() === today.getFullYear();
+                const isWeekend = dayIndex === 5 || dayIndex === 6; // Сб, Вс
 
                 return (
                   <div
-                    key={dayIndex}
+                    key={day}
                     className={cn(
-                      "p-1 border-r min-h-[60px] relative group",
-                      isDragOver && canDrop && "bg-blue-200 transition-colors",
-                      !hasDelivery &&
-                        !isPast &&
-                        !isDragging &&
-                        "hover:bg-blue-50 transition-colors cursor-pointer",
-                      !hasDelivery && isPast && !isDragging && "hover:bg-zinc-50 transition-colors",
+                      "p-3 text-center text-sm font-medium border-r dark:border-white/20",
+                      isToday && "bg-blue-50 text-blue-600 dark:bg-blue-600/40 dark:text-zinc-100",
+                      !isToday && isWeekend && "bg-red-100 dark:bg-red-600/60",
                     )}
-                    onClick={() => {
-                      if (!hasDelivery && !isPast && !isDragging) {
-                        handleCellClick(dayIndex, hour);
-                      }
-                    }}
-                    onDragOver={
-                      canDrop
-                        ? (e) => {
-                            handleDragOver(dayIndex, hour)(e);
-                          }
-                        : undefined
-                    }
-                    onDragLeave={() => {
-                      if (dragOverCell?.dayIndex === dayIndex && dragOverCell?.hour === hour) {
-                        setDragOverCell(null);
-                      }
-                    }}
-                    onDrop={() => {
-                      if (canDrop) {
-                        handleDrop(dayIndex, hour);
-                      }
-                    }}
                   >
-                    {/* Иконки по центру ячейки (только если нет доставки) */}
-                    {!hasDelivery && (
-                      <div
-                        className="absolute inset-0 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!hasDelivery && !isPast) {
-                            handleCellClick(dayIndex, hour);
-                          }
-                        }}
-                      >
-                        {isPast ? (
-                          <BanIcon className="h-12 w-12 text-gray-400/40" />
-                        ) : (
-                          <PlusIcon className="h-12 w-12 text-gray-400/40" />
-                        )}
-                      </div>
-                    )}
-                    {hourDeliveries.map((delivery) => {
-                      const isCompleted = delivery.status === "completed";
-                      const isDragDisabled = isCompleted;
-
-                      return (
-                        <DeliveryBlock
-                          key={delivery.id}
-                          delivery={delivery}
-                          time={formatTime(delivery.dateTime)}
-                          onEdit={handleEditDelivery}
-                          onDragStart={handleDragStart}
-                          isDragDisabled={isDragDisabled}
-                        />
-                      );
-                    })}
+                    <div>{day}</div>
+                    <div className={cn("text-lg", isToday && "font-bold")}>{dayDate.getDate()}</div>
                   </div>
                 );
               })}
             </div>
-          ))}
+
+            {/* Часы с доставками (скроллируемая область) */}
+            <div className="flex-1 overflow-y-auto overflow-x-hidden">
+              {HOURS.map((hour) => (
+                <div
+                  key={hour}
+                  className="grid grid-cols-[70px_repeat(7,1fr)] border-b hover:bg-zinc-50 dark:hover:bg-white/10 transition-colors dark:border-white/30"
+                >
+                  {/* Ячейка времени (фиксированная колонка) */}
+                  <div className="p-2 text-center text-xs text-muted-foreground border-r bg-zinc-50 whitespace-nowrap sticky dark:text-zinc-100 left-0 z-20 dark:bg-white/10 dark:backdrop-blur-xl dark:border-white/20">
+                    {hour.toString().padStart(2, "0")}:00
+                  </div>
+                  {/* Ячейки дней */}
+                  {DAYS_WEEK.map((_, dayIndex) => {
+                    const dayDeliveries = getDeliveriesForDay(dayIndex);
+                    const hourDeliveries = dayDeliveries.filter((d) => {
+                      const h = new Date(d.dateTime).getHours();
+                      return h === hour;
+                    });
+
+                    // Вычисляем дату для этой ячейки
+                    const date = new Date(selectedDate);
+                    const currentDay = date.getDay() === 0 ? 6 : date.getDay() - 1;
+                    const targetDay = DAYS_WEEK.indexOf(DAYS_WEEK[dayIndex]);
+                    const diff = targetDay - currentDay;
+                    const cellDate = new Date(date);
+                    cellDate.setDate(date.getDate() + diff);
+                    cellDate.setHours(hour, 0, 0, 0);
+
+                    const now = new Date();
+                    const isPast = cellDate <= now;
+                    const canDrop = !isPast;
+                    const hasDelivery = hourDeliveries.length > 0;
+
+                    const isDragOver =
+                      isDragging &&
+                      dragOverCell?.dayIndex === dayIndex &&
+                      dragOverCell?.hour === hour;
+
+                    return (
+                      <div
+                        key={dayIndex}
+                        className={cn(
+                          "p-1 border-r min-h-[60px] relative group dark:border-white/20",
+                          isDragOver && canDrop && "bg-blue-200 transition-colors",
+                          !hasDelivery &&
+                            !isPast &&
+                            !isDragging &&
+                            "hover:bg-blue-50 dark:hover:bg-white/10 transition-colors cursor-pointer",
+                          !hasDelivery &&
+                            isPast &&
+                            !isDragging &&
+                            "hover:bg-zinc-50 dark:hover:bg-white/10 transition-colors",
+                        )}
+                        onClick={() => {
+                          if (!hasDelivery && !isPast && !isDragging) {
+                            handleCellClick(dayIndex, hour);
+                          }
+                        }}
+                        onDragOver={
+                          canDrop
+                            ? (e) => {
+                                handleDragOver(dayIndex, hour)(e);
+                              }
+                            : undefined
+                        }
+                        onDragLeave={() => {
+                          if (dragOverCell?.dayIndex === dayIndex && dragOverCell?.hour === hour) {
+                            setDragOverCell(null);
+                          }
+                        }}
+                        onDrop={() => {
+                          if (canDrop) {
+                            handleDrop(dayIndex, hour);
+                          }
+                        }}
+                      >
+                        {/* Иконки по центру ячейки (только если нет доставки) */}
+                        {!hasDelivery && (
+                          <div
+                            className="absolute inset-0 flex items-center justify-center z-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (!hasDelivery && !isPast) {
+                                handleCellClick(dayIndex, hour);
+                              }
+                            }}
+                          >
+                            {isPast ? (
+                              <BanIcon className="h-8 w-8 text-gray-400/40 dark:text-white/30" />
+                            ) : (
+                              <PlusIcon className="h-8 w-8 text-gray-400/40 dark:text-white/30" />
+                            )}
+                          </div>
+                        )}
+                        {hourDeliveries.map((delivery) => {
+                          const isCompleted = delivery.status === "completed";
+                          const isDragDisabled = isCompleted;
+
+                          return (
+                            <DeliveryBlock
+                              key={delivery.id}
+                              delivery={delivery}
+                              time={formatTime(delivery.dateTime)}
+                              onEdit={handleEditDelivery}
+                              onDragStart={handleDragStart}
+                              isDragDisabled={isDragDisabled}
+                            />
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -434,33 +459,11 @@ export const CalendarDesktop = () => {
         editingDelivery={editingDelivery}
         handleSaveComplete={handleSaveComplete}
         handleCancelComplete={handleCancelComplete}
-        drivers={drivers}
         users={users}
         isChangingRecipient={isChangingRecipient}
       />
 
-      <div
-        className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
-      >
-        <Link to="/">
-          <Button
-            type="button"
-            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900 flex gap-2"
-          >
-            <HomeIcon className="w-4 h-4" /> Главная
-          </Button>
-        </Link>
-
-        {isMobile && (
-          <Button
-            type="button"
-            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
-            onClick={() => setOpen(true)}
-          >
-            <MenuIcon className="w-4 h-4" />
-          </Button>
-        )}
-      </div>
+      <BottomBar hideSaveButton />
     </div>
   );
 };

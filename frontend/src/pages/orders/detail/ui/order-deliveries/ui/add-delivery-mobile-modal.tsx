@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Car, Delivery, DeliveryForm, Driver, User } from "@/lib/types";
-import { Dispatch, SetStateAction, useEffect, useMemo, useState } from "react";
+import { Car, Delivery, DeliveryForm, User } from "@/lib/types";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 
 interface Props {
@@ -23,7 +23,7 @@ interface Props {
   error: string | null;
   editingDelivery: Delivery | null;
   handleSaveDelivery: (data: DeliveryForm) => Promise<void>;
-  drivers: Driver[];
+  drivers: User[];
   cars: Car[];
   handleCancelDelivery: () => void;
   users: User[];
@@ -62,8 +62,6 @@ export const AddDeliveryMobileModal = ({
   const inputProps = isReadOnly ? { disabled: true as const } : {};
   const checkboxProps = isReadOnly ? { disabled: true as const } : {};
 
-  // Получаем ID водителя из текущей доставки
-  const recipientType = form.watch("recipientType");
   const isPaid = form.watch("isPaid");
 
   // Показываем поля получателя если isPaid = true или если мы в режиме завершения доставки
@@ -93,7 +91,6 @@ export const AddDeliveryMobileModal = ({
         isPaymentBeforeUnloading: editingDelivery.isPaymentBeforeUnloading,
         notifyClient: editingDelivery.notifyClient,
         notifyDriver: editingDelivery.notifyDriver,
-        recipientType: editingDelivery.recipientType || undefined,
         recipientId: editingDelivery.recipientId || undefined,
       });
     }
@@ -232,68 +229,24 @@ export const AddDeliveryMobileModal = ({
                 <Label className="text-base font-semibold">Получатель средств</Label>
 
                 <div className="space-y-2">
-                  <Label>Тип получателя *</Label>
+                  <Label>Сотрудник *</Label>
                   <Select
-                    value={recipientType || ""}
-                    onValueChange={(value: "employee" | "driver") =>
-                      form.setValue("recipientType", value)
-                    }
+                    value={String(form.watch("recipientId") || "")}
+                    onValueChange={(value) => form.setValue("recipientId", Number(value))}
                     {...selectProps}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Выберите тип получателя" />
+                      <SelectValue placeholder="Выберите сотрудника" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="employee">Сотрудник</SelectItem>
-                      <SelectItem value="driver">Водитель</SelectItem>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={String(user.id)}>
+                          {user.lastName} {user.firstName} {user.middleName || ""}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
-
-                {/* Поле выбора сотрудника/водителя в зависимости от типа */}
-                {recipientType === "employee" && (
-                  <div className="space-y-2">
-                    <Label>Сотрудник *</Label>
-                    <Select
-                      value={String(form.watch("recipientId") || "")}
-                      onValueChange={(value) => form.setValue("recipientId", Number(value))}
-                      {...selectProps}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите сотрудника" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {users.map((user) => (
-                          <SelectItem key={user.id} value={String(user.id)}>
-                            {user.lastName} {user.firstName} {user.middleName || ""}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
-
-                {recipientType === "driver" && (
-                  <div className="space-y-2">
-                    <Label>Водитель *</Label>
-                    <Select
-                      value={String(form.watch("recipientId") || "")}
-                      onValueChange={(value) => form.setValue("recipientId", Number(value))}
-                      {...selectProps}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Выберите водителя" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {drivers.map((driver) => (
-                          <SelectItem key={driver.id} value={String(driver.id)}>
-                            {driver.lastName} {driver.firstName} {driver.middleName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
               </div>
             )}
 

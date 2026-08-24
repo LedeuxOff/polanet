@@ -45,7 +45,7 @@ async function logHistory(
     .run();
 }
 
-// Получить все заявки с фильтрами
+// Получить все заявки с фильтрами и пагинацией
 router.get("/", authenticate, requirePermission("orders:list"), (req: AuthRequest, res) => {
   try {
     // Парсинг query параметров
@@ -55,6 +55,11 @@ router.get("/", authenticate, requirePermission("orders:list"), (req: AuthReques
     const queryCompanyDebt = req.query.companyDebt as string;
     const queryDateFrom = req.query.dateFrom as string;
     const queryDateTo = req.query.dateTo as string;
+
+    // Парсинг параметров пагинации
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+    const offset = (page - 1) * limit;
 
     // Получаем все заявки
     const allOrders = db.select().from(orders).orderBy(desc(orders.createdAt)).all();
@@ -180,7 +185,20 @@ router.get("/", authenticate, requirePermission("orders:list"), (req: AuthReques
       finalOrders = finalOrders.filter((o) => (o.companyDebt ?? 0) === 0);
     }
 
-    res.json(finalOrders);
+    // Пагинация
+    const totalRecords = finalOrders.length;
+    const totalPages = Math.ceil(totalRecords / limit);
+    const paginatedOrders = finalOrders.slice(offset, offset + limit);
+
+    res.json({
+      data: paginatedOrders,
+      pagination: {
+        page,
+        limit,
+        totalRecords,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error("Error getting orders:", error);
     res.status(500).json({
@@ -447,11 +465,24 @@ router.delete(
         return res.status(404).json({ error: "Заявка не найдена" });
       }
 
-      // Удаляем заявку (выплаты и история удалятся каскадом)
-      db.delete(orders).where(eq(orders.id, orderId)).run();
+      // Удаляем связанные записи (каскадное удаление)
+      // Сначала удаляем доставки (у них есть foreign key на orders)
+      db.delete(deliveries).where(eq(deliveries.orderId, orderId)).run();
+
+      // Удаляем доходы связанные с заказами
+      db.delete(incomes).where(eq(incomes.orderId, orderId)).run();
+
+      // Удаляем выплаты
+      db.delete(payments).where(eq(payments.orderId, orderId)).run();
+
+      // Удаляем историю
+      db.delete(orderHistory).where(eq(orderHistory.orderId, orderId)).run();
 
       // Запись в историю (перед удалением)
       await logHistory(orderId, userId, "deleted");
+
+      // Удаляем заявку
+      db.delete(orders).where(eq(orders.id, orderId)).run();
 
       res.status(204).send();
     } catch (error) {

@@ -1,24 +1,36 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useClientsListPage } from "./hooks";
 import { ColumnDef } from "@tanstack/react-table";
 import { Client } from "@/lib/types";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatPhoneDisplay } from "@/lib/utils/phone";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
-import { HomeIcon, MenuIcon } from "lucide-react";
 import { PermissionGuard } from "@/lib/components/permission-guard";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
-import { useIsMobile } from "@/hooks";
-import { useTabbar } from "@/lib/contexts/tabbar-context";
+import { DataTableSearchFilter } from "@/components/data-table/data-table-search-filter";
+import { ClientsTypeFilter } from "./ui/clients-type-filter";
+import { BottomBar } from "@/components/bottom-bar";
 
 export const ClientsPage = () => {
   const navigate = useNavigate();
-  const { clients, isLoading } = useClientsListPage();
+  const {
+    clients,
+    isLoading,
+    currentPage,
+    limit,
+    totalRecords,
+    totalPages,
+    search,
+    clientType,
+    handlePageChange,
+    handleLimitChange,
+    handleSearchChange,
+    handleTypeChange,
+    getTypeFilterLabel,
+  } = useClientsListPage();
   const { hasPermission } = usePermissions();
   const { showToast } = useToast();
-  const isMobile = useIsMobile();
-  const { setOpen } = useTabbar();
 
   const columns: ColumnDef<Client>[] = [
     {
@@ -45,7 +57,7 @@ export const ClientsPage = () => {
     {
       accessorKey: "phone",
       header: "Телефон",
-      cell: ({ getValue }) => getValue<string>() || "—",
+      cell: ({ getValue }) => formatPhoneDisplay(getValue<string>() || undefined) || "—",
     },
     {
       accessorKey: "email",
@@ -57,67 +69,47 @@ export const ClientsPage = () => {
   return (
     <PermissionGuard permission="clients:list">
       <div className="flex flex-col gap-4">
-        <Card>
+        <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
           <CardHeader>
-            <div className="flex flex-col gap-2">
-              <CardTitle>Клиенты</CardTitle>
-
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-black">Список</span>
-              </div>
-            </div>
+            <CardTitle>Клиенты</CardTitle>
           </CardHeader>
         </Card>
 
-        <Card>
-          <CardContent className="pt-8">
-            {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
-            ) : (
-              <DataTable
-                columns={columns}
-                data={clients}
-                onRowClick={(row) =>
-                  navigate({ to: "/clients/$clientId", params: { clientId: row.id.toString() } })
-                }
-              />
-            )}
-          </CardContent>
-        </Card>
+        {/* Search and filter */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <DataTableSearchFilter search={search} handleSearchChange={handleSearchChange} />
 
-        <div
-          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
-        >
-          <Link to="/">
-            <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
-              <HomeIcon className="w-4 h-4" />
-            </Button>
-          </Link>
-
-          {isMobile && (
-            <Button
-              type="button"
-              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
-              onClick={() => setOpen(true)}
-            >
-              <MenuIcon className="w-4 h-4" />
-            </Button>
-          )}
-
-          <Button
-            type="button"
-            className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
-            onClick={() => {
-              if (!hasPermission("clients:create")) {
-                showToast("У вас нет прав на создание клиента", "error");
-                return;
-              }
-              navigate({ to: "/clients/new" });
-            }}
-          >
-            Создать
-          </Button>
+          <ClientsTypeFilter
+            clientType={clientType}
+            handleTypeChange={handleTypeChange}
+            getTypeFilterLabel={getTypeFilterLabel}
+          />
         </div>
+
+        {isLoading ? (
+          <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={clients}
+            pagination={{ currentPage, limit, totalRecords, totalPages }}
+            onPageChange={handlePageChange}
+            onLimitChange={handleLimitChange}
+            onRowClick={(row) =>
+              navigate({ to: "/clients/$clientId", params: { clientId: row.id.toString() } })
+            }
+          />
+        )}
+
+        <BottomBar
+          onCreate={() => {
+            if (!hasPermission("clients:create")) {
+              showToast("У вас нет прав на создание клиента", "error");
+              return;
+            }
+            navigate({ to: "/clients/new" });
+          }}
+        />
       </div>
     </PermissionGuard>
   );

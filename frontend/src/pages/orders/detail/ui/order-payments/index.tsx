@@ -57,22 +57,22 @@ export const OrderPayments = ({ orderId, order, setOrder }: Props) => {
     <>
       <div className="flex flex-col gap-4">
         <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
-          <div className="border rounded-md p-4">
+          <div className="border rounded-2xl shadow-xl p-4">
             <p className="text-sm text-muted-foreground">Получено средств</p>
             <p className="text-2xl font-bold text-green-600">{receivedAmount} ₽</p>
           </div>
-          <div className="border rounded-md p-4">
+          <div className="border rounded-2xl shadow-xl p-4">
             <p className="text-sm text-muted-foreground">Ожидает подтверждения</p>
             <p className="text-2xl font-bold text-yellow-600">{pendingAmount} ₽</p>
           </div>
         </div>
 
         <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
-          <div className="border rounded-md p-4">
+          <div className="border rounded-2xl shadow-xl p-4">
             <p className="text-sm text-muted-foreground">Долг клиента</p>
             <p className="text-2xl font-bold text-destructive">{customerDebt} ₽</p>
           </div>
-          <div className="border rounded-md p-4">
+          <div className="border rounded-2xl shadow-xl p-4">
             <p className="text-sm text-muted-foreground">Долг компании</p>
             <p className="text-2xl font-bold text-orange-600">{companyDebt} ₽</p>
           </div>
@@ -116,7 +116,7 @@ export const OrderPayments = ({ orderId, order, setOrder }: Props) => {
           <Button
             type="button"
             onClick={openIncomeDialog}
-            className="bg-blue-600 hover:bg-blue-700"
+            className="bg-blue-600/80 hover:bg-blue-600 rounded-2xl"
             disabled={
               order?.status === "completed" ||
               order?.status === "cancelled" ||

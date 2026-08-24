@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { cleanPhone } from "@/lib/utils/phone";
 
 export const useNewClientPage = () => {
   const navigate = useNavigate();
@@ -34,11 +35,23 @@ export const useNewClientPage = () => {
     setError(null);
     setIsSubmitting(true);
     try {
-      // Преобразуем пустые строки в null и отправляем данные
+      // Очищаем номера телефонов от всех символов кроме цифр
       const payload = {
         ...data,
-        payer: data.payer || undefined,
-        receiver: data.receiver || undefined,
+        phone: data.phone ? cleanPhone(data.phone) : undefined,
+        email: data.email,
+        payer: data.payer
+          ? {
+              ...data.payer,
+              phone: data.payer.phone ? cleanPhone(data.payer.phone) : undefined,
+            }
+          : undefined,
+        receiver: data.receiver
+          ? {
+              ...data.receiver,
+              phone: data.receiver.phone ? cleanPhone(data.receiver.phone) : undefined,
+            }
+          : undefined,
       };
       await clientsApi.create(payload);
       navigate({ to: "/clients" });

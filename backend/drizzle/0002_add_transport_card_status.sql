@@ -1,1 +1,2 @@
-ALTER TABLE transport_cards ADD COLUMN status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'inactive'));
+-- Column status already exists from 0000_rich_young_avengers.sql
+-- This migration is kept for reference but is now a no-op

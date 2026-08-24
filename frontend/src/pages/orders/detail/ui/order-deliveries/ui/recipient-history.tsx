@@ -47,7 +47,7 @@ export const RecipientHistoryList = ({ deliveryId }: Props) => {
 
   if (history.length === 0) {
     return (
-      <Card>
+      <Card className="rounded-2xl">
         <CardHeader>
           <CardTitle className="text-base">История получателей</CardTitle>
         </CardHeader>
@@ -59,7 +59,7 @@ export const RecipientHistoryList = ({ deliveryId }: Props) => {
   }
 
   return (
-    <Card>
+    <Card className="rounded-2xl">
       <CardHeader>
         <CardTitle className="text-base">История получателей ({history.length})</CardTitle>
       </CardHeader>

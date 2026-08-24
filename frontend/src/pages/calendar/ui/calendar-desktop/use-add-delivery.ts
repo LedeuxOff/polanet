@@ -1,11 +1,9 @@
-import { carsApi, deliveriesApi, driversApi, ordersApi, usersApi } from "@/lib/api";
+import { carsApi, deliveriesApi, ordersApi, usersApi } from "@/lib/api";
 import {
   Car,
   CreateDeliveryInput,
-  Delivery,
   DeliveryForm,
   deliverySchema,
-  Driver,
   Order,
   UpdateDeliveryInput,
   User,
@@ -17,7 +15,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 export const completeDeliverySchema = z.object({
-  recipientType: z.enum(["employee", "driver"]).optional().nullable(),
   recipientId: z.coerce.number().optional().nullable(),
   comment: z.string().optional(),
 });
@@ -37,7 +34,7 @@ interface Props {
 
 export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
   const [showDeliveryDialog, setShowDeliveryDialog] = useState(false);
-  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [drivers, setDrivers] = useState<User[]>([]);
   const [cars, setCars] = useState<Car[]>([]);
   const [availableOrders, setAvailableOrders] = useState<Order[]>([]);
   const [users, setUsers] = useState<User[]>([]);
@@ -52,7 +49,6 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
   const completeForm = useForm<DeliveryCompleteForm>({
     resolver: zodResolver(completeDeliverySchema),
     defaultValues: {
-      recipientType: undefined,
       recipientId: undefined,
       comment: "",
     },
@@ -85,25 +81,27 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [driversData, carsData, usersData, draftOrders, newOrders, inProgressOrders] =
-          await Promise.all([
-            driversApi.list(),
-            carsApi.list(),
-            usersApi.list(),
-            ordersApi.list({ status: "draft" }),
-            ordersApi.list({ status: "new" }),
-            ordersApi.list({ status: "in_progress" }),
-          ]);
+        const [usersData, draftOrders, newOrders, inProgressOrders] = await Promise.all([
+          usersApi.list({ limit: 100 }),
+          ordersApi.list({ status: "draft" }),
+          ordersApi.list({ status: "new" }),
+          ordersApi.list({ status: "in_progress" }),
+        ]);
 
-        setDrivers(driversData || []);
-        setCars(carsData || []);
-        setUsers(usersData || []);
+        const [driversResponse, carsResponse] = await Promise.all([
+          usersApi.list({ roleCode: "DRIVER", limit: 1000 }),
+          carsApi.list(),
+        ]);
+
+        setDrivers(driversResponse.data || []);
+        setCars(carsResponse.data || []);
+        setUsers(usersData.data || []);
 
         // Объединяем заказы из всех статусов и убираем дубликаты
         const allOrders = [
-          ...(draftOrders || []),
-          ...(newOrders || []),
-          ...(inProgressOrders || []),
+          ...(draftOrders?.data || []),
+          ...(newOrders?.data || []),
+          ...(inProgressOrders?.data || []),
         ];
         const uniqueOrders = Array.from(
           new Map(allOrders.map((order) => [order.id, order])).values(),
@@ -126,7 +124,6 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
       isPaymentBeforeUnloading: false,
       notifyClient: false,
       notifyDriver: false,
-      recipientType: undefined,
       recipientId: undefined,
     },
   });
@@ -168,7 +165,6 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
         isPaymentBeforeUnloading: editingDelivery.isPaymentBeforeUnloading,
         notifyClient: editingDelivery.notifyClient,
         notifyDriver: editingDelivery.notifyDriver,
-        recipientType: editingDelivery.recipientType ?? undefined,
         recipientId: editingDelivery.recipientId ?? undefined,
       });
     }
@@ -209,7 +205,6 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
           isPaymentBeforeUnloading: data.isPaymentBeforeUnloading,
           notifyClient: data.notifyClient,
           notifyDriver: data.notifyDriver,
-          recipientType: data.recipientType,
           recipientId: data.recipientId,
         };
         await deliveriesApi.update(editingDelivery.id, updateData);
@@ -233,7 +228,6 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
           isPaymentBeforeUnloading: data.isPaymentBeforeUnloading,
           notifyClient: data.notifyClient,
           notifyDriver: data.notifyDriver,
-          recipientType: data.recipientType,
           recipientId: data.recipientId,
         };
         await deliveriesApi.create(createData);
@@ -255,7 +249,6 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
     // Get recipient data from income (nested object)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const income = (editingDelivery as any).income;
-    const currentRecipientType = income?.recipientType || null;
     const currentRecipientId = income?.recipientId || null;
 
     // Устанавливаем флаг что мы меняем получателя
@@ -264,7 +257,6 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
     // Открываем модальное окно для смены получателя
     setShowCompleteDialog(true);
     completeForm.reset({
-      recipientType: currentRecipientType || undefined,
       recipientId: currentRecipientId || undefined,
       comment: editingDelivery.comment || "",
     });
@@ -284,7 +276,6 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
     setShowCompleteDialog(true);
     // Устанавливаем значения формы для редактирования
     completeForm.reset({
-      recipientType: editingDelivery.recipientType || undefined,
       recipientId: editingDelivery.recipientId || undefined,
       comment: editingDelivery.comment || "",
     });
@@ -296,7 +287,6 @@ export const useAddDelivery = ({ initialData, onDeliveryCreated }: Props) => {
     try {
       // Обновляем доставку с данными получателя
       const updateData: UpdateDeliveryInput = {
-        recipientType: data.recipientType,
         recipientId: data.recipientId,
       };
       await deliveriesApi.update(editingDelivery.id, updateData);

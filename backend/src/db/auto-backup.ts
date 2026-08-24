@@ -11,6 +11,16 @@ const AUTO_BACKUP_ENABLED = process.env.AUTO_BACKUP === "true";
 const AUTO_BACKUP_INTERVAL_MS = parseInt(process.env.AUTO_BACKUP_INTERVAL || "3600000", 10); // 1 час по умолчанию
 const AUTO_BACKUP_MAX_COUNT = parseInt(process.env.AUTO_BACKUP_MAX_COUNT || "24", 10); // Хранить последние 24 бэкапа
 
+// Determine backup directory path
+let backupDir: string;
+if (fs.existsSync("/app/data/backups")) {
+  // Docker environment
+  backupDir = "/app/data/backups";
+} else {
+  // Local development
+  backupDir = path.join(__dirname, "../../data/backups");
+}
+
 interface AutoBackupConfig {
   enabled: boolean;
   intervalMs: number;
@@ -22,7 +32,7 @@ const config: AutoBackupConfig = {
   enabled: AUTO_BACKUP_ENABLED,
   intervalMs: AUTO_BACKUP_INTERVAL_MS,
   maxCount: AUTO_BACKUP_MAX_COUNT,
-  backupDir: path.join(__dirname, "../../data/backups"),
+  backupDir: backupDir,
 };
 
 let backupInterval: NodeJS.Timeout | null = null;

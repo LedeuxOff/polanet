@@ -30,7 +30,7 @@ export const DeliveryMobileItem = ({
   handleDeleteDelivery,
 }: Props) => {
   return (
-    <div className="flex flex-col gap-4 border rounded-md p-4">
+    <div className="flex flex-col gap-4 border rounded-2xl p-4">
       <div className="flex gap-2 justify-between">
         <Badge
           className={
@@ -85,7 +85,7 @@ export const DeliveryMobileItem = ({
             size="sm"
             type="button"
             onClick={() => handleCompleteDelivery()}
-            className="bg-green-100 text-green-700 hover:bg-green-200 hover:text-green-800 flex items-center gap-2"
+            className="rounded-2xl bg-green-100 text-green-700 hover:bg-green-200 hover:text-green-800 flex items-center gap-2"
           >
             <BanknoteIcon /> Завершить
           </Button>
@@ -96,7 +96,7 @@ export const DeliveryMobileItem = ({
           size="sm"
           onClick={() => handleEditDelivery(delivery)}
           disabled={delivery.status === "completed" || disabledByStatus}
-          className="bg-blue-100 text-blue-700 hover:bg-blue-200 hover:text-blue-800 flex gap-2"
+          className="rounded-2xl bg-blue-100 text-blue-700 hover:bg-blue-200 hover:text-blue-800 flex gap-2"
         >
           <PencilIcon className="w-4 h-4" /> Редактировать
         </Button>
@@ -106,7 +106,7 @@ export const DeliveryMobileItem = ({
           size="sm"
           onClick={() => handleDeleteDelivery(delivery.id)}
           disabled={delivery.status === "completed" || disabledByStatus}
-          className="bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-800 flex gap-2"
+          className="rounded-2xl bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-800 flex gap-2"
         >
           <TrashIcon className="w-4 h-4" /> Удалить
         </Button>

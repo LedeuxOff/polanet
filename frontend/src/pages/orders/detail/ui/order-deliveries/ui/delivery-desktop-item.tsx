@@ -30,7 +30,7 @@ export const DeliveryDesktopItem = ({
   handleDeleteDelivery,
 }: Props) => {
   return (
-    <div className="flex flex-col gap-4 border rounded-md p-4">
+    <div className="flex flex-col gap-4 border rounded-2xl p-4">
       <div className="flex items-center justify-between">
         <div className="flex gap-2 items-center">
           <Badge
@@ -52,7 +52,7 @@ export const DeliveryDesktopItem = ({
               size="sm"
               type="button"
               onClick={() => handleCompleteDelivery()}
-              className="bg-green-100 text-green-700 hover:bg-green-200 hover:text-green-800 flex items-center gap-2"
+              className="rounded-2xl bg-green-100 text-green-700 hover:bg-green-200 hover:text-green-800 flex items-center gap-2"
             >
               <BanknoteIcon /> Завершить
             </Button>
@@ -63,7 +63,7 @@ export const DeliveryDesktopItem = ({
             size="sm"
             onClick={() => handleEditDelivery(delivery)}
             disabled={delivery.status === "completed" || disabledByStatus}
-            className="bg-blue-100 text-blue-700 hover:bg-blue-200 hover:text-blue-800"
+            className="rounded-2xl bg-blue-100 text-blue-700 hover:bg-blue-200 hover:text-blue-800"
           >
             <PencilIcon className="w-4 h-4" />
           </Button>
@@ -73,7 +73,7 @@ export const DeliveryDesktopItem = ({
             size="sm"
             onClick={() => handleDeleteDelivery(delivery.id)}
             disabled={delivery.status === "completed" || disabledByStatus}
-            className="bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-800"
+            className="rounded-2xl bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-800"
           >
             <TrashIcon className="w-4 h-4" />
           </Button>

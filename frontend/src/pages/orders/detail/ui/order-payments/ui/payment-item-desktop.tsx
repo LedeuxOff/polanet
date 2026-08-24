@@ -11,7 +11,7 @@ interface Props {
 
 export const PaymentItemDesktop = ({ income }: Props) => {
   return (
-    <div className="flex flex-col gap-4 border rounded-md p-4">
+    <div className="flex flex-col gap-4 border rounded-2xl p-4">
       <div className="flex justify-between gap-4">
         <div className="flex gap-2 items-center">
           <OrderPaymentsIncomeItemType incomeType={income.incomeType} />

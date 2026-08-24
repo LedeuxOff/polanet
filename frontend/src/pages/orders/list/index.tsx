@@ -2,19 +2,34 @@ import { ColumnDef } from "@tanstack/react-table";
 import { useOrdersListPage } from "./hooks";
 import { statusLabels } from "./consts";
 import { useNavigate, Link } from "@tanstack/react-router";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { HomeIcon, MenuIcon } from "lucide-react";
+import { ChevronDown, ChevronUp, HomeIcon, MenuIcon } from "lucide-react";
 import { QuickCreateOrderButton } from "./ui/quick-create-order-button";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
 import { OrdersListFilters } from "./ui/filters";
+import { useState } from "react";
 
 export const OrdersPage = () => {
+  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
+
   const navigate = useNavigate();
-  const { orders, isLoading, filters, updateFilter, clearFilters, hasActiveFilters } =
-    useOrdersListPage();
+  const {
+    orders,
+    isLoading,
+    filters,
+    updateFilter,
+    clearFilters,
+    hasActiveFilters,
+    currentPage,
+    limit,
+    totalRecords,
+    totalPages,
+    handlePageChange,
+    handleLimitChange,
+  } = useOrdersListPage();
   const isMobile = useIsMobile();
   const { setOpen } = useTabbar();
 
@@ -117,56 +132,56 @@ export const OrdersPage = () => {
 
   return (
     <div className="flex flex-col gap-4 pb-32">
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardHeader>
           <div className="flex flex-col gap-2">
             <CardTitle>Заявки</CardTitle>
-
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-black">Список заявок</span>
-            </div>
           </div>
         </CardHeader>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <OrdersListFilters
-            filters={filters}
-            clearFilters={clearFilters}
-            hasActiveFilters={hasActiveFilters}
-            updateFilter={updateFilter}
-          />
-        </CardHeader>
-      </Card>
+      <OrdersListFilters
+        filters={filters}
+        clearFilters={clearFilters}
+        hasActiveFilters={hasActiveFilters}
+        updateFilter={updateFilter}
+      />
 
-      <Card>
-        <CardHeader></CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
-          ) : (
-            <DataTable
-              columns={columns}
-              data={orders}
-              onRowClick={(row) =>
-                navigate({
-                  to: "/orders/$orderId",
-                  params: { orderId: String(row.id) },
-                })
-              }
-            />
-          )}
-        </CardContent>
-      </Card>
+      {isLoading ? (
+        <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={orders}
+          pagination={{ currentPage, limit, totalRecords, totalPages }}
+          onPageChange={handlePageChange}
+          onLimitChange={handleLimitChange}
+          onRowClick={(row) =>
+            navigate({
+              to: "/orders/$orderId",
+              params: { orderId: String(row.id) },
+            })
+          }
+        />
+      )}
 
       <div
-        className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+        className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[108px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[108px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
       >
-        <div className="flex flex-col gap-2">
-          <div className="flex gap-2">
+        <div
+          onClick={() => setHideBottomTabbar(false)}
+          className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
+        >
+          <ChevronUp className="text-white w-5" />
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <div className="flex gap-3">
             <Link to="/">
-              <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
+              <Button
+                type="button"
+                className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+              >
                 <HomeIcon className="w-4 h-4" />
               </Button>
             </Link>
@@ -174,7 +189,7 @@ export const OrdersPage = () => {
             {isMobile && (
               <Button
                 type="button"
-                className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+                className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
                 onClick={() => setOpen(true)}
               >
                 <MenuIcon className="w-4 h-4" />
@@ -182,10 +197,21 @@ export const OrdersPage = () => {
             )}
 
             <Link to="/orders/new">
-              <Button type="button" className="px-8 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
+              <Button
+                type="button"
+                className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600"
+              >
                 Создать заявку
               </Button>
             </Link>
+
+            <Button
+              onClick={() => setHideBottomTabbar(true)}
+              type="button"
+              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+            >
+              <ChevronDown className="w-4 h-4" />
+            </Button>
           </div>
 
           <QuickCreateOrderButton />

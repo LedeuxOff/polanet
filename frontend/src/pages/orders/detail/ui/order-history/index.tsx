@@ -61,7 +61,7 @@ export const OrderHistory = ({ order }: Props) => {
                   .join(" ");
 
                 return (
-                  <div key={item.id} className="p-3 border rounded-md bg-muted/50">
+                  <div key={item.id} className="p-3 border rounded-2xl bg-muted/50">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
                         <Badge
@@ -110,12 +110,12 @@ export const OrderHistory = ({ order }: Props) => {
                     size="icon"
                     onClick={handlePreviousPage}
                     disabled={currentPage === 1}
-                    className="h-10 w-10 bg-zinc-800 text-white hover:bg-zinc-900 hover:text-white"
+                    className="rounded-2xl h-10 w-10 bg-blue-600/80 text-white hover:bg-blue-600 hover:text-white"
                     type="button"
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
-                  <div className="flex items-center gap-2 px-4 py-2 border rounded-md">
+                  <div className="flex items-center gap-2 px-4 py-2 border rounded-2xl">
                     <span className="text-sm font-medium">{currentPage}</span>
                     <span className="text-sm text-muted-foreground">/ {totalPages}</span>
                   </div>
@@ -124,7 +124,7 @@ export const OrderHistory = ({ order }: Props) => {
                     size="icon"
                     onClick={handleNextPage}
                     disabled={currentPage === totalPages}
-                    className="h-10 w-10 bg-zinc-800 text-white hover:bg-zinc-900 hover:text-white"
+                    className="rounded-2xl h-10 w-10 bg-blue-600/80 text-white hover:bg-blue-600 hover:text-white"
                     type="button"
                   >
                     <ChevronRight className="h-4 w-4" />

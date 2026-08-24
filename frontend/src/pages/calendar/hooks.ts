@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { calendarApi } from "@/lib/api/calendar-api";
 import type { CalendarDelivery } from "@/lib/types";
 

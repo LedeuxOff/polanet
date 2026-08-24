@@ -6,8 +6,9 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { useToast } from "@/lib/contexts/toast-context";
 
 const loginSchema = z.object({
   email: z.string().email("Неверный формат email"),
@@ -27,6 +28,7 @@ function LoginPage() {
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const search = useSearch({ from: "/login" });
+  const { showToast } = useToast();
   const [error, setError] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
@@ -51,21 +53,23 @@ function LoginPage() {
       await login(data.email, data.password);
       navigate({ to: search.redirect || "/" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка входа");
+      const errorMessage = err instanceof Error ? err.message : "Ошибка входа";
+      setError(errorMessage);
+      showToast(errorMessage, "error");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Вход в систему</CardTitle>
-          <CardDescription>Введите свои данные для входа в административную панель</CardDescription>
+    <div className="min-h-screen flex items-center justify-center bg-zinc-100 dark:bg-[url(/layout/bg.jpeg)] bg-cover p-4">
+      <Card className="w-full max-w-md rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
+        <CardHeader className="flex flex-col gap-4 items-center">
+          <img src="/layout/logo.png" alt="logo" className="w-32" />
+          <CardTitle className="text-2xl font-bold text-center">Вход в систему</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
             {error && (
               <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
                 {error}
@@ -74,6 +78,7 @@ function LoginPage() {
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
+                className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                 id="email"
                 type="email"
                 placeholder="admin@polanet.local"
@@ -85,6 +90,7 @@ function LoginPage() {
             <div className="space-y-2">
               <Label htmlFor="password">Пароль</Label>
               <Input
+                className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                 id="password"
                 type="password"
                 placeholder="••••••••"
@@ -95,13 +101,14 @@ function LoginPage() {
                 <p className="text-sm text-destructive">{errors.password.message}</p>
               )}
             </div>
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              className="mt-4 px-8 py-4 bg-blue-500/90 dark:bg-blue-600/40 dark:text-zinc-100 dark:border dark:border-white/10 rounded-2xl hover:bg-blue-600 dark:hover:bg-blue-600/30 flex-1"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Вход..." : "Войти"}
             </Button>
           </form>
-          <div className="mt-4 text-center text-sm text-muted-foreground">
-            <p>По умолчанию: admin@polanet.local / admin123</p>
-          </div>
         </CardContent>
       </Card>
     </div>

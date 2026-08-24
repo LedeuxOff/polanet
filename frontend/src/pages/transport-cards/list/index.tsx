@@ -1,35 +1,47 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { useTransportCardsListPage } from "./hooks";
 import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { HomeIcon, MenuIcon } from "lucide-react";
 import { PermissionGuard } from "@/lib/components/permission-guard";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
-import { useIsMobile } from "@/hooks";
-import { useTabbar } from "@/lib/contexts/tabbar-context";
+import { DataTableSearchFilter } from "@/components/data-table/data-table-search-filter";
+import { BottomBar } from "@/components/bottom-bar";
+
+const getStatusBadge = (status: string) => {
+  if (status === "active") {
+    return (
+      <Badge className="bg-green-200 text-green-700 border border-green-300 dark:bg-green-200 dark:text-green-700">
+        Активна
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="secondary" className="bg-red-200 text-red-700 border border-red-300">
+      Неактивна
+    </Badge>
+  );
+};
 
 export const TransportCardsPage = () => {
   const navigate = useNavigate();
-  const { cards, isLoading } = useTransportCardsListPage();
   const { hasPermission } = usePermissions();
   const { showToast } = useToast();
-  const isMobile = useIsMobile();
-  const { setOpen } = useTabbar();
 
-  const getStatusBadge = (status: string) => {
-    if (status === "active") {
-      return <Badge className="bg-green-600">Активна</Badge>;
-    }
-    return (
-      <Badge variant="outline" className="text-muted-foreground">
-        Неактивна
-      </Badge>
-    );
-  };
+  const {
+    cards,
+    isLoading,
+    currentPage,
+    limit,
+    totalRecords,
+    totalPages,
+    search,
+    handlePageChange,
+    handleLimitChange,
+    handleSearchChange,
+  } = useTransportCardsListPage();
 
   const columns: ColumnDef<(typeof cards)[0]>[] = [
     {
@@ -38,99 +50,56 @@ export const TransportCardsPage = () => {
       cell: ({ row }) => <span>{row.getValue("cardNumber")}</span>,
     },
     {
-      accessorKey: "driver",
-      header: "Водитель",
-      cell: ({ row }) => {
-        const driver = row.original.driver;
-        return driver ? (
-          <span className="text-sm">
-            {driver.lastName} {driver.firstName} {driver.middleName}
-          </span>
-        ) : (
-          <span className="text-sm text-muted-foreground">Не назначен</span>
-        );
-      },
+      accessorKey: "status",
+      header: "Статус",
+      cell: ({ row }) => getStatusBadge(row.original.status),
     },
     {
       accessorKey: "totalExpenses",
       header: "Общие расходы",
       cell: ({ getValue }) => `${getValue<number>()} ₽`,
     },
-    {
-      accessorKey: "status",
-      header: "Статус",
-      cell: ({ row }) => getStatusBadge(row.original.status),
-    },
   ];
 
   return (
     <PermissionGuard permission="transport-cards:list">
       <div className="flex flex-col gap-4">
-        <Card>
+        <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
           <CardHeader>
-            <div className="flex flex-col gap-2">
-              <CardTitle>Транспортные карты</CardTitle>
-
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-black">Список</span>
-              </div>
-            </div>
+            <CardTitle>Транспортные карты</CardTitle>
           </CardHeader>
         </Card>
 
-        <Card>
-          <CardHeader></CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
-            ) : (
-              <DataTable
-                columns={columns}
-                data={cards}
-                onRowClick={(row) =>
-                  navigate({
-                    to: "/transport-cards/$cardId",
-                    params: { cardId: row.id.toString() },
-                  })
-                }
-              />
-            )}
-          </CardContent>
-        </Card>
+        {/* Search */}
+        <DataTableSearchFilter search={search} handleSearchChange={handleSearchChange} />
 
-        <div
-          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
-        >
-          <Link to="/">
-            <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
-              <HomeIcon className="w-4 h-4" />
-            </Button>
-          </Link>
+        {isLoading ? (
+          <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={cards}
+            pagination={{ currentPage, limit, totalRecords, totalPages }}
+            onPageChange={handlePageChange}
+            onLimitChange={handleLimitChange}
+            onRowClick={(row) =>
+              navigate({
+                to: "/transport-cards/$cardId",
+                params: { cardId: row.id.toString() },
+              })
+            }
+          />
+        )}
 
-          {isMobile && (
-            <Button
-              type="button"
-              className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
-              onClick={() => setOpen(true)}
-            >
-              <MenuIcon className="w-4 h-4" />
-            </Button>
-          )}
-
-          <Button
-            type="button"
-            className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
-            onClick={() => {
-              if (!hasPermission("transport-cards:create")) {
-                showToast("У вас нет прав на создание карты", "error");
-                return;
-              }
-              navigate({ to: "/transport-cards/new" });
-            }}
-          >
-            Создать
-          </Button>
-        </div>
+        <BottomBar
+          onCreate={() => {
+            if (!hasPermission("transport-cards:create")) {
+              showToast("У вас нет прав на создание карты", "error");
+              return;
+            }
+            navigate({ to: "/transport-cards/new" });
+          }}
+        />
       </div>
     </PermissionGuard>
   );

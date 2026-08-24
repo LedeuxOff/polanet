@@ -4,7 +4,6 @@ import {
   expenses,
   transportCards,
   transportCardHistory,
-  drivers,
   users,
   permissions,
   rolePermissions,
@@ -123,7 +122,7 @@ router.post(
 
       if (data.expenseType === "salary" && !data.driverId) {
         return res.status(400).json({
-          error: "Для расхода 'зарплата' необходима привязка к водителю",
+          error: "Для расхода 'зарплата' необходима привязка к сотруднику",
         });
       }
 

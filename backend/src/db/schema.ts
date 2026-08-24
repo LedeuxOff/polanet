@@ -45,6 +45,9 @@ export const users = sqliteTable("users", {
   roleId: integer("role_id")
     .references(() => roles.id)
     .notNull(),
+  transportCardId: integer("transport_card_id").references(() => transportCards.id, {
+    onDelete: "set null",
+  }),
   createdAt: text("created_at").default("CURRENT_TIMESTAMP").notNull(),
   updatedAt: text("updated_at").default("CURRENT_TIMESTAMP").notNull(),
 });
@@ -62,16 +65,6 @@ export const cars = sqliteTable("cars", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   brand: text("brand").notNull(),
   licensePlate: text("license_plate").notNull().unique(),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP").notNull(),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP").notNull(),
-});
-
-export const drivers = sqliteTable("drivers", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  lastName: text("last_name").notNull(),
-  firstName: text("first_name").notNull(),
-  middleName: text("middle_name"),
-  phone: text("phone"),
   createdAt: text("created_at").default("CURRENT_TIMESTAMP").notNull(),
   updatedAt: text("updated_at").default("CURRENT_TIMESTAMP").notNull(),
 });
@@ -118,8 +111,10 @@ export const orders = sqliteTable("orders", {
   receiverFirstName: text("receiver_first_name").notNull(),
   receiverMiddleName: text("receiver_middle_name"),
   receiverPhone: text("receiver_phone"),
-  // Дата и время
-  dateTime: text("date_time").notNull(),
+  // Дата
+  date: text("date").notNull(),
+  // Объем груза (м³)
+  volume: integer("volume"),
   // Пропуск
   hasPass: integer("has_pass", { mode: "boolean" }).notNull().default(false),
   // Комментарий
@@ -143,10 +138,10 @@ export const deliveries = sqliteTable("deliveries", {
   orderId: integer("order_id")
     .notNull()
     .references(() => orders.id, { onDelete: "cascade" }),
-  // Водитель и автомобиль
+  // Водитель (теперь ссылается на users.id) и автомобиль
   driverId: integer("driver_id")
     .notNull()
-    .references(() => drivers.id),
+    .references(() => users.id),
   carId: integer("car_id")
     .notNull()
     .references(() => cars.id),
@@ -237,11 +232,7 @@ export const incomes = sqliteTable("incomes", {
   paymentDate: text("payment_date").notNull(),
   // Айди доставки к которой привязан доход (опционально)
   deliveryId: integer("delivery_id"),
-  // Тип получателя - employee (сотрудник) | driver (водитель)
-  recipientType: text("recipient_type", {
-    enum: ["employee", "driver"],
-  }).$type<"employee" | "driver">(),
-  // Айди получателя (id сотрудника или водителя)
+  // Айди получателя (id сотрудника)
   recipientId: integer("recipient_id"),
   // Аудит
   createdAt: text("created_at").notNull(),
@@ -259,8 +250,13 @@ export const usersRelations = relations(users, ({ one, many }) => ({
     fields: [users.roleId],
     references: [roles.id],
   }),
+  transportCard: one(transportCards, {
+    fields: [users.transportCardId],
+    references: [transportCards.id],
+  }),
   createdOrders: many(orders),
   orderHistory: many(orderHistory),
+  deliveriesAsDriver: many(deliveries),
 }));
 
 export const clientsRelations = relations(clients, ({ many }) => ({
@@ -291,9 +287,9 @@ export const deliveriesRelations = relations(deliveries, ({ one, many }) => ({
     fields: [deliveries.orderId],
     references: [orders.id],
   }),
-  driver: one(drivers, {
+  driver: one(users, {
     fields: [deliveries.driverId],
-    references: [drivers.id],
+    references: [users.id],
   }),
   car: one(cars, {
     fields: [deliveries.carId],
@@ -336,17 +332,15 @@ export const incomesRelations = relations(incomes, ({ one }) => ({
   }),
 }));
 
+// Transport cards - привязываются к сотрудникам через users.transportCardId
 export const transportCards = sqliteTable("transport_cards", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   cardNumber: text("card_number").notNull().unique(),
   status: text("status", { enum: ["active", "inactive"] })
     .notNull()
     .default("active"),
-  driverId: integer("driver_id").references(() => drivers.id, {
-    onDelete: "set null",
-  }),
   createdAt: text("created_at").notNull(),
-  updatedAt: text("updated_at").notNull(),
+  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP").notNull(),
 });
 
 export const transportCardExpenses = sqliteTable("transport_card_expenses", {
@@ -367,26 +361,17 @@ export const transportCardHistory = sqliteTable("transport_card_history", {
   userId: integer("user_id")
     .notNull()
     .references(() => users.id),
-  action: text("action").notNull(), // 'created', 'updated', 'deleted', 'expense_added', 'expense_removed', 'driver_assigned', 'driver_unassigned'
+  action: text("action").notNull(), // 'created', 'updated', 'deleted', 'expense_added', 'expense_removed', 'employee_assigned', 'employee_unassigned'
   fieldName: text("field_name"),
   oldValue: text("old_value"),
   newValue: text("new_value"),
   createdAt: text("created_at").notNull(),
 });
 
-// Relations
-export const transportCardsRelations = relations(transportCards, ({ one, many }) => ({
-  driver: one(drivers, {
-    fields: [transportCards.driverId],
-    references: [drivers.id],
-  }),
+// Relations для transport cards
+export const transportCardsRelations = relations(transportCards, ({ many }) => ({
   expenses: many(transportCardExpenses),
   history: many(transportCardHistory),
-}));
-
-export const driversRelations = relations(drivers, ({ one, many }) => ({
-  orders: many(orders),
-  transportCard: one(transportCards),
 }));
 
 export const transportCardExpensesRelations = relations(transportCardExpenses, ({ one }) => ({
@@ -407,7 +392,7 @@ export const transportCardHistoryRelations = relations(transportCardHistory, ({ 
   }),
 }));
 
-// Expenses table
+// Expenses table - driverId теперь ссылается на users.id
 export const expenses = sqliteTable("expenses", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   expenseType: text("expense_type", { enum: ["salary", "fuel"] }).notNull(),
@@ -415,12 +400,48 @@ export const expenses = sqliteTable("expenses", {
   transportCardId: integer("transport_card_id").references(() => transportCards.id, {
     onDelete: "set null",
   }),
-  driverId: integer("driver_id").references(() => drivers.id, {
+  driverId: integer("driver_id").references(() => users.id, {
     onDelete: "set null",
   }),
   dateTime: text("date_time").notNull(),
   amount: integer("amount").notNull(),
   comment: text("comment"),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+// === Templates (Шаблоны заявок) ===
+
+export const templates = sqliteTable("templates", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  // Тип заявки
+  type: text("type", { enum: ["delivery", "pickup"] }).notNull(),
+  // Адрес
+  address: text("address").notNull(),
+  // Плательщик
+  payerLastName: text("payer_last_name").notNull(),
+  payerFirstName: text("payer_first_name").notNull(),
+  payerMiddleName: text("payer_middle_name"),
+  payerPhone: text("payer_phone"),
+  // Приемщик
+  receiverLastName: text("receiver_last_name").notNull(),
+  receiverFirstName: text("receiver_first_name").notNull(),
+  receiverMiddleName: text("receiver_middle_name"),
+  receiverPhone: text("receiver_phone"),
+  // Дата
+  date: text("date").notNull(),
+  // Объем груза (м³)
+  volume: integer("volume"),
+  // Пропуск
+  hasPass: integer("has_pass", { mode: "boolean" }).notNull().default(false),
+  // Комментарий
+  addressComment: text("address_comment"),
+  // Связи
+  clientId: integer("client_id").references(() => clients.id),
+  // Аудит
+  createdById: integer("created_by_id")
+    .references(() => users.id)
+    .notNull(),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
@@ -435,13 +456,7 @@ export const recipientHistory = sqliteTable("recipient_history", {
   userId: integer("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "restrict" }),
-  recipientType: text("recipient_type", { enum: ["employee", "driver"] }).$type<
-    "employee" | "driver"
-  >(),
   recipientId: integer("recipient_id"),
-  oldRecipientType: text("old_recipient_type", { enum: ["employee", "driver"] }).$type<
-    "employee" | "driver"
-  >(),
   oldRecipientId: integer("old_recipient_id"),
   action: text("action").notNull(), // 'created', 'updated', 'deleted'
   comment: text("comment"),
@@ -470,9 +485,21 @@ export const expensesRelations = relations(expenses, ({ one }) => ({
     fields: [expenses.transportCardId],
     references: [transportCards.id],
   }),
-  driver: one(drivers, {
+  driver: one(users, {
     fields: [expenses.driverId],
-    references: [drivers.id],
+    references: [users.id],
+  }),
+}));
+
+// Relations for templates
+export const templatesRelations = relations(templates, ({ one }) => ({
+  createdBy: one(users, {
+    fields: [templates.createdById],
+    references: [users.id],
+  }),
+  client: one(clients, {
+    fields: [templates.clientId],
+    references: [clients.id],
   }),
 }));
 
@@ -485,8 +512,6 @@ export type Session = typeof sessions.$inferSelect;
 export type NewSession = typeof sessions.$inferInsert;
 export type Car = typeof cars.$inferSelect;
 export type NewCar = typeof cars.$inferInsert;
-export type Driver = typeof drivers.$inferSelect;
-export type NewDriver = typeof drivers.$inferInsert;
 export type Client = typeof clients.$inferSelect;
 export type NewClient = typeof clients.$inferInsert;
 export type Order = typeof orders.$inferSelect;
@@ -511,6 +536,8 @@ export type Permission = typeof permissions.$inferSelect;
 export type NewPermission = typeof permissions.$inferInsert;
 export type RolePermission = typeof rolePermissions.$inferSelect;
 export type NewRolePermission = typeof rolePermissions.$inferInsert;
+export type Template = typeof templates.$inferSelect;
+export type NewTemplate = typeof templates.$inferInsert;
 
 // Отношения для permissions
 export const permissionsRelations = relations(permissions, ({ many }) => ({

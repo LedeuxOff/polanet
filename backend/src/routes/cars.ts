@@ -8,11 +8,47 @@ import { eq } from "drizzle-orm";
 
 const router = Router();
 
-// Получить все автомобили
+// Получить все автомобили с пагинацией и поиском
 router.get("/", authenticate, requirePermission("cars:list"), (req: AuthRequest, res) => {
   try {
-    const allCars = db.select().from(cars).all();
-    res.json(allCars);
+    // Парсинг параметров пагинации
+    const page = parseInt(req.query.page as string, 10) || 1;
+    const limit = parseInt(req.query.limit as string, 10) || 10;
+    const offset = (page - 1) * limit;
+
+    // Парсинг параметров поиска
+    const searchBrand = req.query.brand as string;
+    const searchLicensePlate = req.query.licensePlate as string;
+
+    // Получаем все автомобили
+    let allCars = db.select().from(cars).all();
+
+    if (searchBrand || searchLicensePlate) {
+      allCars = allCars.filter((car) => {
+        const matchesBrand = searchBrand
+          ? car.brand?.toLowerCase().includes(searchBrand.toLowerCase())
+          : true;
+        const matchesLicensePlate = searchLicensePlate
+          ? car.licensePlate?.toLowerCase().includes(searchLicensePlate.toLowerCase())
+          : true;
+        return matchesBrand && matchesLicensePlate;
+      });
+    }
+
+    // Пагинация
+    const totalRecords = allCars.length;
+    const totalPages = Math.ceil(totalRecords / limit);
+    const paginatedCars = allCars.slice(offset, offset + limit);
+
+    res.json({
+      data: paginatedCars,
+      pagination: {
+        page,
+        limit,
+        totalRecords,
+        totalPages,
+      },
+    });
   } catch (error) {
     console.error("Error getting cars:", error);
     res

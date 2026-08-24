@@ -133,7 +133,7 @@ export const OrderDeliveries = ({ orderId, setOrder, order, disabledByStatus }: 
                 form.reset();
                 form.setValue("orderId", Number(orderId));
               }}
-              className="bg-blue-600 hover:bg-blue-700"
+              className="rounded-2xl bg-blue-600/80 hover:bg-blue-600"
               disabled={
                 order?.status === "completed" ||
                 order?.status === "cancelled" ||

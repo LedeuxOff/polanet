@@ -5,12 +5,15 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
-import { ChevronLeft, TrashIcon, SaveIcon, MenuIcon } from "lucide-react";
+import { ChevronLeft, TrashIcon, SaveIcon, MenuIcon, ChevronUp, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
+import { Badge } from "@/components/ui/badge";
 
 export const EditRolePage = () => {
+  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
+
   const { roleId: roleIdStr } = useParams({ from: "/roles/$roleId" });
   const roleId = parseInt(roleIdStr);
   const navigate = useNavigate();
@@ -37,7 +40,7 @@ export const EditRolePage = () => {
 
   if (isLoading) {
     return (
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardContent className="py-8 text-center text-muted-foreground">Загрузка...</CardContent>
       </Card>
     );
@@ -45,7 +48,7 @@ export const EditRolePage = () => {
 
   if (!role) {
     return (
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardContent className="py-8 text-center text-muted-foreground">
           Роль не найдена
         </CardContent>
@@ -59,19 +62,19 @@ export const EditRolePage = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
+      <Card className="rounded-2xl shadow-xl">
         <CardHeader>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-4">
             <CardTitle>Роли</CardTitle>
 
             <div className="flex items-center gap-2">
               <Link to="/roles" className="text-sm text-muted-foreground">
-                Список ролей
+                <Badge variant="outline">Список ролей</Badge>
               </Link>
 
-              <span className="text-sm text-muted-foreground">/</span>
+              <span className="w-1 h-1 bg-blue-400 rounded-full" />
 
-              <span className="text-sm text-black">{role.name}</span>
+              <Badge variant="secondary">{role.name}</Badge>
             </div>
           </div>
         </CardHeader>
@@ -80,7 +83,7 @@ export const EditRolePage = () => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="flex gap-4">
           <div className="flex flex-col gap-4 flex-1">
-            <Card>
+            <Card className="rounded-2xl shadow-xl">
               <CardHeader>
                 <CardTitle>Основная информация</CardTitle>
               </CardHeader>
@@ -88,6 +91,7 @@ export const EditRolePage = () => {
                 <div className="space-y-2">
                   <Label htmlFor="code">Код роли *</Label>
                   <Input
+                    className="rounded-2xl"
                     id="code"
                     placeholder="ADMIN"
                     disabled={isSubmitting}
@@ -101,6 +105,7 @@ export const EditRolePage = () => {
                 <div className="space-y-2">
                   <Label htmlFor="name">Название *</Label>
                   <Input
+                    className="rounded-2xl"
                     id="name"
                     placeholder="Администратор"
                     disabled={isSubmitting}
@@ -114,13 +119,13 @@ export const EditRolePage = () => {
             </Card>
 
             {/* Секция прав доступа */}
-            <Card>
+            <Card className="rounded-2xl shadow-xl">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <CardTitle>Права доступа</CardTitle>
                 <Button
                   type="button"
-                  variant="outline"
                   onClick={() => setShowPermissions(!showPermissions)}
+                  className="rounded-2xl bg-blue-400 hover:bg-blue-500"
                 >
                   {showPermissions ? "Скрыть" : "Показать"}
                 </Button>
@@ -129,7 +134,7 @@ export const EditRolePage = () => {
                 <CardContent>
                   <div className="space-y-6">
                     {Object.entries(permissionsByModule).map(([moduleKey, modulePermissions]) => (
-                      <div key={moduleKey} className="border rounded-lg p-4">
+                      <div key={moduleKey} className="border rounded-2xl p-4">
                         <div className="flex items-center justify-between mb-3">
                           <h3 className="font-semibold text-base">
                             {moduleNames[moduleKey] || moduleKey}
@@ -172,14 +177,21 @@ export const EditRolePage = () => {
         </div>
 
         <div
-          className={`fixed ${isMobile ? "bottom-2" : "bottom-8"} left-1/2 -translate-x-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md`}
+          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[58px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[58px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
         >
-          <div className="flex flex-col gap-2">
-            <div className="flex gap-2">
+          <div
+            onClick={() => setHideBottomTabbar(false)}
+            className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
+          >
+            <ChevronUp className="text-white w-5" />
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-4">
               <Button
                 type="button"
                 disabled={isSubmitting}
-                className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+                className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
                 onClick={() => navigate({ to: "/roles" })}
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -188,7 +200,7 @@ export const EditRolePage = () => {
               {isMobile && (
                 <Button
                   type="button"
-                  className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+                  className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
                   onClick={() => setOpen(true)}
                 >
                   <MenuIcon className="w-4 h-4" />
@@ -198,7 +210,7 @@ export const EditRolePage = () => {
               {role && canDelete && (
                 <Button
                   type="button"
-                  className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900"
+                  className="px-3 py-4 bg-red-400 rounded-2xl hover:bg-red-500"
                   onClick={handleDelete}
                   disabled={isDeleting || isSubmitting}
                 >
@@ -208,9 +220,17 @@ export const EditRolePage = () => {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-8 py-4 bg-blue-600 rounded-md hover:bg-blue-700"
+                className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600"
               >
                 {isSubmitting ? "Сохранение..." : "Сохранить"}
+              </Button>
+
+              <Button
+                onClick={() => setHideBottomTabbar(true)}
+                type="button"
+                className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+              >
+                <ChevronDown className="w-4 h-4" />
               </Button>
             </div>
 
@@ -218,7 +238,7 @@ export const EditRolePage = () => {
               type="button"
               onClick={handleSavePermissions}
               disabled={isSavingPermissions || isSubmitting}
-              className="px-6 py-4 bg-green-600 rounded-md hover:bg-green-700"
+              className="px-8 py-4 bg-green-500 rounded-2xl hover:bg-green-600"
             >
               <SaveIcon className="w-4 h-4 mr-2" />
               {isSavingPermissions ? "Сохранение..." : "Сохранить права"}

@@ -1,4 +1,4 @@
-import { BarChartIcon, CalendarIcon, Home, MonitorIcon, SettingsIcon } from "lucide-react";
+import { BarChartIcon, FileText, Home, MonitorIcon, SettingsIcon } from "lucide-react";
 
 export interface MenuItem {
   title: string;
@@ -24,7 +24,7 @@ export const menuItems: MenuItem[] = [
         url: "/",
       },
       {
-        title: "Пользователи",
+        title: "Сотрудники",
         url: "/users",
         permission: "users:list",
       },
@@ -37,11 +37,6 @@ export const menuItems: MenuItem[] = [
         title: "Автомобили",
         url: "/cars",
         permission: "cars:list",
-      },
-      {
-        title: "Водители",
-        url: "/drivers",
-        permission: "drivers:list",
       },
       {
         title: "Клиенты",
@@ -57,6 +52,18 @@ export const menuItems: MenuItem[] = [
         title: "Календарь",
         url: "/calendar",
         permission: "deliveries:list",
+      },
+    ],
+  },
+  {
+    title: "Шаблоны",
+    id: "1.5",
+    icon: FileText,
+    links: [
+      {
+        title: "Мои шаблоны",
+        url: "/templates",
+        permission: "templates:list",
       },
     ],
   },
@@ -89,7 +96,7 @@ export const menuItems: MenuItem[] = [
     ],
   },
   {
-    title: "Системные настройки",
+    title: "Система",
     id: "4",
     icon: SettingsIcon,
     links: [
@@ -102,6 +109,11 @@ export const menuItems: MenuItem[] = [
         title: "Резервные копии",
         url: "/backups",
         permission: "backups:list",
+      },
+      {
+        title: "Разработчики",
+        url: "/developers",
+        permission: "users:list",
       },
     ],
   },

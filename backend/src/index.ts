@@ -7,13 +7,14 @@ import authRoutes from "./routes/auth.js";
 
 // Импорт авто-бэкапа
 import { startAutoBackup } from "./db/auto-backup.js";
+
+// Запуск миграций при старте
+import { runMigrations } from "./db/migrate.js";
 import userRoutes from "./routes/users.js";
 import roleRoutes from "./routes/roles.js";
 import carRoutes from "./routes/cars.js";
-import driverRoutes from "./routes/drivers.js";
 import clientRoutes from "./routes/clients.js";
 import orderRoutes from "./routes/orders.js";
-import transportCardRoutes from "./routes/transportCards.js";
 import deliveryRoutes from "./routes/deliveries.js";
 import incomeRoutes from "./routes/incomes.js";
 import expenseRoutes from "./routes/expenses.js";
@@ -22,6 +23,8 @@ import systemInfoRoutes from "./routes/systemInfo.js";
 import systemLogsRoutes from "./routes/systemLogs.js";
 import permissionsRoutes from "./routes/permissions.js";
 import telegramRoutes from "./routes/telegram.js";
+import templateRoutes from "./routes/templates.js";
+import transportCardsRoutes from "./routes/transport-cards.js";
 
 // Импорт обработчика ошибок
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -43,32 +46,18 @@ app.use(
 
 app.use(express.json());
 
-// Serve built frontend in production
-if (isProduction) {
-  const path = await import("path");
-  const frontendDist = path.join(__dirname, "../../frontend/dist");
-  app.use(express.static(frontendDist));
-
-  // Serve index.html for all other routes (SPA fallback)
-  app.get("*", (_req, res) => {
-    res.sendFile(path.join(frontendDist, "index.html"));
-  });
-}
-
 // Health check
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// API роуты
+// API роуты (должны быть перед статическими файлами!)
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/cars", carRoutes);
-app.use("/api/drivers", driverRoutes);
 app.use("/api/clients", clientRoutes);
 app.use("/api/orders", orderRoutes);
-app.use("/api/transport-cards", transportCardRoutes);
 app.use("/api/deliveries", deliveryRoutes);
 app.use("/api/incomes", incomeRoutes);
 app.use("/api/expenses", expenseRoutes);
@@ -77,18 +66,37 @@ app.use("/api/system-info", systemInfoRoutes);
 app.use("/api/system-logs", systemLogsRoutes);
 app.use("/api/permissions", permissionsRoutes);
 app.use("/api/telegram", telegramRoutes);
+app.use("/api/templates", templateRoutes);
+app.use("/api/transport-cards", transportCardsRoutes);
 
-// Telegram webhook endpoint (должен быть перед другими маршрутами)
-app.post("/api/telegram/webhook", async (req, res) => {
-  try {
-    const { handleTelegramWebhook } = await import("./services/telegram-bot.js");
-    const result = await handleTelegramWebhook(req.body);
-    res.json(result);
-  } catch (error) {
-    console.error("[Telegram Webhook] Ошибка:", error);
-    res.status(500).json({ error: "Ошибка обработки webhook" });
+// Serve built frontend in production (после API роутов!)
+if (isProduction) {
+  const path = await import("path");
+  const fs = await import("fs");
+  const url = await import("url");
+  const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
+
+  // Determine frontend dist path based on directory structure
+  // When running from /app/backend/dist/, frontend is at /app/frontend/dist
+  let frontendDist;
+  if (fs.existsSync("/app/frontend/dist")) {
+    // Running in Docker with root /app structure
+    frontendDist = "/app/frontend/dist";
+  } else {
+    // Fallback: relative to __dirname
+    frontendDist = path.join(__dirname, "../frontend/dist");
   }
-});
+
+  // Only serve frontend if it exists
+  if (fs.existsSync(frontendDist)) {
+    app.use(express.static(frontendDist));
+
+    // Serve index.html for all other routes (SPA fallback)
+    app.get("*", (_req, res) => {
+      res.sendFile(path.join(frontendDist, "index.html"));
+    });
+  }
+}
 
 // Глобальный обработчик ошибок (4-argument middleware)
 app.use(errorHandler);
@@ -96,21 +104,51 @@ app.use(errorHandler);
 // Запуск автоматического резервного копирования
 startAutoBackup();
 
-// Настройка Telegram webhook
+// Настройка Telegram webhook с повторными попытками
 async function setupTelegram() {
   const { setupTelegramWebhook } = await import("./services/telegram-bot.js");
   const webhookUrl = process.env.TELEGRAM_WEBHOOK_URL;
 
-  if (webhookUrl) {
-    await setupTelegramWebhook(webhookUrl);
-  } else {
+  if (!webhookUrl) {
     console.log(
       "⚠️  TELEGRAM_WEBHOOK_URL не настроен. Для работы бота настройте webhook или используйте ngrok для локальной разработки.",
     );
+    return;
+  }
+
+  // Ждать 10 секунд перед установкой webhook (для WireGuard)
+  console.log("[Telegram Bot] Ожидание 10 секунд перед установкой webhook...");
+  await new Promise((resolve) => setTimeout(resolve, 10000));
+
+  // Попытаться установить webhook с повторными попытками
+  let attempts = 0;
+  const maxAttempts = 5;
+
+  while (attempts < maxAttempts) {
+    try {
+      attempts++;
+      console.log(`[Telegram Bot] Попытка установки webhook (${attempts}/${maxAttempts})...`);
+      await setupTelegramWebhook(webhookUrl);
+      console.log("[Telegram Bot] Webhook успешно установлен");
+      break;
+    } catch (error) {
+      console.error(
+        `[Telegram Bot] Ошибка попытки ${attempts}:`,
+        error instanceof Error ? error.message : String(error),
+      );
+      if (attempts < maxAttempts) {
+        console.log("[Telegram Bot] Повторная попытка через 5 секунд...");
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+      }
+    }
   }
 }
 
-setupTelegram();
+// Запуск миграций перед стартом сервера
+runMigrations().catch((error) => {
+  console.error("Критическая ошибка при применении миграций:", error);
+  process.exit(1);
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Сервер запущен на http://localhost:${PORT}`);
