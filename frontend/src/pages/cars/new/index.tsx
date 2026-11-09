@@ -5,8 +5,7 @@ import { useToast } from "@/lib/contexts/toast-context";
 import { PermissionsLoader } from "@/components/screens/loaders/permissions-loader";
 import { NoAccessScreen } from "@/components/screens/no-access";
 import { CarNewPageHead } from "./ui/car-new-page-head";
-import { CarNewPageForm } from "./ui/car-new-page-form";
-import { BottomBar } from "@/components/bottom-bar";
+import { FormBuilder } from "@/widgets/form-builder";
 
 export const NewCarPage = () => {
   const navigate = useNavigate();
@@ -36,11 +35,39 @@ export const NewCarPage = () => {
     <div className="flex flex-col gap-4">
       <CarNewPageHead />
 
-      <form onSubmit={handleSubmit}>
-        <CarNewPageForm form={form} disabled={isSubmitting} />
-
-        <BottomBar onBack={() => navigate({ to: "/cars" })} isSumitting={isSubmitting} />
-      </form>
+      <FormBuilder
+        form={form}
+        sections={[
+          {
+            id: "main-info",
+            label: "Основная информация",
+            fields: [
+              {
+                id: "brand",
+                label: "Марка",
+                type: "text",
+                disabled: isSubmitting,
+                className: "col-span-3",
+              },
+              {
+                id: "licensePlate",
+                label: "Гос номер",
+                type: "text",
+                disabled: isSubmitting,
+                className: "col-span-3",
+              },
+            ],
+          },
+        ]}
+        actions={{
+          submit: {
+            onSubmit: handleSubmit,
+            isSubmitting: isSubmitting,
+            disabled: isSubmitting,
+          },
+          back: () => navigate({ to: "/cars" }),
+        }}
+      />
     </div>
   );
 };

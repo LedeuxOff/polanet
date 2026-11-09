@@ -123,67 +123,63 @@ export const OrderDetailPage = () => {
   return (
     <div className="flex flex-col gap-4 pb-4">
       {/* Шапка заявки */}
-      <Card className="rounded-2xl shadow-xl">
-        <CardHeader>
-          <OrderHeader isNewOrder={isNewOrder} orderId={orderId} order={order} />
-        </CardHeader>
-      </Card>
+      <OrderHeader orderId={orderId} order={order} />
 
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="flex gap-1 p-1.5 bg-white border border-zinc-200 rounded-2xl shadow-xl">
-          <button
-            type="button"
-            onClick={() => setActiveTab("details")}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all text-sm font-medium ${
-              activeTab === "details"
-                ? "bg-blue-500 text-white shadow-md"
-                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50"
-            }`}
-          >
-            <FileText className="w-4 h-4" />
-            <span className={!isMobile ? "" : "hidden"}>Детали</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("finances")}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all text-sm font-medium ${
-              activeTab === "finances"
-                ? "bg-blue-500 text-white shadow-md"
-                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50"
-            }`}
-          >
-            <Wallet className="w-4 h-4" />
-            <span className={!isMobile ? "" : "hidden"}>Финансы</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("deliveries")}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all text-sm font-medium ${
-              activeTab === "deliveries"
-                ? "bg-blue-500 text-white shadow-md"
-                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50"
-            }`}
-          >
-            <Truck className="w-4 h-4" />
-            <span className={!isMobile ? "" : "hidden"}>Доставки</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("history")}
-            className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all text-sm font-medium ${
-              activeTab === "history"
-                ? "bg-blue-500 text-white shadow-md"
-                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50"
-            }`}
-          >
-            <History className="w-4 h-4" />
-            <span className={!isMobile ? "" : "hidden"}>История</span>
-          </button>
-        </div>
+      <div className="flex gap-1 p-1.5 bg-white border border-zinc-200 rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
+        <button
+          type="button"
+          onClick={() => setActiveTab("details")}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all text-sm font-medium ${
+            activeTab === "details"
+              ? "bg-blue-500 text-white shadow-md dark:bg-white/10"
+              : "text-zinc-600 dark:text-zinc-200 hover:text-zinc-900 hover:bg-zinc-50 dark:hover:bg-white/10"
+          }`}
+        >
+          <FileText className="w-4 h-4" />
+          <span className={!isMobile ? "" : "hidden"}>Детали</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("finances")}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all text-sm font-medium ${
+            activeTab === "finances"
+              ? "bg-blue-500 text-white shadow-md dark:bg-white/10"
+              : "text-zinc-600 dark:text-zinc-200 hover:text-zinc-900 hover:bg-zinc-50 dark:hover:bg-white/10"
+          }`}
+        >
+          <Wallet className="w-4 h-4" />
+          <span className={!isMobile ? "" : "hidden"}>Финансы</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("deliveries")}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all text-sm font-medium ${
+            activeTab === "deliveries"
+              ? "bg-blue-500 text-white shadow-md dark:bg-white/10"
+              : "text-zinc-600 dark:text-zinc-200 hover:text-zinc-900 hover:bg-zinc-50 dark:hover:bg-white/10"
+          }`}
+        >
+          <Truck className="w-4 h-4" />
+          <span className={!isMobile ? "" : "hidden"}>Доставки</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("history")}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all text-sm font-medium ${
+            activeTab === "history"
+              ? "bg-blue-500 text-white shadow-md dark:bg-white/10"
+              : "text-zinc-600 dark:text-zinc-200 hover:text-zinc-900 hover:bg-zinc-50 dark:hover:bg-white/10"
+          }`}
+        >
+          <History className="w-4 h-4" />
+          <span className={!isMobile ? "" : "hidden"}>История</span>
+        </button>
+      </div>
 
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         {/* Детали и клиент */}
         {activeTab === "details" && (
-          <div className="mt-4 space-y-4">
+          <div className="space-y-4">
             <div className="flex flex-col gap-6">
               <Card className="rounded-2xl shadow-xl">
                 <CardHeader>

@@ -40,7 +40,7 @@ export const ClientsPage = () => {
         const client = row.original;
         const name =
           client.type === "individual"
-            ? `${client.lastName} ${client.firstName} ${client.middleName || ""}`.trim()
+            ? [client.lastName, client.firstName, client.middleName].filter(Boolean).join(" ") || "—"
             : client.organizationName || "—";
 
         return <span>{name}</span>;

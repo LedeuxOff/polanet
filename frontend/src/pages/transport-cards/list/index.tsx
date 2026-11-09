@@ -66,7 +66,7 @@ export const TransportCardsPage = () => {
       <div className="flex flex-col gap-4">
         <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
           <CardHeader>
-            <CardTitle>Транспортные карты</CardTitle>
+            <CardTitle>Топливные карты</CardTitle>
           </CardHeader>
         </Card>
 

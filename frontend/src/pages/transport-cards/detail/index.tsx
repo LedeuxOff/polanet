@@ -7,8 +7,9 @@ import { PermissionsLoader } from "@/components/screens/loaders/permissions-load
 import { NoAccessScreen } from "@/components/screens/no-access";
 import { PageError } from "@/components/screens/error";
 import { TransportCardPageHead } from "./ui/transport-card-head";
-import { TransportCardPageForm } from "./ui/transport-card-form";
-import { BottomBar } from "@/components/bottom-bar";
+import { FormBuilder } from "@/widgets/form-builder";
+import { TransportCardExpenses } from "./ui/transport-card-expenses";
+import { TransportCardHistory } from "./ui/transport-card-history";
 
 export const TransportCardDetailPage = () => {
   const navigate = useNavigate();
@@ -60,51 +61,113 @@ export const TransportCardDetailPage = () => {
       return;
     }
     await onSubmit(data);
-    showToast("Транспортная карта успешно сохранена", "success");
+    showToast("Топливная карта успешно сохранена", "success");
     navigate({ to: "/transport-cards" });
   });
+
+  const totalExpenses = card?.totalExpenses || 0;
 
   return (
     <div className="flex flex-col gap-4 pb-4">
       <TransportCardPageHead card={card} />
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <TransportCardPageForm
-          isSubmitting={isSubmitting}
-          form={form}
-          card={card}
-          openExpenseDialog={openExpenseDialog}
-          handleRemoveExpense={handleRemoveExpense}
-          showExpenseDialog={showExpenseDialog}
-          setShowExpenseDialog={setShowExpenseDialog}
-          expensePaymentType={expensePaymentType}
-          setExpensePaymentType={setExpensePaymentType}
-          expenseAmount={expenseAmount}
-          setExpenseAmount={setExpenseAmount}
-          expenseDateTime={expenseDateTime}
-          setExpenseDateTime={setExpenseDateTime}
-          handleAddExpense={handleAddExpense}
-          isAddingExpense={isAddingExpense}
-          hasPermission={hasPermission}
-          showToast={showToast}
-          isRoleAdminOrDeveloper={isRoleAdminOrDeveloper}
-        />
-
-        <BottomBar
-          saveLabel={isSubmitting ? "Сохранение..." : "Сохранить"}
-          isSumitting={isSubmitting}
-          onBack={() => navigate({ to: "/transport-cards" })}
-          showDeleteButton
-          isDeleting={isDeleting}
-          handleDelete={() => {
-            if (!hasPermission("transport-cards:delete")) {
-              showToast("У вас нет прав на удаление карты", "error");
-              return;
-            }
-            handleDelete();
-          }}
-        />
-      </form>
+      <FormBuilder
+        form={form}
+        sections={[
+          {
+            id: "main-info",
+            label: "Основная информация",
+            fields: [
+              {
+                id: "cardNumber",
+                label: "Номер карты",
+                type: "text",
+                disabled: isSubmitting,
+                className: "col-span-3",
+              },
+              {
+                id: "status",
+                label: "Статус",
+                type: "select",
+                disabled: isSubmitting,
+                select: {
+                  options: [
+                    { id: "active", name: "Активна" },
+                    { id: "inactive", name: "Неактивна" },
+                  ],
+                },
+                className: "col-span-3",
+              },
+            ],
+          },
+          {
+            id: "expenses",
+            label: "Расходы",
+            fields: [
+              {
+                id: "cardNumber",
+                label: "Расходы",
+                type: "controller",
+                className: "col-span-3",
+                Controller: () => (
+                  <TransportCardExpenses
+                    totalExpenses={totalExpenses}
+                    openExpenseDialog={openExpenseDialog}
+                    card={card}
+                    handleRemoveExpense={handleRemoveExpense}
+                    showExpenseDialog={showExpenseDialog}
+                    setShowExpenseDialog={setShowExpenseDialog}
+                    expensePaymentType={expensePaymentType}
+                    setExpensePaymentType={setExpensePaymentType}
+                    expenseAmount={expenseAmount}
+                    setExpenseAmount={setExpenseAmount}
+                    expenseDateTime={expenseDateTime}
+                    setExpenseDateTime={setExpenseDateTime}
+                    handleAddExpense={handleAddExpense}
+                    isAddingExpense={isAddingExpense}
+                    hasPermission={hasPermission}
+                    showToast={showToast}
+                  />
+                ),
+              },
+            ],
+          },
+          {
+            id: "history",
+            label: "История изменений",
+            hide: !isRoleAdminOrDeveloper,
+            fields: [
+              {
+                id: "cardNumber",
+                label: "История",
+                type: "controller",
+                className: "col-span-3",
+                Controller: () => <TransportCardHistory card={card} />,
+              },
+            ],
+          },
+        ]}
+        actions={{
+          submit: {
+            onSubmit: handleSubmit,
+            isSubmitting: isSubmitting,
+            disabled: isSubmitting || isDeleting,
+            label: isSubmitting ? "Сохранение..." : "Сохранить",
+          },
+          back: () => navigate({ to: "/transport-cards" }),
+          delete: {
+            onDelete: () => {
+              if (!hasPermission("transport-cards:delete")) {
+                showToast("У вас нет прав на удаление карты", "error");
+                return;
+              }
+              handleDelete();
+            },
+            isDeleting: isDeleting,
+            disabled: isDeleting || isSubmitting,
+          },
+        }}
+      />
     </div>
   );
 };

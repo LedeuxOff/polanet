@@ -44,7 +44,7 @@ export const menuItems: MenuItem[] = [
         permission: "clients:list",
       },
       {
-        title: "Транспортные карты",
+        title: "Топливные карты",
         url: "/transport-cards",
         permission: "transport-cards:list",
       },
@@ -52,6 +52,21 @@ export const menuItems: MenuItem[] = [
         title: "Календарь",
         url: "/calendar",
         permission: "deliveries:list",
+      },
+      {
+        title: "Календарь работ",
+        url: "/works",
+        permission: "works:list",
+      },
+      {
+        title: "Рабочие",
+        url: "/workers",
+        permission: "workers:list",
+      },
+      {
+        title: "Бригады",
+        url: "/teams",
+        permission: "teams:list",
       },
     ],
   },
@@ -104,6 +119,11 @@ export const menuItems: MenuItem[] = [
         title: "Роли",
         url: "/roles",
         permission: "roles:list",
+      },
+      {
+        title: "Справочники",
+        url: "/directories",
+        permission: "directories:manage",
       },
       {
         title: "Резервные копии",

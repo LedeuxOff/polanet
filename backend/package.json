@@ -16,6 +16,7 @@
     "db:backup:list": "tsx src/db/backup.ts list",
     "db:restore": "tsx src/db/backup.ts restore",
     "db:backup:delete": "tsx src/db/backup.ts delete",
+    "db:import-legacy": "tsx src/scripts/import-legacy.ts",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "prepare": "cd .. && husky install"

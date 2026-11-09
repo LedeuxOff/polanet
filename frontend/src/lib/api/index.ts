@@ -11,6 +11,14 @@ export { ordersApi, type OrdersListQuery } from "./orders-api";
 export { incomesApi } from "./incomes-api";
 export { expensesApi } from "./expenses-api";
 export { templatesApi } from "./templates-api";
+export { worksApi, type WorksListQuery } from "./works-api";
+export { teamsApi } from "./teams-api";
+export { workersApi, type WorkersListQuery } from "./workers-api";
+export {
+  directoriesApi,
+  type WorkStatusRefInput,
+  type WorkTypeRefInput,
+} from "./directories-api";
 
 const APP_VERSION = import.meta.env.VITE_APP_VERSION || "1.9.11";
 

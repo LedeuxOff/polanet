@@ -9,3 +9,5 @@ export * from "./payment-types";
 export * from "./income-types";
 export * from "./expense-types";
 export * from "./template-types";
+export * from "./work-types";
+export * from "./worker-types";

@@ -15,7 +15,7 @@ export const ClientPageHead = ({ client }: { client: Client }) => {
               {
                 label: `${
                   client.type === "individual"
-                    ? `${client.lastName} ${client.firstName} ${client.middleName || ""}`.trim()
+                    ? [client.lastName, client.firstName, client.middleName].filter(Boolean).join(" ")
                     : client.organizationName
                 }`,
                 active: true,

@@ -115,14 +115,17 @@ export const OrdersListDateFilter = ({ name, date, updateFilter }: Props) => {
   return (
     <Popover open={showDatePopover} onOpenChange={setShowDatePopover}>
       <PopoverTrigger asChild>
-        <Button variant="outline" className="rounded-xl flex items-center gap-2 min-w-[180px]">
+        <Button
+          variant="outline"
+          className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 flex items-center gap-2 min-w-[180px]"
+        >
           <span className="truncate">{getDateFilterLabel()}</span>
           <ChevronDownIcon className="h-4 w-4 ml-auto shrink-0" />
         </Button>
       </PopoverTrigger>
 
       <PopoverContent
-        className="z-50 w-64 rounded-2xl bg-white border border-gray-200 shadow-lg p-1"
+        className="z-50 w-64 bg-white border border-gray-200 shadow-lg p-1 rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
         sideOffset={5}
         align="end"
       >
@@ -132,7 +135,7 @@ export const OrdersListDateFilter = ({ name, date, updateFilter }: Props) => {
               variant="outline"
               size="sm"
               onClick={() => changeMonth(-1)}
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
             >
               ←
             </Button>
@@ -141,7 +144,7 @@ export const OrdersListDateFilter = ({ name, date, updateFilter }: Props) => {
               variant="outline"
               size="sm"
               onClick={() => changeMonth(1)}
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
             >
               →
             </Button>
@@ -149,7 +152,10 @@ export const OrdersListDateFilter = ({ name, date, updateFilter }: Props) => {
 
           <div className="grid grid-cols-7 gap-1">
             {["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((day) => (
-              <div key={day} className="text-center text-xs font-medium text-muted-foreground py-1">
+              <div
+                key={day}
+                className="text-center text-xs font-medium text-muted-foreground dark:text-slate-100 py-1"
+              >
                 {day}
               </div>
             ))}
@@ -163,10 +169,10 @@ export const OrdersListDateFilter = ({ name, date, updateFilter }: Props) => {
                   size="sm"
                   className={cn(
                     "h-8 w-8 p-0 text-sm rounded-2xl",
-                    !day.isCurrentMonth && "text-muted-foreground opacity-50",
-                    today && "bg-accent font-medium",
+                    !day.isCurrentMonth && "text-muted-foreground dark:text-slate-100 opacity-50",
+                    today && "bg-accent dark:bg-white/10 font-medium",
                     selectedDay &&
-                      "bg-blue-500 text-primary-foreground hover:bg-blue-500 hover:text-primary-foreground",
+                      "bg-blue-500 dark:bg-blue-400/40 dark:text-white text-primary-foreground hover:bg-blue-500 hover:text-primary-foreground",
                   )}
                   onClick={() => handleSelect(day.date)}
                 >
@@ -180,7 +186,7 @@ export const OrdersListDateFilter = ({ name, date, updateFilter }: Props) => {
             <Button
               variant="outline"
               size="sm"
-              className="w-full rounded-2xl bg-red-400/40 hover:bg-red-400/60 text-red-500 hover:text-red-500 border-none"
+              className="w-full rounded-2xl bg-red-400/40 hover:bg-red-400/60 text-red-500 hover:text-red-500 border-none dark:bg-red-400/20 dark:text-white"
               onClick={clearDate}
             >
               Сбросить

@@ -5,8 +5,7 @@ import { useToast } from "@/lib/contexts/toast-context";
 import { PermissionsLoader } from "@/components/screens/loaders/permissions-loader";
 import { NoAccessScreen } from "@/components/screens/no-access";
 import { CardNewPageHead } from "./ui/card-new-page-head";
-import { CardNewPageForm } from "./ui/card-new-page-form";
-import { BottomBar } from "@/components/bottom-bar";
+import { FormBuilder } from "@/widgets/form-builder";
 
 export const NewTransportCardPage = () => {
   const navigate = useNavigate();
@@ -28,7 +27,7 @@ export const NewTransportCardPage = () => {
       return;
     }
     await onSubmit(data);
-    showToast("Транспортная карта успешно создана", "success");
+    showToast("Топливная карта успешно создана", "success");
     navigate({ to: "/transport-cards" });
   });
 
@@ -36,15 +35,46 @@ export const NewTransportCardPage = () => {
     <div className="flex flex-col gap-4">
       <CardNewPageHead />
 
-      <form onSubmit={handleSubmit}>
-        <CardNewPageForm form={form} isSubmitting={isSubmitting} />
-
-        <BottomBar
-          onBack={() => navigate({ to: "/transport-cards" })}
-          isSumitting={isSubmitting}
-          saveLabel={isSubmitting ? "Сохранение..." : "Сохранить"}
-        />
-      </form>
+      <FormBuilder
+        form={form}
+        sections={[
+          {
+            id: "main-info",
+            label: "Основная информация",
+            fields: [
+              {
+                id: "cardNumber",
+                label: "Номер карты",
+                type: "text",
+                disabled: isSubmitting,
+                className: "col-span-3",
+              },
+              {
+                id: "status",
+                label: "Статус",
+                type: "select",
+                disabled: isSubmitting,
+                select: {
+                  options: [
+                    { id: "active", name: "Активна" },
+                    { id: "inactive", name: "Неактивна" },
+                  ],
+                },
+                className: "col-span-3",
+              },
+            ],
+          },
+        ]}
+        actions={{
+          submit: {
+            onSubmit: handleSubmit,
+            isSubmitting: isSubmitting,
+            disabled: isSubmitting,
+            label: isSubmitting ? "Сохранение..." : "Сохранить",
+          },
+          back: () => navigate({ to: "/transport-cards" }),
+        }}
+      />
     </div>
   );
 };

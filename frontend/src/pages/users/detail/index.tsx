@@ -11,7 +11,6 @@ import { UserPageDetailsTab } from "./ui/user-page-details-tab";
 import { UserPageTransportCardTab } from "./ui/user-page-card-tab";
 import { PermissionsLoader } from "@/components/screens/loaders/permissions-loader";
 import { NoAccessScreen } from "@/components/screens/no-access";
-import { BottomBar } from "@/components/bottom-bar";
 
 export const EditUserPage = () => {
   const [activeTab, setActiveTab] = useState("details");
@@ -47,7 +46,6 @@ export const EditUserPage = () => {
   } = useUserDetailPage();
 
   const isOwnUser = currentUser?.id === Number(userId);
-  const isDriver = user?.roleCode === "DRIVER";
 
   if (isLoading || isPermissionsLoading) {
     return <PermissionsLoader />;
@@ -61,71 +59,57 @@ export const EditUserPage = () => {
     return <PageError />;
   }
 
+  const handleSubmit = form.handleSubmit(async (data) => {
+    if (!hasPermission("users:update")) {
+      showToast("У вас нет прав на редактирование пользователя", "error");
+      return { success: false };
+    }
+
+    const result = await onSubmit(data);
+
+    if (result.success) {
+      showToast("Пользователь успешно сохранен", "success");
+      navigate({ to: "/users" });
+    } else if (result.error) {
+      showToast(result.error, "error");
+    }
+  });
+
   return (
     <div className="flex flex-col gap-4">
       <UserPageHead user={user} />
 
-      <form
-        onSubmit={form.handleSubmit(async (data) => {
-          if (!hasPermission("users:update")) {
-            showToast("У вас нет прав на редактирование пользователя", "error");
-            return { success: false };
-          }
-          const result = await onSubmit(data);
-          if (result.success) {
-            showToast("Пользователь успешно сохранен", "success");
-            navigate({ to: "/users" });
-          } else if (result.error) {
-            showToast(result.error, "error");
-          }
-        })}
-      >
-        <div className="flex gap-4">
-          <div className="flex flex-col gap-4 flex-1">
-            {/* Tabs */}
-            <UserPageTabs activeTab={activeTab} setActiveTab={setActiveTab} />
+      <UserPageTabs activeTab={activeTab} setActiveTab={setActiveTab} />
 
-            {/* Details Tab */}
-            {activeTab === "details" && (
-              <UserPageDetailsTab
-                form={form}
-                isSubmitting={isSubmitting}
-                roles={roles}
-                user={user}
-                handleUnbindTelegram={handleUnbindTelegram}
-                isUnbindingTelegram={isUnbindingTelegram}
-                isOwnUser={isOwnUser}
-              />
-            )}
-
-            {/* Transport Card Tab */}
-            {activeTab === "transport-card" && (
-              <UserPageTransportCardTab
-                user={user}
-                availableCards={availableCards}
-                isFetchingCards={isFetchingCards}
-                handleDetachCard={handleDetachCard}
-                handleAttachCard={handleAttachCard}
-                isDetachingCard={isDetachingCard}
-                isAttachingCard={isAttachingCard}
-              />
-            )}
-          </div>
-        </div>
-
-        <BottomBar
-          isSumitting={isSubmitting}
-          onBack={() => navigate({ to: "/users" })}
-          // Удаление
-          showDeleteButton={user?.roleCode === "DEVELOPER" && !isOwnUser}
-          handleDelete={handleDelete}
-          isDeleting={isDeleting}
-          // Отправка пароля
+      {activeTab === "details" && (
+        <UserPageDetailsTab
+          form={form}
+          roles={roles}
+          user={user}
+          handleUnbindTelegram={handleUnbindTelegram}
+          handleSubmit={handleSubmit}
           handleSendPassword={handleSendPassword}
+          handleDelete={handleDelete}
+          isSubmitting={isSubmitting}
+          isUnbindingTelegram={isUnbindingTelegram}
+          isOwnUser={isOwnUser}
+          isDeleting={isDeleting}
+          isDetachingCard={isDetachingCard}
           isSendingPassword={isSendingPassword}
-          sendPasswordDisabled={isSendingPassword || !user?.telegramChatId || isDriver}
         />
-      </form>
+      )}
+
+      {activeTab === "transport-card" && (
+        <UserPageTransportCardTab
+          user={user}
+          availableCards={availableCards}
+          isFetchingCards={isFetchingCards}
+          handleDetachCard={handleDetachCard}
+          handleAttachCard={handleAttachCard}
+          isDetachingCard={isDetachingCard}
+          isAttachingCard={isAttachingCard}
+        />
+      )}
     </div>
   );
 };

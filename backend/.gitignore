@@ -16,6 +16,8 @@ data/*.db
 data/*.db-journal
 data/*.db-wal
 data/*.db-shm
+# Данные старой системы (персональные данные клиентов)
+data/legacy/
 
 # Logs
 *.log

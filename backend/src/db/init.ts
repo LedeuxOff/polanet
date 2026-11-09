@@ -345,6 +345,13 @@ async function initData() {
       { module: "templates", code: "templates:list", name: "Просмотр списка шаблонов" },
       { module: "templates", code: "templates:create", name: "Создание шаблона" },
       { module: "templates", code: "templates:delete", name: "Удаление шаблона" },
+      // Works (calendar of screed works) permissions
+      { module: "works", code: "works:list", name: "Просмотр календаря работ" },
+      { module: "works", code: "works:detail", name: "Просмотр деталей работы" },
+      { module: "works", code: "works:create", name: "Создание работы" },
+      { module: "works", code: "works:update", name: "Редактирование работы" },
+      { module: "works", code: "works:delete", name: "Удаление работы" },
+      { module: "works", code: "teams:manage", name: "Управление бригадами" },
     ];
 
     const permissionIds: Record<string, number> = {};
@@ -384,6 +391,10 @@ async function initData() {
       "expenses:list",
       "expenses:create",
       "finances:view",
+      "works:list",
+      "works:detail",
+      "works:create",
+      "works:update",
     ];
     for (const code of userPermissions) {
       if (permissionIds[code]) {

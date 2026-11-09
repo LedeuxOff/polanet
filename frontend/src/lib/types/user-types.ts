@@ -55,6 +55,7 @@ export const userSchema = z
     email: z.string().email("Неверный формат email"),
     phone: z.string().optional(),
     roleId: z.coerce.number().int().positive("Роль обязательна"),
+    telegramId: z.string().nullable().optional(),
   })
   .transform((data) => ({
     lastName: data.lastName || "",
@@ -64,6 +65,7 @@ export const userSchema = z
     email: data.email || "",
     phone: data.phone || undefined,
     roleId: data.roleId,
+    telegramId: data.telegramId,
   }));
 
 export type UserForm = z.infer<typeof userSchema>;

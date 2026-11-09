@@ -8,6 +8,7 @@ import { BottomBarHideButton } from "./bottom-bar-hide-button";
 import { BottomBarDeleteButton } from "./bottom-bar-delete-button";
 import { BottomBarSendPasswordButton } from "./bottom-bar-send-password-button";
 import { BottomBarCreateButton } from "./bottom-bar-create-button";
+import { QuickCreateOrderButton } from "@/pages/orders/list/ui/quick-create-order-button";
 
 interface Props {
   isSumitting?: boolean;
@@ -24,6 +25,8 @@ interface Props {
   handleSendPassword?: () => Promise<void>;
   isSendingPassword?: boolean;
   sendPasswordDisabled?: boolean;
+  quickCreate?: boolean;
+  saveTemplate?: boolean;
 }
 
 export const BottomBar = ({
@@ -41,12 +44,15 @@ export const BottomBar = ({
   handleSendPassword,
   isSendingPassword,
   sendPasswordDisabled,
+  // Создание черновика заявки
+  quickCreate,
+  saveTemplate,
 }: Props) => {
   const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
 
   const isMobile = useIsMobile();
 
-  const isTwoRows = !!handleSendPassword;
+  const isTwoRows = !!handleSendPassword || quickCreate || saveTemplate;
 
   return (
     <div
@@ -87,6 +93,8 @@ export const BottomBar = ({
             isSendingPassword={isSendingPassword}
           />
         )}
+
+        {quickCreate && <QuickCreateOrderButton />}
       </div>
     </div>
   );
