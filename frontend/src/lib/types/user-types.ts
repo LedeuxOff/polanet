@@ -43,7 +43,9 @@ export interface RegisterInput {
   birthDate?: string;
   email: string;
   phone?: string;
-  roleId: number;
+  roleId?: number;
+  /** Код роли — альтернатива roleId */
+  roleCode?: string;
 }
 
 export const userSchema = z

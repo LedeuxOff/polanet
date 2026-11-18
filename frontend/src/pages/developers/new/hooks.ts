@@ -12,7 +12,8 @@ export const useNewDeveloperPage = () => {
   const form = useForm<UserForm>({
     resolver: zodResolver(userSchema),
     defaultValues: {
-      roleId: 1, // DEVELOPER role ID
+      // Заглушка для валидации формы; реальная роль передаётся кодом
+      roleId: 1,
     },
   });
 
@@ -20,9 +21,11 @@ export const useNewDeveloperPage = () => {
     setError(null);
     setIsSubmitting(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { roleId: _roleId, ...rest } = data;
       const payload = {
-        ...data,
-        roleId: 1, // DEVELOPER role ID
+        ...rest,
+        roleCode: "DEVELOPER",
         phone: data.phone ? cleanPhone(data.phone) : undefined,
       };
       await usersApi.create(payload);

@@ -16,6 +16,15 @@ export const registerSchema = z.object({
   transportCardId: z.number().int().positive().optional().nullable(),
 });
 
+// Создание сотрудника из админки: роль можно передать id или кодом
+// (id ролей отличаются между БД, поэтому для фиксированных ролей удобнее код)
+export const createUserSchema = registerSchema
+  .extend({
+    roleId: z.number().int().positive("Роль обязательна").optional(),
+    roleCode: z.string().min(1).optional(),
+  })
+  .refine((d) => d.roleId || d.roleCode, { message: "Роль обязательна", path: ["roleId"] });
+
 export const updateUserSchema = z.object({
   lastName: z.string().min(1, "Фамилия обязательна").optional(),
   firstName: z.string().min(1, "Имя обязательно").optional(),

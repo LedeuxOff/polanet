@@ -4,7 +4,7 @@ import { db, sqlite } from "../db/index.js";
 import { users, roles, transportCards } from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { requirePermission } from "../middleware/permissions.js";
-import { registerSchema, updateUserSchema } from "../middleware/validators.js";
+import { createUserSchema, updateUserSchema } from "../middleware/validators.js";
 import { eq, and, or, not, count, like } from "drizzle-orm";
 import { generatePassword } from "../utils/password-generator.js";
 import { sendPasswordNotification, sendTelegramMessage } from "../services/telegram-service.js";
@@ -219,7 +219,7 @@ router.get("/:id", authenticate, requirePermission("users:detail"), (req: AuthRe
 // Создать пользователя
 router.post("/", authenticate, requirePermission("users:create"), async (req: AuthRequest, res) => {
   try {
-    const data = registerSchema.parse(req.body);
+    const data = createUserSchema.parse(req.body);
 
     const existingUser = db.select().from(users).where(eq(users.email, data.email)).get();
 
@@ -239,6 +239,15 @@ router.post("/", authenticate, requirePermission("users:create"), async (req: Au
     }
     const passwordHash = await bcrypt.hash(password, 10);
 
+    let roleId = data.roleId;
+    if (data.roleCode) {
+      const role = db.select({ id: roles.id }).from(roles).where(eq(roles.code, data.roleCode)).get();
+      if (!role) {
+        return res.status(400).json({ error: `Роль ${data.roleCode} не найдена` });
+      }
+      roleId = role.id;
+    }
+
     const result = db
       .insert(users)
       .values({
@@ -249,7 +258,7 @@ router.post("/", authenticate, requirePermission("users:create"), async (req: Au
         email: data.email,
         phone: data.phone,
         passwordHash,
-        roleId: data.roleId,
+        roleId: roleId!,
         transportCardId: data.transportCardId || null,
       })
       .run();
