@@ -89,7 +89,7 @@ export const NewUserPage = () => {
                 type: "select",
                 disabled: isSubmitting,
                 select: {
-                  options: roles,
+                  options: roles.map((item) => ({ id: item.id.toString(), name: item.name })),
                 },
               },
             ],
