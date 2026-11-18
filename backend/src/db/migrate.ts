@@ -17,7 +17,8 @@ export async function runMigrations() {
     console.log("Создана папка: data");
   }
 
-  const dbPath = path.join(dataDir, "polanet.db");
+  const dbPath = process.env.DATABASE_PATH || path.join(dataDir, "polanet.db");
+  fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 
   // Проверяем существование базы данных
   const dbExists = fs.existsSync(dbPath);
