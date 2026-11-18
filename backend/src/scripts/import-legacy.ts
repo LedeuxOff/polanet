@@ -160,7 +160,7 @@ function main() {
          date, start_time, end_time, team_id, client_id, address, area, thickness, strength, work_type, hose_length,
          is_transmix, price, is_final_price, status, measurer_name, notes, legacy_id,
          created_by_id, created_at, updated_at
-       ) VALUES (?, '08:00', '24:00', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)`,
+       ) VALUES (?, '08:00', '24:00', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)`,
     );
 
     // 3. Работы
