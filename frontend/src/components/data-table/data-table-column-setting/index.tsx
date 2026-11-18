@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { Settings } from "lucide-react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useState } from "react";
@@ -13,12 +14,14 @@ interface DataTableColumnSettingProps {
   }[];
   columnVisibility: Record<string, boolean>;
   handleColumnToggle: (key: string) => void;
+  triggerClassName?: string;
 }
 
 export const DataTableColumnSetting = ({
   columnDefinitions,
   columnVisibility,
   handleColumnToggle,
+  triggerClassName,
 }: DataTableColumnSettingProps) => {
   const [showColumnSettings, setShowColumnSettings] = useState(false);
 
@@ -30,9 +33,12 @@ export const DataTableColumnSetting = ({
         <DrawerTrigger asChild>
           <Button
             variant="outline"
-            className="rounded-xl w-10 h-10 p-0 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 dark:hover:bg-white/20"
+            className={cn(
+              "rounded-xl w-10 h-10 p-0 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 dark:hover:bg-white/20",
+              triggerClassName,
+            )}
           >
-            <Settings className="h-4 w-4 text-white" />
+            <Settings className="h-4 w-4 dark:text-white" />
           </Button>
         </DrawerTrigger>
         <DrawerContent className="dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
@@ -66,7 +72,10 @@ export const DataTableColumnSetting = ({
       <Popover.Trigger asChild>
         <Button
           variant="outline"
-          className="rounded-2xl w-10 h-10 p-0 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 dark:hover:bg-white/20"
+          className={cn(
+            "rounded-2xl w-10 h-10 p-0 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 dark:hover:bg-white/20",
+            triggerClassName,
+          )}
         >
           <Settings className="h-4 w-4 dark:text-white" />
         </Button>

@@ -1,3 +1,5 @@
+import { ContactIcon, PackageCheckIcon, WalletIcon } from "lucide-react";
+import { listCardClass } from "@/components/data-list";
 import { useNavigate } from "@tanstack/react-router";
 import { useNewClientPage } from "./hooks";
 import { ClientNewPageHead } from "./ui/client-new-page-head";
@@ -19,13 +21,16 @@ export const NewClientPage = () => {
           {
             id: "main-info",
             label: "Основная информация",
+            description: "Тип клиента, имя или название и контакты",
+            icon: <ContactIcon />,
+            cardClassName: listCardClass,
             fields: [
               {
                 id: "type",
                 label: "Тип клиента",
                 type: "select",
                 disabled: isSubmitting,
-                className: "col-span-3",
+                className: "col-span-full",
                 select: {
                   options: [
                     { id: "individual", name: "Физическое лицо" },
@@ -78,61 +83,34 @@ export const NewClientPage = () => {
           {
             id: "payer",
             label: "Плательщик",
+            description: "Оплачивает заявки по умолчанию",
+            icon: <WalletIcon />,
+            cardClassName: listCardClass,
+            className: "lg:grid-cols-4",
             fields: [
-              {
-                id: "payer.firstName",
-                label: "Имя",
-                type: "text",
-                disabled: isSubmitting,
-              },
-              {
-                id: "payer.lastName",
-                label: "Отчество",
-                type: "text",
-                disabled: isSubmitting,
-              },
-              {
-                id: "payer.middleName",
-                label: "Отчество",
-                type: "text",
-                disabled: isSubmitting,
-              },
-              {
-                id: "payer.phone",
-                label: "Телефон",
-                type: "phone",
-                disabled: isSubmitting,
-              },
+              { id: "payer.lastName", label: "Фамилия", type: "text", disabled: isSubmitting },
+              { id: "payer.firstName", label: "Имя", type: "text", disabled: isSubmitting },
+              { id: "payer.middleName", label: "Отчество", type: "text", disabled: isSubmitting },
+              { id: "payer.phone", label: "Телефон", type: "phone", disabled: isSubmitting },
             ],
           },
           {
             id: "receiver",
-            label: "Приемщик",
+            label: "Приёмщик",
+            description: "Принимает груз на объекте",
+            icon: <PackageCheckIcon />,
+            cardClassName: listCardClass,
+            className: "lg:grid-cols-4",
             fields: [
-              {
-                id: "receiver.firstName",
-                label: "Имя",
-                type: "text",
-                disabled: isSubmitting,
-              },
-              {
-                id: "receiver.lastName",
-                label: "Отчество",
-                type: "text",
-                disabled: isSubmitting,
-              },
+              { id: "receiver.lastName", label: "Фамилия", type: "text", disabled: isSubmitting },
+              { id: "receiver.firstName", label: "Имя", type: "text", disabled: isSubmitting },
               {
                 id: "receiver.middleName",
                 label: "Отчество",
                 type: "text",
                 disabled: isSubmitting,
               },
-              {
-                id: "receiver.phone",
-                label: "Телефон",
-                type: "phone",
-                disabled: isSubmitting,
-              },
+              { id: "receiver.phone", label: "Телефон", type: "phone", disabled: isSubmitting },
             ],
           },
         ]}

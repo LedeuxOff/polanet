@@ -1,3 +1,5 @@
+import { CreditCardIcon } from "lucide-react";
+import { listCardClass } from "@/components/data-list";
 import { useNewTransportCardPage } from "./hooks";
 import { useNavigate } from "@tanstack/react-router";
 import { usePermissions } from "@/lib/contexts/permission-context";
@@ -41,13 +43,15 @@ export const NewTransportCardPage = () => {
           {
             id: "main-info",
             label: "Основная информация",
+            description: "Номер и статус карты",
+            icon: <CreditCardIcon />,
+            cardClassName: listCardClass,
             fields: [
               {
                 id: "cardNumber",
                 label: "Номер карты",
                 type: "text",
                 disabled: isSubmitting,
-                className: "col-span-3",
               },
               {
                 id: "status",
@@ -60,7 +64,6 @@ export const NewTransportCardPage = () => {
                     { id: "inactive", name: "Неактивна" },
                   ],
                 },
-                className: "col-span-3",
               },
             ],
           },

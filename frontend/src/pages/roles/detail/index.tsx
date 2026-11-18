@@ -1,31 +1,31 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useNavigate, useParams } from "@tanstack/react-router";
+import { KeyRoundIcon, Loader2Icon, SaveIcon, ShieldCheckIcon } from "lucide-react";
+import { Breadcrumbs } from "@/components/breadcrumbs";
+import { BottomBar } from "@/components/bottom-bar";
+import { barButton } from "@/components/bottom-bar/styles";
+import {
+  DetailPageHead,
+  HeadChip,
+  ListEmptyState,
+  Shimmer,
+  listCardClass,
+} from "@/components/data-list";
+import { cn } from "@/lib/utils";
 import { useRoleDetailPage } from "./hooks";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Link, useNavigate, useParams } from "@tanstack/react-router";
-import { ChevronLeft, TrashIcon, SaveIcon, MenuIcon, ChevronUp, ChevronDown } from "lucide-react";
-import { useState } from "react";
-import { useIsMobile } from "@/hooks";
-import { useTabbar } from "@/lib/contexts/tabbar-context";
-import { Badge } from "@/components/ui/badge";
+import { RoleCodeBadge, RoleMainInfo, roleTone } from "../ui/role-parts";
+import { RolePermissions } from "./ui/role-permissions";
 
 export const EditRolePage = () => {
-  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
-
   const { roleId: roleIdStr } = useParams({ from: "/roles/$roleId" });
   const roleId = parseInt(roleIdStr);
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const { setOpen } = useTabbar();
-  const [showPermissions, setShowPermissions] = useState(false);
   const {
     isLoading,
     isDeleting,
     isSubmitting,
     isSavingPermissions,
     role,
+    permissions,
     rolePermissions,
     permissionsByModule,
     moduleNames,
@@ -40,211 +40,79 @@ export const EditRolePage = () => {
 
   if (isLoading) {
     return (
-      <Card className="rounded-2xl shadow-xl">
-        <CardContent className="py-8 text-center text-muted-foreground">Загрузка...</CardContent>
-      </Card>
+      <div className="flex flex-col gap-4">
+        <div className={cn(listCardClass, "flex items-center gap-4 p-6")}>
+          <Shimmer className="h-14 w-14 rounded-[20px]" />
+          <div className="flex flex-1 flex-col gap-2">
+            <Shimmer className="h-6 w-48" />
+            <Shimmer className="h-4 w-24" />
+          </div>
+        </div>
+        <Shimmer className="h-40 w-full rounded-3xl" />
+        <Shimmer className="h-72 w-full rounded-3xl" />
+      </div>
     );
   }
 
   if (!role) {
-    return (
-      <Card className="rounded-2xl shadow-xl">
-        <CardContent className="py-8 text-center text-muted-foreground">
-          Роль не найдена
-        </CardContent>
-      </Card>
-    );
+    return <ListEmptyState title="Роль не найдена" text="Возможно, она была удалена" />;
   }
-
-  const handleSavePermissions = async () => {
-    await savePermissions(rolePermissions);
-  };
 
   return (
     <div className="flex flex-col gap-4">
-      <Card className="rounded-2xl shadow-xl">
-        <CardHeader>
-          <div className="flex flex-col gap-4">
-            <CardTitle>Роли</CardTitle>
+      <DetailPageHead
+        breadcrumbs={
+          <Breadcrumbs
+            items={[
+              { label: "Роли", active: false, href: "/roles" },
+              { label: role.name, active: true },
+            ]}
+          />
+        }
+        icon={<ShieldCheckIcon />}
+        iconClassName={roleTone}
+        title={role.name}
+        badges={<RoleCodeBadge code={role.code} />}
+        chips={
+          <HeadChip icon={<KeyRoundIcon />}>
+            Прав: {rolePermissions.length} из {permissions.length}
+          </HeadChip>
+        }
+      />
 
-            <div className="flex items-center gap-2">
-              <Link to="/roles" className="text-sm text-muted-foreground">
-                <Badge variant="outline">Список ролей</Badge>
-              </Link>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <RoleMainInfo form={form} disabled={isSubmitting} />
 
-              <span className="w-1 h-1 bg-blue-400 rounded-full" />
+        <RolePermissions
+          permissionsByModule={permissionsByModule}
+          moduleNames={moduleNames}
+          rolePermissions={rolePermissions}
+          togglePermission={togglePermission}
+          toggleModulePermissions={toggleModulePermissions}
+        />
 
-              <Badge variant="secondary">{role.name}</Badge>
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
-
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="flex gap-4">
-          <div className="flex flex-col gap-4 flex-1">
-            <Card className="rounded-2xl shadow-xl">
-              <CardHeader>
-                <CardTitle>Основная информация</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <Label htmlFor="code">Код роли *</Label>
-                  <Input
-                    className="rounded-2xl"
-                    id="code"
-                    placeholder="ADMIN"
-                    disabled={isSubmitting}
-                    {...form.register("code")}
-                  />
-                  {form.formState.errors.code && (
-                    <p className="text-sm text-destructive">{form.formState.errors.code.message}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="name">Название *</Label>
-                  <Input
-                    className="rounded-2xl"
-                    id="name"
-                    placeholder="Администратор"
-                    disabled={isSubmitting}
-                    {...form.register("name")}
-                  />
-                  {form.formState.errors.name && (
-                    <p className="text-sm text-destructive">{form.formState.errors.name.message}</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Секция прав доступа */}
-            <Card className="rounded-2xl shadow-xl">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle>Права доступа</CardTitle>
-                <Button
-                  type="button"
-                  onClick={() => setShowPermissions(!showPermissions)}
-                  className="rounded-2xl bg-blue-400 hover:bg-blue-500"
-                >
-                  {showPermissions ? "Скрыть" : "Показать"}
-                </Button>
-              </CardHeader>
-              {showPermissions && (
-                <CardContent>
-                  <div className="space-y-6">
-                    {Object.entries(permissionsByModule).map(([moduleKey, modulePermissions]) => (
-                      <div key={moduleKey} className="border rounded-2xl p-4">
-                        <div className="flex items-center justify-between mb-3">
-                          <h3 className="font-semibold text-base">
-                            {moduleNames[moduleKey] || moduleKey}
-                          </h3>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => toggleModulePermissions(modulePermissions)}
-                          >
-                            {modulePermissions.every((p) => rolePermissions.includes(p.code))
-                              ? "Снять все"
-                              : "Выбрать все"}
-                          </Button>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                          {modulePermissions.map((permission) => (
-                            <div key={permission.id} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={permission.code}
-                                checked={rolePermissions.includes(permission.code)}
-                                onCheckedChange={() => togglePermission(permission.code)}
-                              />
-                              <label
-                                htmlFor={permission.code}
-                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                              >
-                                {permission.name}
-                              </label>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              )}
-            </Card>
-          </div>
-        </div>
-
-        <div
-          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[58px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[58px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
-        >
-          <div
-            onClick={() => setHideBottomTabbar(false)}
-            className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
-          >
-            <ChevronUp className="text-white w-5" />
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <div className="flex gap-4">
-              <Button
-                type="button"
-                disabled={isSubmitting}
-                className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-                onClick={() => navigate({ to: "/roles" })}
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-
-              {isMobile && (
-                <Button
-                  type="button"
-                  className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-                  onClick={() => setOpen(true)}
-                >
-                  <MenuIcon className="w-4 h-4" />
-                </Button>
-              )}
-
-              {role && canDelete && (
-                <Button
-                  type="button"
-                  className="px-3 py-4 bg-red-400 rounded-2xl hover:bg-red-500"
-                  onClick={handleDelete}
-                  disabled={isDeleting || isSubmitting}
-                >
-                  <TrashIcon className="w-4 h-4" />
-                </Button>
-              )}
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600"
-              >
-                {isSubmitting ? "Сохранение..." : "Сохранить"}
-              </Button>
-
-              <Button
-                onClick={() => setHideBottomTabbar(true)}
-                type="button"
-                className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-              >
-                <ChevronDown className="w-4 h-4" />
-              </Button>
-            </div>
-
-            <Button
+        <BottomBar
+          isSumitting={isSubmitting}
+          saveLabel={isSubmitting ? "Сохранение..." : "Сохранить"}
+          onBack={() => navigate({ to: "/roles" })}
+          showDeleteButton={canDelete}
+          handleDelete={handleDelete}
+          isDeleting={isDeleting || isSubmitting}
+          extraRow={
+            <button
               type="button"
-              onClick={handleSavePermissions}
+              onClick={() => savePermissions(rolePermissions)}
               disabled={isSavingPermissions || isSubmitting}
-              className="px-8 py-4 bg-green-500 rounded-2xl hover:bg-green-600"
+              className={cn(
+                barButton.secondary,
+                "w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-500/20 dark:text-emerald-200 dark:hover:bg-emerald-500/30",
+              )}
             >
-              <SaveIcon className="w-4 h-4 mr-2" />
-              {isSavingPermissions ? "Сохранение..." : "Сохранить права"}
-            </Button>
-          </div>
-        </div>
+              {isSavingPermissions ? <Loader2Icon className="animate-spin" /> : <SaveIcon />}
+              {isSavingPermissions ? "Сохранение прав..." : "Сохранить права"}
+            </button>
+          }
+        />
       </form>
     </div>
   );

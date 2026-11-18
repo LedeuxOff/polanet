@@ -171,6 +171,7 @@ export const useRoleDetailPage = (roleId: number) => {
     "transport-cards": "Транспортные карты",
     deliveries: "Доставки",
     finances: "Финансы",
+    statistics: "Статистика",
     backups: "Резервные копии",
     "system-info": "Информация о системе",
     "system-logs": "Системные логи",

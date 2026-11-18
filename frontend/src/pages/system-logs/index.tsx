@@ -1,27 +1,159 @@
-import { Link } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useMemo, useState } from "react";
 import {
-  HomeIcon,
-  RefreshCw,
-  Trash2,
-  AlertTriangle,
-  MenuIcon,
-  ChevronUp,
-  ChevronDown,
+  CheckIcon,
+  ChevronDownIcon,
+  CopyIcon,
+  FileWarningIcon,
+  RefreshCwIcon,
+  SearchIcon,
+  ServerCrashIcon,
+  ShieldCheckIcon,
+  Trash2Icon,
 } from "lucide-react";
+import { BottomBar } from "@/components/bottom-bar";
+import { barButton } from "@/components/bottom-bar/styles";
+import { listCardClass, listFilterControlClass, Shimmer } from "@/components/data-list";
+import { Input } from "@/components/ui/input";
+import type { ServerError } from "@/lib/api/system-logs-api";
+import { cn } from "@/lib/utils";
 import { useSystemLogs } from "./hooks";
-import { Badge } from "@/components/ui/badge";
-import { useIsMobile } from "@/hooks";
-import { useTabbar } from "@/lib/contexts/tabbar-context";
-import { useState } from "react";
+
+const METHOD_TONES: Record<string, string> = {
+  GET: "bg-sky-100 text-sky-700 dark:bg-sky-400/20 dark:text-sky-200",
+  POST: "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/20 dark:text-emerald-200",
+  PUT: "bg-amber-100 text-amber-700 dark:bg-amber-400/20 dark:text-amber-200",
+  PATCH: "bg-amber-100 text-amber-700 dark:bg-amber-400/20 dark:text-amber-200",
+  DELETE: "bg-red-100 text-red-700 dark:bg-red-400/20 dark:text-red-200",
+};
+
+const formatRelative = (value: string) => {
+  const diff = Date.now() - new Date(value).getTime();
+  const min = Math.round(diff / 60000);
+  if (min < 1) return "только что";
+  if (min < 60) return `${min} мин назад`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `${h} ч назад`;
+  return `${Math.round(h / 24)} дн назад`;
+};
+
+const plural = (n: number) => {
+  const m10 = n % 10;
+  const m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return "ошибка";
+  if (m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20)) return "ошибки";
+  return "ошибок";
+};
+
+const LogItem = ({
+  err,
+  formatTimestamp,
+}: {
+  err: ServerError;
+  formatTimestamp: (t: string) => string;
+}) => {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const method = err.method?.toUpperCase();
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText([err.message, err.stack].filter(Boolean).join("\n\n"));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* буфер обмена недоступен */
+    }
+  };
+
+  return (
+    <div className={cn(listCardClass, "flex flex-col overflow-hidden")}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex items-start gap-3 p-4 text-left transition-colors hover:bg-slate-50 dark:hover:bg-white/5"
+      >
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600 dark:bg-red-400/15 dark:text-red-300">
+          <FileWarningIcon className="h-5 w-5" />
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            {method && (
+              <span
+                className={cn(
+                  "rounded-md px-1.5 py-0.5 font-mono text-[11px] font-bold",
+                  METHOD_TONES[method] ??
+                    "bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-300",
+                )}
+              >
+                {method}
+              </span>
+            )}
+            {err.endpoint && (
+              <span className="truncate font-mono text-xs text-slate-600 dark:text-slate-300">
+                {err.endpoint}
+              </span>
+            )}
+          </div>
+          <p
+            className={cn(
+              "break-words text-sm font-medium text-slate-900 dark:text-slate-100",
+              !open && "line-clamp-2",
+            )}
+          >
+            {err.message}
+          </p>
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-400">
+            <span title={formatTimestamp(err.timestamp)}>{formatRelative(err.timestamp)}</span>
+            <span className="tabular-nums">#{err.id}</span>
+            {err.appVersion && <span>v{err.appVersion}</span>}
+          </div>
+        </div>
+        <ChevronDownIcon
+          className={cn(
+            "mt-2 h-4 w-4 shrink-0 text-slate-400 transition-transform",
+            open && "rotate-180",
+          )}
+        />
+      </button>
+
+      {open && (
+        <div className="flex flex-col gap-3 border-t border-slate-100 p-4 dark:border-white/10">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-xs">
+            <dt className="text-slate-400">Время</dt>
+            <dd className="tabular-nums text-slate-700 dark:text-slate-200">
+              {formatTimestamp(err.timestamp)}
+            </dd>
+            {err.userAgent && (
+              <>
+                <dt className="text-slate-400">Клиент</dt>
+                <dd className="break-all text-slate-700 dark:text-slate-200">{err.userAgent}</dd>
+              </>
+            )}
+          </dl>
+          {err.stack && (
+            <div className="relative">
+              <pre className="max-h-80 overflow-auto rounded-2xl bg-slate-900 p-4 pr-12 font-mono text-xs leading-relaxed text-slate-200 dark:bg-black/40">
+                {err.stack}
+              </pre>
+              <button
+                type="button"
+                onClick={copy}
+                title="Скопировать"
+                aria-label="Скопировать ошибку"
+                className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
+              >
+                {copied ? <CheckIcon className="h-4 w-4" /> : <CopyIcon className="h-4 w-4" />}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const SystemLogsPage = () => {
-  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
-
-  const isMobile = useIsMobile();
-  const { setOpen } = useTabbar();
-
   const {
     errors,
     isLoading,
@@ -32,194 +164,127 @@ export const SystemLogsPage = () => {
     formatTimestamp,
     canClearErrors,
   } = useSystemLogs();
+  const [search, setSearch] = useState("");
 
-  if (isLoading && errors.length === 0) {
-    return (
-      <div className="flex flex-col gap-4">
-        <Card className="rounded-2xl shadow-xl">
-          <CardHeader>
-            <CardTitle>Серверные логи</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center h-32">
-            <p className="text-muted-foreground">Загрузка...</p>
-          </CardContent>
-        </Card>
-        <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
-          <Link to="/">
-            <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
-              <HomeIcon className="w-4 h-4" />
-            </Button>
-          </Link>
-        </div>
-      </div>
+  const filtered = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return errors;
+    return errors.filter((e) =>
+      [e.message, e.endpoint, e.method, String(e.id)].some((v) => v?.toLowerCase().includes(term)),
     );
-  }
+  }, [errors, search]);
 
-  if (error && errors.length === 0) {
-    return (
-      <div className="flex flex-col gap-4">
-        <Card className="rounded-2xl shadow-xl">
-          <CardHeader>
-            <CardTitle>Серверные логи</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center gap-4 h-32">
-            <p className="text-destructive">{error}</p>
-            <Button onClick={refresh} variant="outline">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Повторить
-            </Button>
-          </CardContent>
-        </Card>
-        <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
-          <Link to="/">
-            <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
-              <HomeIcon className="w-4 h-4" />
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const firstLoad = isLoading && errors.length === 0 && !lastUpdated;
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Header with refresh */}
-      <Card className="rounded-2xl shadow-xl">
-        <CardHeader>
-          <div
-            className={`flex ${isMobile ? "flex-col gap-2" : "flex-row items-center"} justify-between`}
-          >
-            <div className="flex items-center gap-4">
-              <CardTitle>Серверные логи</CardTitle>
-              {errors.length > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="bg-red-100 hover:bg-red-100 text-red-700 border-red-200"
-                >
-                  {errors.length} ошибок
-                </Badge>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              {lastUpdated && (
-                <Button variant="outline" size="sm" className="rounded-2xl text-zinc-500">
-                  Обновлено: {lastUpdated}
-                </Button>
-              )}
-            </div>
+      <div
+        className={cn(
+          listCardClass,
+          "flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6",
+        )}
+      >
+        <div className="flex items-center gap-4">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-red-100 text-red-600 dark:bg-red-400/15 dark:text-red-300">
+            <ServerCrashIcon className="h-6 w-6" />
           </div>
-        </CardHeader>
-      </Card>
+          <div className="flex flex-col gap-0.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl">
+                Серверные логи
+              </h1>
+              {errors.length > 0 && (
+                <span className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium tabular-nums text-red-700 dark:bg-red-400/20 dark:text-red-200">
+                  {errors.length} {plural(errors.length)}
+                </span>
+              )}
+            </div>
+            <span className="text-sm text-slate-500 dark:text-slate-300">
+              Ошибки сервера с запросом и стеком вызовов
+            </span>
+          </div>
+        </div>
+        {lastUpdated && (
+          <span className="w-fit rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-600 dark:border-white/15 dark:bg-white/5 dark:text-slate-300">
+            Обновлено в <span className="tabular-nums">{lastUpdated}</span>
+          </span>
+        )}
+      </div>
 
-      {/* Error list */}
-      {errors.length > 0 ? (
-        <Card className="rounded-2xl shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-lg">Список ошибок</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            {errors.map((err) => (
-              <div
-                key={err.id}
-                className="p-4 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-lg"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3 flex-1">
-                    <AlertTriangle className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-medium text-sm">
-                          #{err.id} - {formatTimestamp(err.timestamp)}
-                        </span>
-                        {err.appVersion && <Badge variant="outline">v{err.appVersion}</Badge>}
-                        {err.method && err.endpoint && (
-                          <Badge variant="secondary">
-                            {err.method} {err.endpoint}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-1 break-all">{err.message}</p>
-                      {err.stack && (
-                        <details className="mt-2">
-                          <summary className="text-xs text-muted-foreground cursor-pointer hover:text-foreground">
-                            Показать стек вызовов
-                          </summary>
-                          <pre className="mt-2 p-3 bg-background rounded-md text-xs overflow-x-auto whitespace-pre-wrap">
-                            {err.stack}
-                          </pre>
-                        </details>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      ) : (
-        <Card className="rounded-2xl shadow-xl">
-          <CardContent className="flex items-center justify-center h-32">
-            <p className="text-muted-foreground">Ошибок не найдено</p>
-          </CardContent>
-        </Card>
+      {errors.length > 0 && (
+        <div className="relative">
+          <SearchIcon className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Input
+            className={cn(listFilterControlClass, "pl-9 dark:border-white/20 dark:bg-white/10")}
+            placeholder="Поиск по тексту, адресу запроса или номеру"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
       )}
 
-      {/* Bottom Navigation */}
-      <div
-        className={`fixed transition-all ${isMobile ? "bottom-2" : hideBottomTabbar ? "-bottom-14" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
-      >
-        <div
-          onClick={() => setHideBottomTabbar(false)}
-          className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
-        >
-          <ChevronUp className="text-white w-5" />
+      {firstLoad ? (
+        <div className="flex flex-col gap-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Shimmer key={i} className="h-24 w-full rounded-3xl" />
+          ))}
         </div>
-
-        <Link to="/">
-          <Button type="button" className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600">
-            <HomeIcon className="w-4 h-4" />
-          </Button>
-        </Link>
-
-        {isMobile && (
-          <Button
-            type="button"
-            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-            onClick={() => setOpen(true)}
-          >
-            <MenuIcon className="w-4 h-4" />
-          </Button>
-        )}
-
-        <Button
-          onClick={refresh}
-          disabled={isLoading}
-          type="button"
-          className="px-4 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600 flex items-center gap-2"
+      ) : error && errors.length === 0 ? (
+        <div
+          className={cn(listCardClass, "flex flex-col items-center gap-3 px-6 py-12 text-center")}
         >
-          <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
-          <span>Обновить</span>
-        </Button>
-
-        {errors.length > 0 && canClearErrors && (
-          <Button
-            onClick={clearAllErrors}
-            disabled={isLoading}
-            className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900 flex gap-2"
-          >
-            <Trash2 className="w-4 h-4 text-red-500" />
-            <span>Очистить</span>
-          </Button>
-        )}
-
-        <Button
-          onClick={() => setHideBottomTabbar(true)}
-          type="button"
-          className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 text-red-600 dark:bg-red-400/15 dark:text-red-300">
+            <ServerCrashIcon className="h-6 w-6" />
+          </div>
+          <span className="font-medium text-slate-900 dark:text-slate-100">{error}</span>
+          <span className="text-sm text-slate-500 dark:text-slate-400">
+            Нажмите «Обновить», чтобы попробовать снова
+          </span>
+        </div>
+      ) : errors.length === 0 ? (
+        <div
+          className={cn(listCardClass, "flex flex-col items-center gap-3 px-6 py-14 text-center")}
         >
-          <ChevronDown className="w-4 h-4" />
-        </Button>
-      </div>
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-600 dark:bg-emerald-400/15 dark:text-emerald-300">
+            <ShieldCheckIcon className="h-6 w-6" />
+          </div>
+          <span className="font-medium text-slate-900 dark:text-slate-100">Ошибок нет</span>
+          <span className="text-sm text-slate-500 dark:text-slate-400">
+            Записей об ошибках пока нет
+          </span>
+        </div>
+      ) : (
+        <div className={cn("flex flex-col gap-3 transition-opacity", isLoading && "opacity-60")}>
+          {filtered.map((err) => (
+            <LogItem key={err.id} err={err} formatTimestamp={formatTimestamp} />
+          ))}
+          {filtered.length === 0 && (
+            <div className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
+              Ничего не найдено
+            </div>
+          )}
+        </div>
+      )}
+
+      <BottomBar
+        onCreate={refresh}
+        createLabel={isLoading ? "Обновление..." : "Обновить"}
+        createIcon={<RefreshCwIcon className={cn(isLoading && "animate-spin")} />}
+        createDisabled={isLoading}
+        extraRow={
+          errors.length > 0 && canClearErrors ? (
+            <button
+              type="button"
+              onClick={clearAllErrors}
+              disabled={isLoading}
+              className={cn(barButton.danger, "w-full")}
+            >
+              <Trash2Icon />
+              Очистить все ошибки
+            </button>
+          ) : undefined
+        }
+      />
     </div>
   );
 };

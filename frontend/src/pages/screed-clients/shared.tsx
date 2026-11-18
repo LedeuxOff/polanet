@@ -1,3 +1,5 @@
+import { UserRoundIcon } from "lucide-react";
+import { listCardClass } from "@/components/data-list";
 import z from "zod";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -51,6 +53,9 @@ export const getScreedClientSections = (
   {
     id: "main-info",
     label: "Основная информация",
+    description: "ФИО, телефон и заметки",
+    icon: <UserRoundIcon />,
+    cardClassName: listCardClass,
     fields: [
       { id: "lastName", label: "Фамилия", type: "text", disabled },
       { id: "firstName", label: "Имя *", type: "text", disabled },
@@ -60,15 +65,16 @@ export const getScreedClientSections = (
         id: "notes",
         label: "Заметки",
         type: "controller",
-        className: "col-span-3",
+        className: "col-span-full",
         Controller: () => (
-          <div className="flex flex-col gap-2">
+          <div key="notes" className="col-span-full flex flex-col gap-2">
             <Label htmlFor="notes">Заметки</Label>
             <Textarea
               id="notes"
               rows={3}
               disabled={disabled}
-              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+              placeholder="Например: предпочитает звонки после 18:00"
+              className="resize-none rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               {...form.register("notes")}
             />
           </div>

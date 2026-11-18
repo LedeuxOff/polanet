@@ -92,8 +92,8 @@ export const ScreedClientDetailPage = () => {
   };
 
   return (
-    <div className="flex flex-col gap-4 pb-28">
-      <ScreedClientPageHead title={getScreedClientName(client)} />
+    <div className="flex flex-col gap-4">
+      <ScreedClientPageHead client={client} />
       {hasPermission("works:list") && <ScreedClientWorks clientId={client.id} />}
       <FormBuilder
         form={form}

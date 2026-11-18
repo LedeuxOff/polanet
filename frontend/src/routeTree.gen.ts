@@ -46,6 +46,8 @@ import { Route as TransportCardsNewRouteImport } from './routes/transport-cards/
 import { Route as TransportCardsCardIdRouteImport } from './routes/transport-cards/$cardId'
 import { Route as TeamsNewRouteImport } from './routes/teams/new'
 import { Route as TeamsTeamIdRouteImport } from './routes/teams/$teamId'
+import { Route as StatisticsWorksRouteImport } from './routes/statistics/works'
+import { Route as StatisticsOperationsRouteImport } from './routes/statistics/operations'
 import { Route as ScreedClientsNewRouteImport } from './routes/screed-clients/new'
 import { Route as ScreedClientsScreedClientIdRouteImport } from './routes/screed-clients/$screedClientId'
 import { Route as RolesNewRouteImport } from './routes/roles/new'
@@ -244,6 +246,16 @@ const TeamsTeamIdRoute = TeamsTeamIdRouteImport.update({
   path: '/$teamId',
   getParentRoute: () => TeamsRoute,
 } as any)
+const StatisticsWorksRoute = StatisticsWorksRouteImport.update({
+  id: '/statistics/works',
+  path: '/statistics/works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatisticsOperationsRoute = StatisticsOperationsRouteImport.update({
+  id: '/statistics/operations',
+  path: '/statistics/operations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ScreedClientsNewRoute = ScreedClientsNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -336,6 +348,8 @@ export interface FileRoutesByFullPath {
   '/roles/new': typeof RolesNewRoute
   '/screed-clients/$screedClientId': typeof ScreedClientsScreedClientIdRoute
   '/screed-clients/new': typeof ScreedClientsNewRoute
+  '/statistics/operations': typeof StatisticsOperationsRoute
+  '/statistics/works': typeof StatisticsWorksRoute
   '/teams/$teamId': typeof TeamsTeamIdRoute
   '/teams/new': typeof TeamsNewRoute
   '/transport-cards/$cardId': typeof TransportCardsCardIdRoute
@@ -376,6 +390,8 @@ export interface FileRoutesByTo {
   '/roles/new': typeof RolesNewRoute
   '/screed-clients/$screedClientId': typeof ScreedClientsScreedClientIdRoute
   '/screed-clients/new': typeof ScreedClientsNewRoute
+  '/statistics/operations': typeof StatisticsOperationsRoute
+  '/statistics/works': typeof StatisticsWorksRoute
   '/teams/$teamId': typeof TeamsTeamIdRoute
   '/teams/new': typeof TeamsNewRoute
   '/transport-cards/$cardId': typeof TransportCardsCardIdRoute
@@ -428,6 +444,8 @@ export interface FileRoutesById {
   '/roles/new': typeof RolesNewRoute
   '/screed-clients/$screedClientId': typeof ScreedClientsScreedClientIdRoute
   '/screed-clients/new': typeof ScreedClientsNewRoute
+  '/statistics/operations': typeof StatisticsOperationsRoute
+  '/statistics/works': typeof StatisticsWorksRoute
   '/teams/$teamId': typeof TeamsTeamIdRoute
   '/teams/new': typeof TeamsNewRoute
   '/transport-cards/$cardId': typeof TransportCardsCardIdRoute
@@ -481,6 +499,8 @@ export interface FileRouteTypes {
     | '/roles/new'
     | '/screed-clients/$screedClientId'
     | '/screed-clients/new'
+    | '/statistics/operations'
+    | '/statistics/works'
     | '/teams/$teamId'
     | '/teams/new'
     | '/transport-cards/$cardId'
@@ -521,6 +541,8 @@ export interface FileRouteTypes {
     | '/roles/new'
     | '/screed-clients/$screedClientId'
     | '/screed-clients/new'
+    | '/statistics/operations'
+    | '/statistics/works'
     | '/teams/$teamId'
     | '/teams/new'
     | '/transport-cards/$cardId'
@@ -572,6 +594,8 @@ export interface FileRouteTypes {
     | '/roles/new'
     | '/screed-clients/$screedClientId'
     | '/screed-clients/new'
+    | '/statistics/operations'
+    | '/statistics/works'
     | '/teams/$teamId'
     | '/teams/new'
     | '/transport-cards/$cardId'
@@ -616,6 +640,8 @@ export interface RootRouteChildren {
   ClientsNewRoute: typeof ClientsNewRoute
   OrdersOrderIdRoute: typeof OrdersOrderIdRoute
   OrdersNewRoute: typeof OrdersNewRoute
+  StatisticsOperationsRoute: typeof StatisticsOperationsRoute
+  StatisticsWorksRoute: typeof StatisticsWorksRoute
   ClientsIndexRoute: typeof ClientsIndexRoute
   MoneyStatisticIndexRoute: typeof MoneyStatisticIndexRoute
   OrdersIndexRoute: typeof OrdersIndexRoute
@@ -882,6 +908,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeamsTeamIdRouteImport
       parentRoute: typeof TeamsRoute
     }
+    '/statistics/works': {
+      id: '/statistics/works'
+      path: '/statistics/works'
+      fullPath: '/statistics/works'
+      preLoaderRoute: typeof StatisticsWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/statistics/operations': {
+      id: '/statistics/operations'
+      path: '/statistics/operations'
+      fullPath: '/statistics/operations'
+      preLoaderRoute: typeof StatisticsOperationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/screed-clients/new': {
       id: '/screed-clients/new'
       path: '/new'
@@ -1142,6 +1182,8 @@ const rootRouteChildren: RootRouteChildren = {
   ClientsNewRoute: ClientsNewRoute,
   OrdersOrderIdRoute: OrdersOrderIdRoute,
   OrdersNewRoute: OrdersNewRoute,
+  StatisticsOperationsRoute: StatisticsOperationsRoute,
+  StatisticsWorksRoute: StatisticsWorksRoute,
   ClientsIndexRoute: ClientsIndexRoute,
   MoneyStatisticIndexRoute: MoneyStatisticIndexRoute,
   OrdersIndexRoute: OrdersIndexRoute,

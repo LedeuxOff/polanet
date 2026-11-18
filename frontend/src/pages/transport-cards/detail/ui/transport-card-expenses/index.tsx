@@ -1,17 +1,11 @@
-import { Button } from "@/components/ui/button";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { ExpensePaymentType, TransportCard } from "@/lib/types";
 import { useState, useMemo, Dispatch, SetStateAction } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { FuelIcon, PlusIcon, ReceiptIcon, Trash2Icon, WalletIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks";
+import { cn, getFormattedAmount } from "@/lib/utils";
+import { MiniPager } from "@/components/data-list";
 import { AddExpenseDesktopModal } from "./add-expense-desktop-modal";
 import { AddExpenseMobileModal } from "./add-expense-mobile-modal";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface Props {
   totalExpenses: number;
@@ -32,7 +26,10 @@ interface Props {
   showToast: (message: string, type: "success" | "error" | "info" | "warning") => void;
 }
 
-const ITEMS_PER_PAGE = 3;
+const ITEMS_PER_PAGE = 5;
+
+const formatDate = (value: string) =>
+  new Date(value).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" });
 
 export const TransportCardExpenses = ({
   totalExpenses,
@@ -65,102 +62,92 @@ export const TransportCardExpenses = ({
     return (card?.expenses || []).slice(start, start + ITEMS_PER_PAGE);
   }, [card?.expenses, currentPage]);
 
-  const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
   const hasExpensesCreatePermission = hasPermission("expenses:create");
+  const expenses = card?.expenses || [];
+  const lastExpense = expenses.reduce<(typeof expenses)[number] | null>(
+    (latest, e) => (!latest || new Date(e.paymentDate) > new Date(latest.paymentDate) ? e : latest),
+    null,
+  );
 
   return (
-    <div className="flex flex-col gap-4 col-span-3">
-      <div>
-        <p className="text-sm text-muted-foreground dark:text-zinc-100">Общая сумма расходов</p>
-        <p className="text-2xl font-bold text-destructive dark:text-zinc-300">{totalExpenses} ₽</p>
+    <div className="col-span-full flex flex-col gap-4">
+      {/* Сводка */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <div className="col-span-2 flex flex-col gap-1 rounded-2xl border border-red-100 bg-red-50 p-4 sm:col-span-1 dark:border-red-400/20 dark:bg-red-500/10">
+          <span className="text-xs font-medium text-red-700/80 dark:text-red-200/80">
+            Общая сумма
+          </span>
+          <span className="text-2xl font-bold tabular-nums text-red-600 dark:text-red-300">
+            {getFormattedAmount(totalExpenses)} ₽
+          </span>
+        </div>
+        <div className="flex flex-col gap-1 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/15 dark:bg-white/5">
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Операций</span>
+          <span className="text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-100">
+            {expenses.length}
+          </span>
+        </div>
+        <div className="flex flex-col gap-1 rounded-2xl border border-slate-200 bg-slate-50 p-4 dark:border-white/15 dark:bg-white/5">
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Последний</span>
+          <span className="text-base font-semibold leading-8 text-slate-900 dark:text-slate-100">
+            {lastExpense ? formatDate(lastExpense.paymentDate) : "—"}
+          </span>
+        </div>
       </div>
 
-      {/* История расходов */}
-      <Accordion type="single" collapsible className="w-full">
-        <AccordionItem value="expenses" className="dark:border-white/30">
-          <AccordionTrigger className="text-base">
-            Расходы ({card?.expenses?.length || 0})
-          </AccordionTrigger>
-          <AccordionContent className="">
-            <div className="flex flex-col gap-2">
-              {paginatedExpenses.map((expense) => (
+      {/* Список */}
+      {expenses.length === 0 ? (
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-slate-200 px-4 py-8 text-center dark:border-white/20">
+          <ReceiptIcon className="h-6 w-6 text-slate-300 dark:text-slate-500" />
+          <span className="text-sm text-slate-500 dark:text-slate-400">Расходов пока нет</span>
+        </div>
+      ) : (
+        <div className="flex flex-col divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-200 dark:divide-white/10 dark:border-white/15">
+          {paginatedExpenses.map((expense) => {
+            const isFuel = expense.expenseType !== "salary";
+            return (
+              <div key={expense.id} className="flex items-center gap-3 px-4 py-3">
                 <div
-                  key={expense.id}
-                  className="flex rounded-2xl items-start justify-between p-3 border dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                  className={cn(
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                    isFuel
+                      ? "bg-orange-100 text-orange-600 dark:bg-orange-400/15 dark:text-orange-300"
+                      : "bg-violet-100 text-violet-600 dark:bg-violet-400/15 dark:text-violet-300",
+                  )}
                 >
-                  <div className="space-y-1">
-                    <p className="font-medium">{expense.amount} ₽</p>
-                    <div className="flex gap-2 text-sm text-muted-foreground">
-                      <span className="dark:text-zinc-100">
-                        {expense.expenseType === "salary" ? "Зарплата" : "Топливо"}
-                      </span>
-                      <span>•</span>
-                      <span className="dark:text-zinc-100">
-                        {expense.paymentType === "cash" ? "Наличные" : "Безналичные"}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground dark:text-zinc-300">
-                      {new Date(expense.paymentDate).toLocaleDateString("ru-RU")}
-                    </p>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="dark:hover:bg-red-600/40"
-                    onClick={() => handleRemoveExpense(expense.id)}
-                  >
-                    Удалить
-                  </Button>
+                  {isFuel ? <FuelIcon className="h-5 w-5" /> : <WalletIcon className="h-5 w-5" />}
                 </div>
-              ))}
-            </div>
-
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-6">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handlePreviousPage}
-                  disabled={currentPage === 1}
-                  className="h-10 w-10 bg-zinc-800 text-white hover:bg-zinc-900 hover:text-white"
-                  type="button"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <div className="flex items-center gap-2 px-4 py-2 border rounded-md">
-                  <span className="text-sm font-medium">{currentPage}</span>
-                  <span className="text-sm text-muted-foreground">/ {totalPages}</span>
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                    {isFuel ? "Топливо" : "Зарплата"}
+                  </span>
+                  <span className="truncate text-xs text-slate-500 dark:text-slate-400">
+                    {formatDate(expense.paymentDate)} ·{" "}
+                    {expense.paymentType === "cash" ? "Наличные" : "Безналичные"}
+                  </span>
                 </div>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleNextPage}
-                  disabled={currentPage === totalPages}
-                  className="h-10 w-10 bg-zinc-800 text-white hover:bg-zinc-900 hover:text-white"
+                <span className="whitespace-nowrap font-semibold tabular-nums text-red-600 dark:text-red-300">
+                  −{getFormattedAmount(expense.amount)} ₽
+                </span>
+                <button
                   type="button"
+                  onClick={() => handleRemoveExpense(expense.id)}
+                  title="Удалить расход"
+                  aria-label="Удалить расход"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/20 dark:hover:text-red-200"
                 >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+                  <Trash2Icon className="h-4 w-4" />
+                </button>
               </div>
-            )}
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+            );
+          })}
+        </div>
+      )}
 
-      {/* Кнопка добавления расхода */}
-      <div className="flex justify-end">
-        <Button
+      <div className="flex flex-col-reverse items-center gap-3 sm:flex-row sm:justify-between">
+        <MiniPager page={currentPage} totalPages={totalPages} onChange={setCurrentPage} />
+        <button
+          type="button"
           onClick={() => {
             if (!hasExpensesCreatePermission) {
               showToast("У вас нет прав на добавление расходов", "error");
@@ -168,12 +155,11 @@ export const TransportCardExpenses = ({
             }
             openExpenseDialog();
           }}
-          variant="outline"
-          type="button"
-          className="rounded-2xl bg-blue-400 text-white hover:bg-blue-500 hover:text-white dark:bg-blue-600/40 dark:backdrop-blur-xl dark:border dark:border-white/20"
+          className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 text-sm font-medium text-white transition-colors hover:bg-blue-700 sm:ml-auto sm:w-auto dark:bg-blue-500/80 dark:hover:bg-blue-500"
         >
+          <PlusIcon className="h-4 w-4" />
           Добавить расход
-        </Button>
+        </button>
       </div>
 
       {isMobile && (

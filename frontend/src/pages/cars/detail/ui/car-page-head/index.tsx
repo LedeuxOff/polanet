@@ -1,22 +1,35 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { DetailPageHead, HeadChip } from "@/components/data-list";
 import { Car } from "@/lib/types";
+import { CalendarIcon, CarFrontIcon } from "lucide-react";
+import { LicensePlate } from "../../../ui/license-plate";
 
 export const CarPageHead = ({ car }: { car: Car }) => {
-  return (
-    <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-      <CardHeader>
-        <div className="flex flex-col gap-4">
-          <CardTitle>Автомобили</CardTitle>
+  const createdDate = car.createdAt ? new Date(car.createdAt) : null;
+  const created =
+    createdDate && !Number.isNaN(createdDate.getTime())
+      ? createdDate.toLocaleDateString("ru-RU", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        })
+      : null;
 
-          <Breadcrumbs
-            items={[
-              { label: "Список", active: false, href: "/cars" },
-              { label: `${car.brand}`, active: true },
-            ]}
-          />
-        </div>
-      </CardHeader>
-    </Card>
+  return (
+    <DetailPageHead
+      breadcrumbs={
+        <Breadcrumbs
+          items={[
+            { label: "Автомобили", active: false, href: "/cars" },
+            { label: car.brand, active: true },
+          ]}
+        />
+      }
+      icon={<CarFrontIcon />}
+      iconClassName="bg-orange-100 text-orange-600 dark:bg-orange-400/15 dark:text-orange-300"
+      title={car.brand}
+      badges={<LicensePlate value={car.licensePlate} size="sm" />}
+      chips={created && <HeadChip icon={<CalendarIcon />}>Добавлен {created}</HeadChip>}
+    />
   );
 };

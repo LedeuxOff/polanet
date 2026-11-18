@@ -1,4 +1,4 @@
-import { FormEventHandler, HTMLAttributes } from "react";
+import { FormEventHandler, HTMLAttributes, ReactNode } from "react";
 import { FieldPath, FieldValues, UseFormReturn } from "react-hook-form";
 
 export type FormBuilderFieldType<T extends FieldValues = FieldValues> = {
@@ -17,6 +17,12 @@ export type FormBuilderFieldType<T extends FieldValues = FieldValues> = {
 export type FormBuilderSectionType<T extends FieldValues = FieldValues> = {
   id: string;
   label: string;
+  /** Подзаголовок под названием секции */
+  description?: string;
+  /** Иконка секции (lucide), отображается слева от заголовка */
+  icon?: ReactNode;
+  /** Классы карточки секции (переопределяют стандартные) */
+  cardClassName?: HTMLAttributes<HTMLDivElement>["className"];
   className?: HTMLAttributes<HTMLDivElement>["className"];
   fields: FormBuilderFieldType<T>[];
   hide?: boolean;

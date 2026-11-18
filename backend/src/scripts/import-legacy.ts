@@ -58,7 +58,7 @@ const WORK_TYPE_MAP: Record<string, string> = {
 // Достаёт первый российский номер из произвольной строки и приводит к 7XXXXXXXXXX
 export function extractPhone(raw: string | null): string | null {
   if (!raw) return null;
-  const chunks = raw.split(/[^\d\s\-()+ ‑‐‒–]+/);
+  const chunks = raw.split(/[^\d\s\-()+\u00A0‑‐‒–]+/);
   for (const chunk of chunks) {
     const digits = chunk.replace(/\D/g, "");
     if (digits.length === 11 && (digits[0] === "7" || digits[0] === "8")) {

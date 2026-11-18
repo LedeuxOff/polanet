@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { deliveriesApi, DeliveriesSummary } from "@/lib/api/deliveries-api";
 import { usePermissions } from "@/lib/contexts/permission-context";
-import { homeCardClass, PulseIcon, StatTile } from "./ui-parts";
+import { cardTints, homeCardClass, SectionContent, SectionHeader, StatTile } from "./ui-parts";
 import {
   CalendarCheckIcon,
   CalendarClockIcon,
@@ -66,19 +67,15 @@ export const DeliveriesCalendarSection = () => {
 
   return (
     <Link to="/calendar" className="col-span-12">
-      <Card className={homeCardClass}>
-        <CardHeader>
-          <CardTitle className="dark:text-slate-100">Календарь доставок</CardTitle>
-          <CardDescription className="dark:text-slate-200 max-w-[75%]">
-            Просмотр, создание и редактирование предстоящих доставок
-          </CardDescription>
-        </CardHeader>
+      <Card className={cn(homeCardClass, cardTints.cyan)}>
+        <SectionHeader
+          title="Календарь доставок"
+          description="Просмотр, создание и редактирование предстоящих доставок"
+          color="cyan"
+          icon={<CalendarDaysIcon />}
+        />
 
-        <PulseIcon color="cyan">
-          <CalendarDaysIcon />
-        </PulseIcon>
-
-        <CardContent>
+        <SectionContent color="cyan">
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
             <StatTile
               icon={<CalendarClockIcon className="h-3.5 w-3.5" />}
@@ -117,7 +114,7 @@ export const DeliveriesCalendarSection = () => {
               valueClassName="text-blue-600 dark:text-blue-300"
             />
           </div>
-        </CardContent>
+        </SectionContent>
       </Card>
     </Link>
   );

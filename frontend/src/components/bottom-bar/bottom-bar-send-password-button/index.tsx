@@ -1,7 +1,8 @@
-import { Button } from "@/components/ui/button";
+import { barButton } from "../styles";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
-import { Send } from "lucide-react";
+import { Loader2Icon, Send } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Props {
   disabled?: boolean;
@@ -18,7 +19,7 @@ export const BottomBarSendPasswordButton = ({
   const { showToast } = useToast();
 
   return (
-    <Button
+    <button
       type="button"
       disabled={disabled}
       onClick={() => {
@@ -28,10 +29,10 @@ export const BottomBarSendPasswordButton = ({
         }
         handleSendPassword();
       }}
-      className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 dark:text-zinc-100"
+      className={cn(barButton.secondary, "w-full")}
     >
-      <Send className="w-4 h-4 mr-2 dark:text-zinc-100" />
+      {isSendingPassword ? <Loader2Icon className="animate-spin" /> : <Send />}
       {isSendingPassword ? "Отправка..." : "Выслать новый пароль"}
-    </Button>
+    </button>
   );
 };

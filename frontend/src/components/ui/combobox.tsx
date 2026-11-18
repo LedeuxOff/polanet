@@ -175,7 +175,10 @@ export const Combobox = ({
                   )}
                 >
                   <CheckIcon
-                    className={cn("mt-0.5 h-4 w-4 shrink-0", o.value === value ? "opacity-100" : "opacity-0")}
+                    className={cn(
+                      "mt-0.5 h-4 w-4 shrink-0",
+                      o.value === value ? "opacity-100" : "opacity-0",
+                    )}
                   />
                   <span className="min-w-0">
                     <span className="block truncate">{o.label}</span>

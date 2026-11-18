@@ -16,7 +16,7 @@ export const useSystemLogs = () => {
     try {
       const data = await systemLogsApi.getErrors();
       setErrors(data);
-      setLastUpdated(new Date().toLocaleString("ru-RU"));
+      setLastUpdated(new Date().toLocaleTimeString("ru-RU"));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Произошла ошибка");
     } finally {
@@ -25,10 +25,11 @@ export const useSystemLogs = () => {
   }, []);
 
   const clearAllErrors = useCallback(async () => {
+    if (!confirm("Удалить все записи об ошибках? Это действие нельзя отменить.")) return;
     try {
       await systemLogsApi.clearErrors();
       setErrors([]);
-      setLastUpdated(new Date().toLocaleString("ru-RU"));
+      setLastUpdated(new Date().toLocaleTimeString("ru-RU"));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Произошла ошибка");
     }

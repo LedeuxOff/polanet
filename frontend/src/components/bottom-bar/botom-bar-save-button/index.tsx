@@ -1,4 +1,5 @@
-import { Button } from "@/components/ui/button";
+import { CheckIcon, Loader2Icon } from "lucide-react";
+import { barButton } from "../styles";
 
 interface Props {
   disabled?: boolean;
@@ -7,12 +8,9 @@ interface Props {
 
 export const BottomBarSaveButton = ({ saveLabel, disabled }: Props) => {
   return (
-    <Button
-      type="submit"
-      disabled={disabled}
-      className="px-8 py-4 bg-blue-500/90 dark:bg-blue-600/40 dark:text-zinc-100 dark:border dark:border-white/10 rounded-2xl hover:bg-blue-600 dark:hover:bg-blue-600/30 flex-1"
-    >
+    <button type="submit" disabled={disabled} className={barButton.primary}>
+      {disabled ? <Loader2Icon className="animate-spin" /> : <CheckIcon />}
       {saveLabel ? saveLabel : disabled ? "Сохранение..." : "Сохранить"}
-    </Button>
+    </button>
   );
 };

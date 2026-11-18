@@ -1,21 +1,19 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { DetailPageHead } from "@/components/data-list";
+import { UserPlusIcon } from "lucide-react";
 
-export const ClientNewPageHead = () => {
-  return (
-    <Card className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-      <CardHeader>
-        <div className="flex flex-col gap-4">
-          <CardTitle>Клиенты</CardTitle>
-
-          <Breadcrumbs
-            items={[
-              { label: "Список", href: "/clients", active: false },
-              { label: "Создание", active: true },
-            ]}
-          />
-        </div>
-      </CardHeader>
-    </Card>
-  );
-};
+export const ClientNewPageHead = () => (
+  <DetailPageHead
+    breadcrumbs={
+      <Breadcrumbs
+        items={[
+          { label: "Клиенты", href: "/clients", active: false },
+          { label: "Создание", active: true },
+        ]}
+      />
+    }
+    icon={<UserPlusIcon />}
+    iconClassName="bg-amber-100 text-amber-600 dark:bg-amber-400/15 dark:text-amber-300"
+    title="Новый клиент"
+  />
+);

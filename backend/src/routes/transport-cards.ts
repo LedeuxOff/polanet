@@ -36,7 +36,7 @@ router.get(
       }
 
       // Получаем общее количество
-      let totalQuery = db.select({ count: count() }).from(transportCards);
+      const totalQuery = db.select({ count: count() }).from(transportCards);
       if (whereClause.length > 0) {
         totalQuery.where(and(...whereClause));
       }

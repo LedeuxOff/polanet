@@ -1,5 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { TrashIcon } from "lucide-react";
+import { barButton } from "../styles";
+import { Trash2Icon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface Props {
   disabled?: boolean;
@@ -8,13 +9,15 @@ interface Props {
 
 export const BottomBarDeleteButton = ({ disabled, handleDelete }: Props) => {
   return (
-    <Button
+    <button
       type="button"
       disabled={disabled}
       onClick={handleDelete}
-      className="px-3 py-4 bg-red-400 dark:bg-red-600/40 hover:bg-red-500 dark:hover:bg-red-600/60 rounded-2xl"
+      title="Удалить"
+      aria-label="Удалить"
+      className={cn(barButton.danger, barButton.icon)}
     >
-      <TrashIcon className="w-4 h-4 dark:text-white" />
-    </Button>
+      <Trash2Icon />
+    </button>
   );
 };

@@ -1,11 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { Work } from "@/lib/types";
-import {
-  formatWorkTime,
-  getStatusClasses,
-  getClientName,
-  getWorkRange,
-} from "../consts";
+import { formatWorkTime, getStatusClasses, getClientName, getWorkRange } from "../consts";
 
 export const WORK_DRAG_TYPE = "application/x-polanet-work";
 

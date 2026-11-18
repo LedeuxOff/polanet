@@ -1,21 +1,19 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { DetailPageHead } from "@/components/data-list";
+import { CarFrontIcon } from "lucide-react";
 
-export const CarNewPageHead = () => {
-  return (
-    <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-      <CardHeader>
-        <div className="flex flex-col gap-4">
-          <CardTitle>Автомобили</CardTitle>
-
-          <Breadcrumbs
-            items={[
-              { label: "Список", href: "/cars", active: false },
-              { label: "Создание", active: true },
-            ]}
-          />
-        </div>
-      </CardHeader>
-    </Card>
-  );
-};
+export const CarNewPageHead = () => (
+  <DetailPageHead
+    breadcrumbs={
+      <Breadcrumbs
+        items={[
+          { label: "Автомобили", href: "/cars", active: false },
+          { label: "Создание", active: true },
+        ]}
+      />
+    }
+    icon={<CarFrontIcon />}
+    iconClassName="bg-orange-100 text-orange-600 dark:bg-orange-400/15 dark:text-orange-300"
+    title="Новый автомобиль"
+  />
+);

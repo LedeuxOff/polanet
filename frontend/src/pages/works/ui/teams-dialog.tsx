@@ -87,7 +87,9 @@ export const TeamsDialog = ({ open, onOpenChange, onChanged }: Props) => {
                   checked={team.isActive}
                   disabled={busy}
                   title="Активна"
-                  onCheckedChange={(v) => run(() => teamsApi.update(team.id, { isActive: v === true }))}
+                  onCheckedChange={(v) =>
+                    run(() => teamsApi.update(team.id, { isActive: v === true }))
+                  }
                 />
                 <Input
                   value={names[team.id] ?? ""}
@@ -100,13 +102,22 @@ export const TeamsDialog = ({ open, onOpenChange, onChanged }: Props) => {
                     size="sm"
                     disabled={busy || !(names[team.id] ?? "").trim()}
                     onClick={() =>
-                      run(() => teamsApi.update(team.id, { name: names[team.id].trim() }), "Сохранено")
+                      run(
+                        () => teamsApi.update(team.id, { name: names[team.id].trim() }),
+                        "Сохранено",
+                      )
                     }
                   >
                     OK
                   </Button>
                 )}
-                <Button type="button" size="icon" variant="ghost" disabled={busy || i === 0} onClick={() => move(i, -1)}>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="ghost"
+                  disabled={busy || i === 0}
+                  onClick={() => move(i, -1)}
+                >
                   <ArrowUpIcon className="h-4 w-4" />
                 </Button>
                 <Button

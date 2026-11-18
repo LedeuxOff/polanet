@@ -1,3 +1,4 @@
+import { PackageCheckIcon, WalletIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { InputPhone } from "@/components/ui/input-phone";
 import { Label } from "@/components/ui/label";
@@ -99,120 +100,142 @@ export const OrderClient = ({ form, isSubmitting, disabledByStatus }: Props) => 
         </Select>
       </div>
 
-      {/* Плательщик */}
-      <div>
-        <h3 className="text-lg font-semibold mb-3">Плательщик</h3>
-        <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-4"} gap-4`}>
-          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
-            <Label htmlFor="payerLastName">Фамилия *</Label>
-            <Input
-              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
-              id="payerLastName"
-              disabled={isSubmitting || disabledByStatus}
-              {...form.register("payerLastName")}
-            />
-            {form.formState.errors.payerLastName && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.payerLastName.message}
-              </p>
-            )}
+      <div className="grid gap-4 xl:grid-cols-2">
+        {/* Плательщик */}
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-white/15 dark:bg-white/5">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 dark:bg-emerald-400/15 dark:text-emerald-300">
+              <WalletIcon className="h-4 w-4" />
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                Плательщик
+              </h3>
+              <span className="text-xs text-slate-500 dark:text-slate-400">Оплачивает заявку</span>
+            </div>
           </div>
+          <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-4"} gap-4`}>
+            <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
+              <Label htmlFor="payerLastName">Фамилия *</Label>
+              <Input
+                className="rounded-2xl bg-white dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                id="payerLastName"
+                disabled={isSubmitting || disabledByStatus}
+                {...form.register("payerLastName")}
+              />
+              {form.formState.errors.payerLastName && (
+                <p className="text-sm text-destructive">
+                  {form.formState.errors.payerLastName.message}
+                </p>
+              )}
+            </div>
 
-          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
-            <Label htmlFor="payerFirstName">Имя *</Label>
-            <Input
-              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
-              id="payerFirstName"
-              disabled={isSubmitting || disabledByStatus}
-              {...form.register("payerFirstName")}
-            />
-            {form.formState.errors.payerFirstName && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.payerFirstName.message}
-              </p>
-            )}
-          </div>
+            <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
+              <Label htmlFor="payerFirstName">Имя *</Label>
+              <Input
+                className="rounded-2xl bg-white dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                id="payerFirstName"
+                disabled={isSubmitting || disabledByStatus}
+                {...form.register("payerFirstName")}
+              />
+              {form.formState.errors.payerFirstName && (
+                <p className="text-sm text-destructive">
+                  {form.formState.errors.payerFirstName.message}
+                </p>
+              )}
+            </div>
 
-          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
-            <Label htmlFor="payerMiddleName">Отчество</Label>
-            <Input
-              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
-              id="payerMiddleName"
-              disabled={isSubmitting || disabledByStatus}
-              {...form.register("payerMiddleName")}
-            />
-          </div>
+            <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
+              <Label htmlFor="payerMiddleName">Отчество</Label>
+              <Input
+                className="rounded-2xl bg-white dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                id="payerMiddleName"
+                disabled={isSubmitting || disabledByStatus}
+                {...form.register("payerMiddleName")}
+              />
+            </div>
 
-          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
-            <Label htmlFor="payerPhone">Телефон</Label>
-            <InputPhone
-              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
-              id="payerPhone"
-              disabled={isSubmitting || disabledByStatus}
-              value={form.watch("payerPhone") || ""}
-              onPhoneChange={(value) =>
-                form.setValue("payerPhone", value || undefined, { shouldValidate: true })
-              }
-            />
+            <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
+              <Label htmlFor="payerPhone">Телефон</Label>
+              <InputPhone
+                className="rounded-2xl bg-white dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                id="payerPhone"
+                disabled={isSubmitting || disabledByStatus}
+                value={form.watch("payerPhone") || ""}
+                onPhoneChange={(value) =>
+                  form.setValue("payerPhone", value || undefined, { shouldValidate: true })
+                }
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Приемщик */}
-      <div>
-        <h3 className="text-lg font-semibold mb-3">Приемщик</h3>
-        <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-4"} gap-4`}>
-          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
-            <Label htmlFor="receiverLastName">Фамилия *</Label>
-            <Input
-              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
-              id="receiverLastName"
-              disabled={isSubmitting || disabledByStatus}
-              {...form.register("receiverLastName")}
-            />
-            {form.formState.errors.receiverLastName && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.receiverLastName.message}
-              </p>
-            )}
+        {/* Приемщик */}
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-white/15 dark:bg-white/5">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sky-100 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300">
+              <PackageCheckIcon className="h-4 w-4" />
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Приёмщик</h3>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Принимает груз на объекте
+              </span>
+            </div>
           </div>
+          <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-4"} gap-4`}>
+            <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
+              <Label htmlFor="receiverLastName">Фамилия *</Label>
+              <Input
+                className="rounded-2xl bg-white dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                id="receiverLastName"
+                disabled={isSubmitting || disabledByStatus}
+                {...form.register("receiverLastName")}
+              />
+              {form.formState.errors.receiverLastName && (
+                <p className="text-sm text-destructive">
+                  {form.formState.errors.receiverLastName.message}
+                </p>
+              )}
+            </div>
 
-          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
-            <Label htmlFor="receiverFirstName">Имя *</Label>
-            <Input
-              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
-              id="receiverFirstName"
-              disabled={isSubmitting || disabledByStatus}
-              {...form.register("receiverFirstName")}
-            />
-            {form.formState.errors.receiverFirstName && (
-              <p className="text-sm text-destructive">
-                {form.formState.errors.receiverFirstName.message}
-              </p>
-            )}
-          </div>
+            <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
+              <Label htmlFor="receiverFirstName">Имя *</Label>
+              <Input
+                className="rounded-2xl bg-white dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                id="receiverFirstName"
+                disabled={isSubmitting || disabledByStatus}
+                {...form.register("receiverFirstName")}
+              />
+              {form.formState.errors.receiverFirstName && (
+                <p className="text-sm text-destructive">
+                  {form.formState.errors.receiverFirstName.message}
+                </p>
+              )}
+            </div>
 
-          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
-            <Label htmlFor="receiverMiddleName">Отчество</Label>
-            <Input
-              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
-              id="receiverMiddleName"
-              disabled={isSubmitting || disabledByStatus}
-              {...form.register("receiverMiddleName")}
-            />
-          </div>
+            <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
+              <Label htmlFor="receiverMiddleName">Отчество</Label>
+              <Input
+                className="rounded-2xl bg-white dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                id="receiverMiddleName"
+                disabled={isSubmitting || disabledByStatus}
+                {...form.register("receiverMiddleName")}
+              />
+            </div>
 
-          <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
-            <Label htmlFor="receiverPhone">Телефон</Label>
-            <InputPhone
-              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
-              id="receiverPhone"
-              disabled={isSubmitting || disabledByStatus}
-              value={form.watch("receiverPhone") || ""}
-              onPhoneChange={(value) =>
-                form.setValue("receiverPhone", value || undefined, { shouldValidate: true })
-              }
-            />
+            <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
+              <Label htmlFor="receiverPhone">Телефон</Label>
+              <InputPhone
+                className="rounded-2xl bg-white dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                id="receiverPhone"
+                disabled={isSubmitting || disabledByStatus}
+                value={form.watch("receiverPhone") || ""}
+                onPhoneChange={(value) =>
+                  form.setValue("receiverPhone", value || undefined, { shouldValidate: true })
+                }
+              />
+            </div>
           </div>
         </div>
       </div>

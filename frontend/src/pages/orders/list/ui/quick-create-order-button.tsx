@@ -21,6 +21,9 @@ import { clientsApi, ordersApi } from "@/lib/api";
 import { useEffect, useState } from "react";
 import { useIsMobile } from "@/hooks";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
+import { barButton } from "@/components/bottom-bar/styles";
+import { cn } from "@/lib/utils";
+import { FilePlus2Icon } from "lucide-react";
 
 export function QuickCreateOrderButton() {
   const isMobile = useIsMobile();
@@ -73,13 +76,11 @@ export function QuickCreateOrderButton() {
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={(value) => setOpen(value)}>
-        <DrawerTrigger>
-          <Button
-            type="button"
-            className="w-full px-8 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 dark:text-white"
-          >
+        <DrawerTrigger asChild>
+          <button type="button" className={cn(barButton.secondary, "w-full")}>
+            <FilePlus2Icon />
             Создать черновик
-          </Button>
+          </button>
         </DrawerTrigger>
         <DrawerContent className="rounded-t-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
           <div className="px-2 flex-1 max-h-[90vh] pb-8">
@@ -142,12 +143,10 @@ export function QuickCreateOrderButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          type="button"
-          className="px-8 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 dark:text-white"
-        >
+        <button type="button" className={cn(barButton.secondary, "w-full")}>
+          <FilePlus2Icon />
           Создать черновик
-        </Button>
+        </button>
       </DialogTrigger>
       <DialogContent className="!rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 sm:max-w-[425px]">
         <DialogHeader>

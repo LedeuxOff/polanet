@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { SearchIcon } from "lucide-react";
 
@@ -5,10 +6,12 @@ export const DataTableSearchFilter = ({
   search,
   handleSearchChange,
   placeholder = "Поиск...",
+  inputClassName,
 }: {
   search: string;
   handleSearchChange: (value: string) => void;
   placeholder?: string;
+  inputClassName?: string;
 }) => {
   return (
     <div className="relative flex-1">
@@ -18,7 +21,10 @@ export const DataTableSearchFilter = ({
         placeholder={placeholder}
         value={search}
         onChange={(e) => handleSearchChange(e.target.value)}
-        className="pl-9 rounded-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+        className={cn(
+          "pl-9 rounded-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20",
+          inputClassName,
+        )}
       />
     </div>
   );

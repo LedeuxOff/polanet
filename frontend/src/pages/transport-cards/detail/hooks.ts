@@ -1,3 +1,4 @@
+import { nowDateTimeValue } from "@/components/ui/date-picker";
 import { transportCardsApi, expensesApi } from "@/lib/api";
 import {
   TransportCard,
@@ -24,7 +25,7 @@ export const useTransportCardDetailPage = () => {
   // Для транспортных карт тип расхода всегда "fuel" (топливо)
   const EXPENSE_TYPE = "fuel" as const;
   const [expenseAmount, setExpenseAmount] = useState("");
-  const [expenseDateTime, setExpenseDateTime] = useState(new Date().toISOString().slice(0, 16));
+  const [expenseDateTime, setExpenseDateTime] = useState(nowDateTimeValue());
   const [expensePaymentType, setExpensePaymentType] = useState<ExpensePaymentType>("cash");
   const [isAddingExpense, setIsAddingExpense] = useState(false);
   const [showExpenseDialog, setShowExpenseDialog] = useState(false);
@@ -106,7 +107,7 @@ export const useTransportCardDetailPage = () => {
 
       // Сбрасываем форму и закрываем диалог
       setExpenseAmount("");
-      setExpenseDateTime(new Date().toISOString().slice(0, 16));
+      setExpenseDateTime(nowDateTimeValue());
       setShowExpenseDialog(false);
 
       // Перезагружаем данные

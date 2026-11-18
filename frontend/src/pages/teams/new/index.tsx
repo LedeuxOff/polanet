@@ -45,21 +45,26 @@ export const NewTeamPage = () => {
   });
 
   return (
-    <div className="flex flex-col gap-4 pb-28">
-      <TeamPageHead title="Создание" />
+    <div className="flex flex-col gap-4">
+      <TeamPageHead title="Создание" isNew />
       <FormBuilder
         form={form}
-        sections={getTeamSections(isSubmitting)}
+        sections={getTeamSections(isSubmitting, {
+          count: memberIds.length,
+          render: () => (
+            <TeamMembersPicker
+              key="members"
+              teamId={null}
+              value={memberIds}
+              onChange={setMemberIds}
+              disabled={isSubmitting}
+            />
+          ),
+        })}
         actions={{
           submit: { onSubmit: handleSubmit, isSubmitting, disabled: isSubmitting },
           back: () => navigate({ to: "/teams" }),
         }}
-      />
-      <TeamMembersPicker
-        teamId={null}
-        value={memberIds}
-        onChange={setMemberIds}
-        disabled={isSubmitting}
       />
     </div>
   );

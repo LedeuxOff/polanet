@@ -1,22 +1,32 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { DetailPageHead, HeadChip } from "@/components/data-list";
 import { TransportCard } from "@/lib/types";
+import { getFormattedAmount } from "@/lib/utils";
+import { CreditCardIcon, ReceiptIcon } from "lucide-react";
+import { CardStatusBadge, formatCardNumber } from "../../../ui/card-identity";
 
-export const TransportCardPageHead = ({ card }: { card: TransportCard }) => {
-  return (
-    <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-      <CardHeader>
-        <div className="flex flex-col gap-4">
-          <CardTitle>Топливные карты</CardTitle>
-
-          <Breadcrumbs
-            items={[
-              { label: "Список", active: false, href: "/transport-cards" },
-              { label: `Карта №${card?.cardNumber}`, active: true },
-            ]}
-          />
-        </div>
-      </CardHeader>
-    </Card>
-  );
-};
+export const TransportCardPageHead = ({ card }: { card: TransportCard }) => (
+  <DetailPageHead
+    breadcrumbs={
+      <Breadcrumbs
+        items={[
+          { label: "Топливные карты", active: false, href: "/transport-cards" },
+          { label: `Карта ${formatCardNumber(card?.cardNumber)}`, active: true },
+        ]}
+      />
+    }
+    icon={<CreditCardIcon />}
+    iconClassName={
+      card.status === "active"
+        ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-400/15 dark:text-emerald-300"
+        : undefined
+    }
+    title={<span className="font-mono tracking-wide">{formatCardNumber(card.cardNumber)}</span>}
+    badges={<CardStatusBadge status={card.status} />}
+    chips={
+      <HeadChip icon={<ReceiptIcon />}>
+        Расходы: {getFormattedAmount(card.totalExpenses || 0)} ₽ · {card.expenses?.length ?? 0} шт.
+      </HeadChip>
+    }
+  />
+);

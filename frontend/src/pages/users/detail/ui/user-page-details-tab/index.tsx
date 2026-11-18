@@ -5,6 +5,8 @@ import { UserDetailPageTelegramController } from "./user-page-telegram-controlle
 import { BaseSyntheticEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/lib/contexts/auth-context";
+import { ContactIcon, ShieldCheckIcon, UserRoundIcon } from "lucide-react";
+import { usersCardClass } from "../../../ui/user-identity";
 
 interface Props {
   form: UseFormReturn<UserForm>;
@@ -42,51 +44,41 @@ export const UserPageDetailsTab = ({
   const isCurrentUserDeveloper = currentUser?.roleCode === "DEVELOPER";
 
   const isDriver = user?.roleCode === "DRIVER";
+  const disabled = isSubmitting || isDeleting || isDetachingCard;
 
   return (
     <FormBuilder
       form={form}
       sections={[
         {
-          id: "main-info",
-          label: "Основная информация",
+          id: "personal",
+          label: "Личные данные",
+          description: "ФИО и дата рождения",
+          icon: <UserRoundIcon />,
+          cardClassName: usersCardClass,
           fields: [
-            {
-              id: "lastName",
-              label: "Фамилия",
-              type: "text",
-              disabled: isSubmitting || isDeleting || isDetachingCard,
-            },
-            {
-              id: "firstName",
-              label: "Имя",
-              type: "text",
-              disabled: isSubmitting || isDeleting || isDetachingCard,
-            },
-            {
-              id: "middleName",
-              label: "Отчество",
-              type: "text",
-              disabled: isSubmitting || isDeleting || isDetachingCard,
-            },
-            {
-              id: "email",
-              label: "Email",
-              type: "email",
-              disabled: isSubmitting || isDeleting || isDetachingCard,
-            },
-            {
-              id: "phone",
-              label: "Телефон",
-              type: "phone",
-              disabled: isSubmitting || isDeleting || isDetachingCard,
-            },
+            { id: "lastName", label: "Фамилия", type: "text", disabled },
+            { id: "firstName", label: "Имя", type: "text", disabled },
+            { id: "middleName", label: "Отчество", type: "text", disabled },
+            { id: "birthDate", label: "Дата рождения", type: "date", disabled },
+          ],
+        },
+        {
+          id: "contacts",
+          label: "Контакты",
+          description: "Почта для входа, телефон и Telegram",
+          icon: <ContactIcon />,
+          cardClassName: usersCardClass,
+          fields: [
+            { id: "email", label: "Email", type: "email", disabled },
+            { id: "phone", label: "Телефон", type: "phone", disabled },
             {
               id: "telegramId",
               label: "Телеграмм контроллер",
               type: "controller",
               Controller: () => (
                 <UserDetailPageTelegramController
+                  key="telegram"
                   user={user}
                   handleUnbindTelegram={handleUnbindTelegram}
                   isUnbindingTelegram={isUnbindingTelegram}
@@ -94,17 +86,20 @@ export const UserPageDetailsTab = ({
                 />
               ),
             },
-            {
-              id: "birthDate",
-              label: "Дата рождения",
-              type: "date",
-              disabled: isSubmitting || isDeleting || isDetachingCard,
-            },
+          ],
+        },
+        {
+          id: "access",
+          label: "Доступ",
+          description: "Роль определяет права сотрудника в системе",
+          icon: <ShieldCheckIcon />,
+          cardClassName: usersCardClass,
+          fields: [
             {
               id: "roleId",
               label: "Роль",
               type: "select",
-              disabled: isSubmitting || isDeleting || isDetachingCard,
+              disabled,
               select: {
                 options: roles.map((item) => ({ id: item.id.toString(), name: item.name })),
               },

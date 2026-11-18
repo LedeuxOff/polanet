@@ -67,9 +67,8 @@ export const minutesToTime = (minutes: number) =>
   `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
 
 // Варианты времени в форме: каждые 30 минут с 08:00 до 24:00
-export const TIME_OPTIONS = Array.from(
-  { length: (DAY_END - DAY_START) / TIME_STEP + 1 },
-  (_, i) => minutesToTime(DAY_START + i * TIME_STEP),
+export const TIME_OPTIONS = Array.from({ length: (DAY_END - DAY_START) / TIME_STEP + 1 }, (_, i) =>
+  minutesToTime(DAY_START + i * TIME_STEP),
 );
 
 /** Интервал работы в минутах, прижатый к рабочему диапазону; без времени — весь диапазон */
@@ -154,8 +153,7 @@ export const formatDateLong = (key: string) =>
 export const getClientName = (client: WorkClient | null) => {
   if (!client) return "Без клиента";
   return (
-    [client.lastName, client.firstName, client.middleName].filter(Boolean).join(" ") ||
-    "Без имени"
+    [client.lastName, client.firstName, client.middleName].filter(Boolean).join(" ") || "Без имени"
   );
 };
 

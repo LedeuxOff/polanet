@@ -1,3 +1,4 @@
+import { DatePicker } from "@/components/ui/date-picker";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -67,30 +68,36 @@ const TimeSelect = ({
 const optionalNumber = z
   .string()
   .trim()
-  .refine((v) => v === "" || (!Number.isNaN(Number(v.replace(",", "."))) && Number(v.replace(",", ".")) >= 0), {
-    message: "Введите неотрицательное число",
-  });
+  .refine(
+    (v) =>
+      v === "" || (!Number.isNaN(Number(v.replace(",", "."))) && Number(v.replace(",", ".")) >= 0),
+    {
+      message: "Введите неотрицательное число",
+    },
+  );
 
-const workFormSchema = z.object({
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Укажите дату"),
-  startTime: z.string().regex(/^\d{2}:\d{2}$/, "Укажите время начала"),
-  endTime: z.string().regex(/^\d{2}:\d{2}$/, "Укажите время окончания"),
-  teamId: z.string(),
-  status: z.string().min(1, "Выберите статус"),
-  workType: z.string().min(1, "Выберите тип работ"),
-  address: z.string(),
-  area: optionalNumber,
-  thickness: optionalNumber,
-  strength: z.string(),
-  price: optionalNumber,
-  hoseLength: optionalNumber,
-  isTransmix: z.boolean(),
-  measurerId: z.number().nullable(),
-  notes: z.string(),
-}).refine((v) => v.endTime > v.startTime, {
-  message: "Окончание должно быть позже начала",
-  path: ["endTime"],
-});
+const workFormSchema = z
+  .object({
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Укажите дату"),
+    startTime: z.string().regex(/^\d{2}:\d{2}$/, "Укажите время начала"),
+    endTime: z.string().regex(/^\d{2}:\d{2}$/, "Укажите время окончания"),
+    teamId: z.string(),
+    status: z.string().min(1, "Выберите статус"),
+    workType: z.string().min(1, "Выберите тип работ"),
+    address: z.string(),
+    area: optionalNumber,
+    thickness: optionalNumber,
+    strength: z.string(),
+    price: optionalNumber,
+    hoseLength: optionalNumber,
+    isTransmix: z.boolean(),
+    measurerId: z.number().nullable(),
+    notes: z.string(),
+  })
+  .refine((v) => v.endTime > v.startTime, {
+    message: "Окончание должно быть позже начала",
+    path: ["endTime"],
+  });
 
 export type WorkFormValues = z.infer<typeof workFormSchema>;
 
@@ -217,7 +224,18 @@ export const WorkForm = ({ initial, teams, submitLabel, onSubmit, onCancel }: Pr
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div className="space-y-1">
             <Label>Дата *</Label>
-            <Input type="date" disabled={isSubmitting} {...register("date")} />
+            <Controller
+              control={control}
+              name="date"
+              render={({ field }) => (
+                <DatePicker
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  clearable={false}
+                  disabled={isSubmitting}
+                />
+              )}
+            />
             {fieldError("date")}
           </div>
           <div className="space-y-1">

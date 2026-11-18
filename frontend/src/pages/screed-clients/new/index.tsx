@@ -45,8 +45,8 @@ export const NewScreedClientPage = () => {
   });
 
   return (
-    <div className="flex flex-col gap-4 pb-28">
-      <ScreedClientPageHead title="Создание" />
+    <div className="flex flex-col gap-4">
+      <ScreedClientPageHead />
       <FormBuilder
         form={form}
         sections={getScreedClientSections(form, isSubmitting)}

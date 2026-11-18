@@ -1,17 +1,19 @@
-import { Button } from "@/components/ui/button";
+import { PlusIcon } from "lucide-react";
+import { ReactNode } from "react";
+import { barButton } from "../styles";
 
 interface Props {
   onCreate: () => void;
+  label?: string;
+  disabled?: boolean;
+  icon?: ReactNode;
 }
 
-export const BottomBarCreateButton = ({ onCreate }: Props) => {
+export const BottomBarCreateButton = ({ onCreate, label = "Создать", disabled, icon }: Props) => {
   return (
-    <Button
-      type="button"
-      onClick={onCreate}
-      className="px-8 py-4 bg-blue-500/90 dark:bg-blue-600/40 dark:text-zinc-100 dark:border dark:border-white/10 rounded-2xl hover:bg-blue-600 dark:hover:bg-blue-600/30 flex-1"
-    >
-      Создать
-    </Button>
+    <button type="button" onClick={onCreate} disabled={disabled} className={barButton.primary}>
+      {icon ?? <PlusIcon />}
+      {label}
+    </button>
   );
 };

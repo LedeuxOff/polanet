@@ -1,12 +1,19 @@
 import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 
+/**
+ * Текущее время в ISO для значений по умолчанию.
+ * Важно: `.default("CURRENT_TIMESTAMP")` в drizzle + SQLite подставляет
+ * при вставке строку "CURRENT_TIMESTAMP", а не время.
+ */
+const nowIso = () => new Date().toISOString();
+
 export const roles = sqliteTable("roles", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   code: text("code").notNull().unique(),
   name: text("name").notNull(),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP").notNull(),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP").notNull(),
+  createdAt: text("created_at").$defaultFn(nowIso).notNull(),
+  updatedAt: text("updated_at").$defaultFn(nowIso).notNull(),
 });
 
 // Таблица прав доступа
@@ -16,8 +23,8 @@ export const permissions = sqliteTable("permissions", {
   name: text("name").notNull(),
   module: text("module").notNull(),
   description: text("description"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP").notNull(),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP").notNull(),
+  createdAt: text("created_at").$defaultFn(nowIso).notNull(),
+  updatedAt: text("updated_at").$defaultFn(nowIso).notNull(),
 });
 
 // Таблица связей ролей с правами
@@ -29,7 +36,7 @@ export const rolePermissions = sqliteTable("role_permissions", {
   permissionId: integer("permission_id")
     .references(() => permissions.id, { onDelete: "cascade" })
     .notNull(),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP").notNull(),
+  createdAt: text("created_at").$defaultFn(nowIso).notNull(),
 });
 
 export const users = sqliteTable("users", {
@@ -53,8 +60,8 @@ export const users = sqliteTable("users", {
       onDelete: "set null",
     },
   ),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP").notNull(),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP").notNull(),
+  createdAt: text("created_at").$defaultFn(nowIso).notNull(),
+  updatedAt: text("updated_at").$defaultFn(nowIso).notNull(),
 });
 
 export const sessions = sqliteTable("sessions", {
@@ -63,15 +70,15 @@ export const sessions = sqliteTable("sessions", {
     .references(() => users.id)
     .notNull(),
   expiresAt: text("expires_at").notNull(),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP").notNull(),
+  createdAt: text("created_at").$defaultFn(nowIso).notNull(),
 });
 
 export const cars = sqliteTable("cars", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   brand: text("brand").notNull(),
   licensePlate: text("license_plate").notNull().unique(),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP").notNull(),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP").notNull(),
+  createdAt: text("created_at").$defaultFn(nowIso).notNull(),
+  updatedAt: text("updated_at").$defaultFn(nowIso).notNull(),
 });
 
 export const clients = sqliteTable("clients", {
@@ -96,8 +103,8 @@ export const clients = sqliteTable("clients", {
   receiverFirstName: text("receiver_first_name"),
   receiverMiddleName: text("receiver_middle_name"),
   receiverPhone: text("receiver_phone"),
-  createdAt: text("created_at").default("CURRENT_TIMESTAMP").notNull(),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP").notNull(),
+  createdAt: text("created_at").$defaultFn(nowIso).notNull(),
+  updatedAt: text("updated_at").$defaultFn(nowIso).notNull(),
 });
 
 export const orders = sqliteTable("orders", {
@@ -349,7 +356,7 @@ export const transportCards = sqliteTable("transport_cards", {
     .notNull()
     .default("active"),
   createdAt: text("created_at").notNull(),
-  updatedAt: text("updated_at").default("CURRENT_TIMESTAMP").notNull(),
+  updatedAt: text("updated_at").$defaultFn(nowIso).notNull(),
 });
 
 export const transportCardExpenses = sqliteTable("transport_card_expenses", {
@@ -485,7 +492,7 @@ export const recipientHistory = sqliteTable("recipient_history", {
   oldRecipientId: integer("old_recipient_id"),
   action: text("action").notNull(), // 'created', 'updated', 'deleted'
   comment: text("comment"),
-  createdAt: text("created_at").notNull().default("CURRENT_TIMESTAMP"),
+  createdAt: text("created_at").notNull().$defaultFn(nowIso),
 });
 
 // Relations for recipient history
