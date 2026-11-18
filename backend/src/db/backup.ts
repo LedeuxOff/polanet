@@ -162,7 +162,7 @@ if (process.argv[1] === path.resolve(__filename)) {
   const command = process.argv[2];
 
   switch (command) {
-    case "create":
+    case "create": {
       const customPath = process.argv[3];
       try {
         const backupPath = createBackup(customPath);
@@ -172,8 +172,9 @@ if (process.argv[1] === path.resolve(__filename)) {
         process.exit(1);
       }
       break;
+    }
 
-    case "restore":
+    case "restore": {
       const restorePath = process.argv[3];
       if (!restorePath) {
         console.error("Укажите путь к файлу бэкапа");
@@ -186,8 +187,9 @@ if (process.argv[1] === path.resolve(__filename)) {
         process.exit(1);
       }
       break;
+    }
 
-    case "list":
+    case "list": {
       const backups = listBackups();
       if (backups.length === 0) {
         console.log("Нет доступных резервных копий");
@@ -201,8 +203,9 @@ if (process.argv[1] === path.resolve(__filename)) {
         console.log(`\nВсего: ${backups.length} копий`);
       }
       break;
+    }
 
-    case "delete":
+    case "delete": {
       const deletePath = process.argv[3];
       if (!deletePath) {
         console.error("Укажите путь к файлу бэкапа");
@@ -215,6 +218,7 @@ if (process.argv[1] === path.resolve(__filename)) {
         process.exit(1);
       }
       break;
+    }
 
     default:
       console.log(`

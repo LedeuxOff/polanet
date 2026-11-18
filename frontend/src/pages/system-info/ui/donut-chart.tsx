@@ -1,56 +1,47 @@
+import { cn } from "@/lib/utils";
+
 interface DonutChartProps {
   value: number; // 0-100
   label: string;
-  color: string;
+  /** Tailwind-класс цвета дуги, например "text-blue-500" */
+  colorClass: string;
   size?: number;
 }
 
-export const DonutChart = ({ value, label, color, size = 200 }: DonutChartProps) => {
-  const clampedValue = Math.min(Math.max(value, 0), 100);
-  const circumference = 2 * Math.PI * 45;
-  const strokeDasharray = `${(clampedValue / 100) * circumference} ${circumference}`;
+/** Кольцевой индикатор загрузки; цвета через currentColor — корректно в обеих темах */
+export const DonutChart = ({ value, label, colorClass, size = 180 }: DonutChartProps) => {
+  const v = Math.min(Math.max(value, 0), 100);
+  const r = 42;
+  const c = 2 * Math.PI * r;
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <div className="relative" style={{ width: size, height: size }}>
-        <svg width={size} height={size} viewBox="0 0 200 200">
-          {/* Background circle */}
-          <circle cx="100" cy="100" r="45" fill="none" stroke="#e5e7eb" strokeWidth="20" />
-          {/* Progress circle */}
-          <circle
-            cx="100"
-            cy="100"
-            r="45"
-            fill="none"
-            stroke={color}
-            strokeWidth="20"
-            strokeDasharray={strokeDasharray}
-            strokeLinecap="round"
-            transform="rotate(-90 100 100)"
-            className="transition-all duration-500 ease-in-out"
-          />
-          {/* Center text */}
-          <text
-            x="100"
-            y="95"
-            textAnchor="middle"
-            dominantBaseline="central"
-            className="text-3xl font-bold"
-            fill="#111827"
-          >
-            {Math.round(clampedValue)}%
-          </text>
-          <text
-            x="100"
-            y="120"
-            textAnchor="middle"
-            dominantBaseline="central"
-            className="text-sm"
-            fill="#6b7280"
-          >
-            {label}
-          </text>
-        </svg>
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox="0 0 100 100" className="-rotate-90">
+        <circle
+          cx="50"
+          cy="50"
+          r={r}
+          fill="none"
+          strokeWidth="9"
+          className="stroke-slate-100 dark:stroke-white/10"
+        />
+        <circle
+          cx="50"
+          cy="50"
+          r={r}
+          fill="none"
+          strokeWidth="9"
+          strokeLinecap="round"
+          stroke="currentColor"
+          strokeDasharray={`${(v / 100) * c} ${c}`}
+          className={cn("transition-all duration-700 ease-out", colorClass)}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-3xl font-bold tabular-nums text-slate-900 dark:text-slate-100">
+          {Math.round(v)}%
+        </span>
+        <span className="text-xs font-medium uppercase tracking-wider text-slate-400">{label}</span>
       </div>
     </div>
   );

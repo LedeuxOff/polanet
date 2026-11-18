@@ -1,26 +1,16 @@
-import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ExpensePaymentType } from "@/lib/types";
 import { Dispatch, SetStateAction } from "react";
+import { ReceiptIcon } from "lucide-react";
+import {
+  ExpenseCancelButton,
+  ExpenseFormFields,
+  ExpenseFormProps,
+  ExpenseSubmitButton,
+} from "./expense-form";
 
-interface Props {
+interface Props extends ExpenseFormProps {
   showExpenseDialog: boolean;
   setShowExpenseDialog: Dispatch<SetStateAction<boolean>>;
-  expensePaymentType: ExpensePaymentType;
-  setExpensePaymentType: Dispatch<SetStateAction<ExpensePaymentType>>;
-  expenseAmount: string;
-  setExpenseAmount: Dispatch<SetStateAction<string>>;
-  expenseDateTime: string;
-  setExpenseDateTime: Dispatch<SetStateAction<string>>;
   handleAddExpense: () => Promise<void>;
   isAddingExpense: boolean;
 }
@@ -28,83 +18,35 @@ interface Props {
 export const AddExpenseMobileModal = ({
   showExpenseDialog,
   setShowExpenseDialog,
-  expensePaymentType,
-  setExpensePaymentType,
-  expenseAmount,
-  setExpenseAmount,
-  expenseDateTime,
-  setExpenseDateTime,
   handleAddExpense,
   isAddingExpense,
-}: Props) => {
-  return (
-    <Drawer open={showExpenseDialog} onOpenChange={setShowExpenseDialog}>
-      <DrawerContent className="dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-        <DrawerHeader>
-          <DrawerTitle>Добавить расход</DrawerTitle>
-        </DrawerHeader>
-        <div className="pb-8 flex flex-col gap-4">
-          <div className="space-y-4">
-            {/* Тип оплаты */}
-            <div className="space-y-2">
-              <Label htmlFor="expensePaymentType">Тип оплаты</Label>
-              <Select
-                value={expensePaymentType}
-                onValueChange={(value: ExpensePaymentType) => setExpensePaymentType(value)}
-              >
-                <SelectTrigger className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-                  <SelectValue placeholder="Выберите тип оплаты" />
-                </SelectTrigger>
-                <SelectContent className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-                  <SelectItem value="cash">Наличные</SelectItem>
-                  <SelectItem value="bank_transfer">Безналичные</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Сумма расхода */}
-            <div className="space-y-2">
-              <Label htmlFor="expenseAmount">Сумма расхода (₽)</Label>
-              <Input
-                className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
-                id="expenseAmount"
-                type="number"
-                value={expenseAmount}
-                onChange={(e) => setExpenseAmount(e.target.value)}
-                placeholder="1000"
-              />
-            </div>
-
-            {/* Дата и время */}
-            <div className="space-y-2">
-              <Label htmlFor="expenseDateTime">Дата и время</Label>
-              <Input
-                className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
-                id="expenseDateTime"
-                type="datetime-local"
-                value={expenseDateTime}
-                onChange={(e) => setExpenseDateTime(e.target.value)}
-              />
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Button
-              className="rounded-2xl dark:bg-blue-600/40 dark:hover:bg-blue-600/30 dark:text-white"
-              onClick={handleAddExpense}
-              disabled={isAddingExpense || !expenseAmount}
-            >
-              {isAddingExpense ? "Добавление..." : "Добавить"}
-            </Button>
-            <Button
-              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20sw"
-              variant="outline"
-              onClick={() => setShowExpenseDialog(false)}
-            >
-              Отмена
-            </Button>
-          </div>
+  ...form
+}: Props) => (
+  <Drawer open={showExpenseDialog} onOpenChange={setShowExpenseDialog}>
+    <DrawerContent className="rounded-t-3xl dark:border-white/20 dark:bg-zinc-900/90 dark:backdrop-blur-xl">
+      <DrawerHeader className="flex flex-row items-center gap-3 px-5 text-left">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-600 dark:bg-red-400/15 dark:text-red-300">
+          <ReceiptIcon className="h-5 w-5" />
         </div>
-      </DrawerContent>
-    </Drawer>
-  );
-};
+        <div className="flex flex-col gap-0.5">
+          <DrawerTitle className="text-base">Новый расход</DrawerTitle>
+          <span className="text-sm text-slate-500 dark:text-slate-300">
+            Списание по топливной карте
+          </span>
+        </div>
+      </DrawerHeader>
+
+      <div className="flex flex-col gap-6 px-5 pb-[calc(env(safe-area-inset-bottom)+24px)]">
+        <ExpenseFormFields {...form} />
+        <div className="flex flex-col-reverse gap-2">
+          <ExpenseCancelButton onClick={() => setShowExpenseDialog(false)} />
+          <ExpenseSubmitButton
+            onClick={handleAddExpense}
+            isLoading={isAddingExpense}
+            disabled={isAddingExpense || !form.expenseAmount}
+          />
+        </div>
+      </div>
+    </DrawerContent>
+  </Drawer>
+);

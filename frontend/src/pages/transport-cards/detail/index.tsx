@@ -1,3 +1,5 @@
+import { CreditCardIcon, HistoryIcon, ReceiptIcon } from "lucide-react";
+import { listCardClass } from "@/components/data-list";
 import { useNavigate } from "@tanstack/react-router";
 import { useTransportCardDetailPage } from "./hooks";
 import { usePermissions } from "@/lib/contexts/permission-context";
@@ -68,7 +70,7 @@ export const TransportCardDetailPage = () => {
   const totalExpenses = card?.totalExpenses || 0;
 
   return (
-    <div className="flex flex-col gap-4 pb-4">
+    <div className="flex flex-col gap-4">
       <TransportCardPageHead card={card} />
 
       <FormBuilder
@@ -77,13 +79,15 @@ export const TransportCardDetailPage = () => {
           {
             id: "main-info",
             label: "Основная информация",
+            description: "Номер и статус карты",
+            icon: <CreditCardIcon />,
+            cardClassName: listCardClass,
             fields: [
               {
                 id: "cardNumber",
                 label: "Номер карты",
                 type: "text",
                 disabled: isSubmitting,
-                className: "col-span-3",
               },
               {
                 id: "status",
@@ -96,19 +100,21 @@ export const TransportCardDetailPage = () => {
                     { id: "inactive", name: "Неактивна" },
                   ],
                 },
-                className: "col-span-3",
               },
             ],
           },
           {
             id: "expenses",
             label: "Расходы",
+            description: "Топливо и выплаты по карте",
+            icon: <ReceiptIcon />,
+            cardClassName: listCardClass,
             fields: [
               {
                 id: "cardNumber",
                 label: "Расходы",
                 type: "controller",
-                className: "col-span-3",
+                className: "col-span-full",
                 Controller: () => (
                   <TransportCardExpenses
                     totalExpenses={totalExpenses}
@@ -135,13 +141,16 @@ export const TransportCardDetailPage = () => {
           {
             id: "history",
             label: "История изменений",
+            description: "Кто и что менял по карте",
+            icon: <HistoryIcon />,
+            cardClassName: listCardClass,
             hide: !isRoleAdminOrDeveloper,
             fields: [
               {
                 id: "cardNumber",
                 label: "История",
                 type: "controller",
-                className: "col-span-3",
+                className: "col-span-full",
                 Controller: () => <TransportCardHistory card={card} />,
               },
             ],

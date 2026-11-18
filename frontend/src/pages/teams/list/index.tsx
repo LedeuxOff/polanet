@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ColumnDef } from "@tanstack/react-table";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { DataTable } from "@/components/ui/table";
+import { HardHatIcon } from "lucide-react";
+import { listFilterControlClass, ListPageHead, ListPagination } from "@/components/data-list";
+import { TeamsTable } from "./ui/teams-table";
 import { BottomBar } from "@/components/bottom-bar";
 import { DataTableSearchFilter } from "@/components/data-table/data-table-search-filter";
 import { PermissionGuard } from "@/lib/components/permission-guard";
@@ -34,28 +34,15 @@ export const TeamsPage = () => {
   const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
   const pageData = filtered.slice((currentPage - 1) * limit, currentPage * limit);
 
-  const columns: ColumnDef<Team>[] = [
-    { accessorKey: "name", header: "Название" },
-    {
-      accessorKey: "memberCount",
-      header: "Участников",
-      cell: ({ row }) => row.original.memberCount ?? 0,
-    },
-    {
-      accessorKey: "isActive",
-      header: "В календаре",
-      cell: ({ row }) => (row.original.isActive ? "Да" : "Скрыта"),
-    },
-  ];
-
   return (
     <PermissionGuard permission="teams:list">
       <div className="flex flex-col gap-4">
-        <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-          <CardHeader>
-            <CardTitle>Бригады</CardTitle>
-          </CardHeader>
-        </Card>
+        <ListPageHead
+          icon={<HardHatIcon />}
+          iconClassName="bg-sky-100 text-sky-600 dark:bg-sky-400/15 dark:text-sky-300"
+          title="Бригады"
+          description="Состав бригад и их видимость в календаре работ"
+        />
 
         <DataTableSearchFilter
           search={search}
@@ -64,25 +51,27 @@ export const TeamsPage = () => {
             setCurrentPage(1);
           }}
           placeholder="Поиск по названию"
+          inputClassName={listFilterControlClass}
         />
 
-        {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
-        ) : (
-          <DataTable
-            columns={columns}
-            data={pageData}
-            pagination={{ currentPage, limit, totalRecords: filtered.length, totalPages }}
-            onPageChange={setCurrentPage}
-            onLimitChange={(l) => {
-              setLimit(l);
-              setCurrentPage(1);
-            }}
-            onRowClick={(row) =>
-              navigate({ to: "/teams/$teamId", params: { teamId: String(row.id) } })
-            }
-          />
-        )}
+        <TeamsTable
+          teams={pageData}
+          isLoading={isLoading}
+          skeletonCount={Math.min(limit, 6)}
+          onOpen={(team) => navigate({ to: "/teams/$teamId", params: { teamId: String(team.id) } })}
+        />
+
+        <ListPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalRecords={filtered.length}
+          limit={limit}
+          onPageChange={setCurrentPage}
+          onLimitChange={(l) => {
+            setLimit(l);
+            setCurrentPage(1);
+          }}
+        />
 
         <BottomBar
           onCreate={() => {

@@ -13,7 +13,7 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { listCardClass, ListPageHead, SectionCard, Shimmer } from "@/components/data-list";
 import { Input } from "@/components/ui/input";
 import { BottomBar } from "@/components/bottom-bar";
 import { PermissionGuard } from "@/lib/components/permission-guard";
@@ -27,10 +27,8 @@ import { useWorkDirectories } from "@/pages/works/use-directories";
 
 const COLORS = Object.keys(STATUS_COLOR_CLASSES) as StatusColor[];
 
-const glassCard =
-  "rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20";
 const glassInput =
-  "rounded-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20";
+  "h-10 rounded-xl border-slate-200 bg-white dark:border-white/20 dark:bg-white/10 dark:backdrop-blur-xl";
 
 /** Обёртка для запросов: тост об ошибке + перечитать справочники */
 const useRunner = (reload: () => Promise<unknown>) => {
@@ -76,7 +74,11 @@ const NameInput = ({
       <Input
         value={name}
         disabled={disabled}
-        className={cn(glassInput, changed && "pr-11 border-primary/60 dark:border-primary/60")}
+        className={cn(
+          glassInput,
+          changed &&
+            "pr-11 border-blue-400 ring-2 ring-blue-100 dark:border-blue-400/60 dark:ring-blue-400/20",
+        )}
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter" && changed) onSave(name.trim());
@@ -90,7 +92,7 @@ const NameInput = ({
           title="Сохранить (Enter)"
           disabled={disabled}
           onClick={() => onSave(name.trim())}
-          className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 rounded-lg"
+          className="absolute right-1 top-1/2 h-8 w-8 -translate-y-1/2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500/80"
         >
           <CheckIcon className="h-4 w-4" />
         </Button>
@@ -122,7 +124,7 @@ const RowActions = ({
       title="Выше"
       disabled={busy || isFirst}
       onClick={onUp}
-      className="h-8 w-8 rounded-lg"
+      className="h-8 w-8 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/10"
     >
       <ArrowUpIcon className="h-4 w-4" />
     </Button>
@@ -133,7 +135,7 @@ const RowActions = ({
       title="Ниже"
       disabled={busy || isLast}
       onClick={onDown}
-      className="h-8 w-8 rounded-lg"
+      className="h-8 w-8 rounded-lg text-slate-500 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-white/10"
     >
       <ArrowDownIcon className="h-4 w-4" />
     </Button>
@@ -144,7 +146,7 @@ const RowActions = ({
       title="Удалить"
       disabled={busy}
       onClick={onDelete}
-      className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-red-100 hover:text-red-700 dark:hover:bg-red-500/20 dark:hover:text-red-200"
+      className="h-8 w-8 rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/20 dark:hover:text-red-200"
     >
       <Trash2Icon className="h-4 w-4" />
     </Button>
@@ -152,7 +154,7 @@ const RowActions = ({
 );
 
 const Position = ({ n }: { n: number }) => (
-  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted/60 text-xs font-semibold text-muted-foreground dark:bg-white/10">
+  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-semibold tabular-nums text-slate-500 dark:bg-white/10 dark:text-slate-300">
     {n}
   </span>
 );
@@ -169,7 +171,7 @@ const AddForm = ({
   const [value, setValue] = useState("");
   return (
     <form
-      className="flex gap-2 rounded-2xl border border-dashed p-2 dark:border-white/20"
+      className="flex gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50/60 p-2 transition-colors focus-within:border-blue-300 focus-within:bg-white dark:border-white/20 dark:bg-transparent"
       onSubmit={async (e) => {
         e.preventDefault();
         const name = value.trim();
@@ -181,10 +183,17 @@ const AddForm = ({
         placeholder={placeholder}
         value={value}
         disabled={busy}
-        className={cn(glassInput, "border-0 shadow-none focus-visible:ring-0 dark:border-0")}
+        className={cn(
+          glassInput,
+          "border-0 bg-transparent shadow-none focus-visible:ring-0 dark:border-0 dark:bg-transparent",
+        )}
         onChange={(e) => setValue(e.target.value)}
       />
-      <Button type="submit" disabled={busy || !value.trim()} className="gap-1.5 rounded-xl">
+      <Button
+        type="submit"
+        disabled={busy || !value.trim()}
+        className="h-10 gap-1.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500/80 dark:hover:bg-blue-500"
+      >
         <PlusIcon className="h-4 w-4" /> Добавить
       </Button>
     </form>
@@ -192,14 +201,16 @@ const AddForm = ({
 };
 
 const Hint = ({ children }: { children: ReactNode }) => (
-  <div className="flex items-start gap-2 rounded-xl bg-muted/40 p-3 text-sm text-muted-foreground dark:bg-white/5">
-    <InfoIcon className="mt-0.5 h-4 w-4 shrink-0" />
+  <div className="flex items-start gap-2 rounded-2xl border border-blue-100 bg-blue-50/70 p-3 text-sm text-slate-600 dark:border-blue-400/20 dark:bg-blue-500/10 dark:text-slate-300">
+    <InfoIcon className="mt-0.5 h-4 w-4 shrink-0 text-blue-500 dark:text-blue-300" />
     <div>{children}</div>
   </div>
 );
 
 const EmptyList = ({ text }: { text: string }) => (
-  <p className="py-6 text-center text-sm text-muted-foreground">{text}</p>
+  <p className="rounded-2xl border border-dashed border-slate-200 py-8 text-center text-sm text-slate-500 dark:border-white/20 dark:text-slate-400">
+    {text}
+  </p>
 );
 
 const StatusesSection = ({
@@ -232,7 +243,7 @@ const StatusesSection = ({
       {statuses.map((s, i) => (
         <div
           key={s.id}
-          className="flex flex-col gap-3 rounded-2xl border p-3 transition-colors hover:bg-muted/30 dark:border-white/20 dark:hover:bg-white/5"
+          className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-3 transition-colors hover:border-slate-300 dark:border-white/15 dark:bg-white/5 dark:hover:border-white/25"
         >
           <div className="flex items-center gap-2">
             <Position n={i + 1} />
@@ -272,7 +283,7 @@ const StatusesSection = ({
                     "flex h-6 w-6 items-center justify-center rounded-full border transition-transform hover:scale-110 disabled:opacity-50",
                     STATUS_COLOR_CLASSES[c],
                     s.color === c &&
-                      "ring-2 ring-primary ring-offset-2 ring-offset-background dark:ring-white/80",
+                      "ring-2 ring-blue-500 ring-offset-2 ring-offset-background dark:ring-white/80",
                   )}
                 >
                   {s.color === c && <CheckIcon className="h-3 w-3" />}
@@ -300,8 +311,8 @@ const StatusesSection = ({
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium transition-colors disabled:opacity-50",
                   s.showInCalendar
-                    ? "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-500/20 dark:text-green-200 dark:hover:bg-green-500/30"
-                    : "bg-zinc-100 text-zinc-500 hover:bg-zinc-200 dark:bg-white/5 dark:text-zinc-400 dark:hover:bg-white/10",
+                    ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:text-emerald-200 dark:hover:bg-emerald-500/30"
+                    : "bg-slate-100 text-slate-500 hover:bg-slate-200 dark:bg-white/5 dark:text-zinc-400 dark:hover:bg-white/10",
                 )}
                 title="Показывать работы с этим статусом в календаре"
               >
@@ -352,7 +363,7 @@ const TypesSection = ({
       {types.map((t, i) => (
         <div
           key={t.id}
-          className="flex items-center gap-2 rounded-2xl border p-3 transition-colors hover:bg-muted/30 dark:border-white/20 dark:hover:bg-white/5"
+          className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 transition-colors hover:border-slate-300 dark:border-white/15 dark:bg-white/5 dark:hover:border-white/25"
         >
           <Position n={i + 1} />
           <NameInput
@@ -401,83 +412,99 @@ export const DirectoriesPage = () => {
     {
       key: "statuses",
       label: "Статусы работ",
-      icon: <ListChecksIcon className="h-4 w-4" />,
+      icon: <ListChecksIcon className="h-5 w-5" />,
       count: statuses.length,
       description: "Этапы работ, их цвет и видимость в календаре",
     },
     {
       key: "types",
       label: "Типы работ",
-      icon: <ShapesIcon className="h-4 w-4" />,
+      icon: <ShapesIcon className="h-5 w-5" />,
       count: types.length,
       description: "Виды работ, доступные при создании",
     },
   ];
   const active = tabs.find((t) => t.key === tab)!;
 
+  const tones: Record<TabKey, string> = {
+    statuses: "bg-violet-100 text-violet-600 dark:bg-violet-400/15 dark:text-violet-300",
+    types: "bg-cyan-100 text-cyan-600 dark:bg-cyan-400/15 dark:text-cyan-300",
+  };
+
   return (
     <PermissionGuard permission="directories:manage">
-      <div className="flex flex-col gap-4 pb-28">
-        <Card className={glassCard}>
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary dark:bg-white/10 dark:text-white">
-                <BookOpenIcon className="h-5 w-5" />
-              </div>
-              <div className="flex flex-col gap-1">
-                <CardTitle>Справочники</CardTitle>
-                <CardDescription>Настройка статусов и типов работ по стяжке</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
+      <div className="flex flex-col gap-4">
+        <ListPageHead
+          icon={<BookOpenIcon />}
+          iconClassName="bg-indigo-100 text-indigo-600 dark:bg-indigo-400/15 dark:text-indigo-300"
+          title="Справочники"
+          description="Настройка статусов и типов работ по стяжке"
+        />
 
-        <div className={cn("grid gap-3", isMobile ? "grid-cols-1" : "grid-cols-2")}>
-          {tabs.map((t) => (
-            <button
-              key={t.key}
-              type="button"
-              onClick={() => setTab(t.key)}
-              className={cn(
-                "flex items-center gap-3 rounded-2xl border p-4 text-left shadow-sm transition-colors dark:border-white/20",
-                tab === t.key
-                  ? "border-primary bg-primary/5 dark:border-white/60 dark:bg-white/15"
-                  : "bg-card hover:bg-muted/40 dark:bg-white/5 dark:hover:bg-white/10",
-              )}
-            >
-              <div
+        <div className="grid grid-cols-2 gap-3">
+          {tabs.map((t) => {
+            const isActive = tab === t.key;
+            return (
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => setTab(t.key)}
+                aria-pressed={isActive}
                 className={cn(
-                  "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
-                  tab === t.key
-                    ? "bg-primary text-primary-foreground dark:bg-white/20 dark:text-white"
-                    : "bg-muted/60 text-muted-foreground dark:bg-white/10",
+                  listCardClass,
+                  "flex items-center gap-3 p-4 text-left transition-all",
+                  isMobile && "flex-col items-start gap-2",
+                  isActive
+                    ? "border-blue-400 ring-2 ring-blue-100 dark:border-white/50 dark:ring-white/10"
+                    : "hover:border-slate-300 dark:hover:bg-white/15",
                 )}
               >
-                {t.icon}
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col">
-                <span className="font-semibold">{t.label}</span>
-                <span className="truncate text-xs text-muted-foreground">{t.description}</span>
-              </div>
-              <span className="text-2xl font-bold tabular-nums">{isLoading ? "…" : t.count}</span>
-            </button>
-          ))}
+                <div
+                  className={cn(
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl",
+                    tones[t.key],
+                  )}
+                >
+                  {t.icon}
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="font-semibold text-slate-900 dark:text-slate-100">
+                    {t.label}
+                  </span>
+                  {!isMobile && (
+                    <span className="truncate text-xs text-slate-500 dark:text-slate-400">
+                      {t.description}
+                    </span>
+                  )}
+                </div>
+                {!isMobile && (
+                  <span className="text-2xl font-bold tabular-nums text-slate-900 dark:text-slate-100">
+                    {isLoading ? "…" : t.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
-        <Card className={glassCard}>
-          <CardHeader>
-            <CardTitle>{active.label}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="py-8 text-center text-muted-foreground">Загрузка...</div>
-            ) : tab === "statuses" ? (
-              <StatusesSection statuses={statuses} reload={reload} />
-            ) : (
-              <TypesSection types={types} reload={reload} />
-            )}
-          </CardContent>
-        </Card>
+        <SectionCard
+          icon={active.icon}
+          iconClassName={tones[active.key]}
+          title={active.label}
+          description={isLoading ? undefined : `${active.description} · ${active.count} шт.`}
+        >
+          {isLoading ? (
+            <div className="flex flex-col gap-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Shimmer key={i} className="h-16 w-full rounded-2xl" />
+              ))}
+            </div>
+          ) : tab === "statuses" ? (
+            <StatusesSection statuses={statuses} reload={reload} />
+          ) : (
+            <TypesSection types={types} reload={reload} />
+          )}
+        </SectionCard>
 
         <BottomBar hideSaveButton />
       </div>

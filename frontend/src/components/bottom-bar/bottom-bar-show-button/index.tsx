@@ -1,26 +1,26 @@
-import { cn } from "@/lib/utils";
 import { ChevronUp } from "lucide-react";
-import { HTMLAttributes } from "react";
+import { cn } from "@/lib/utils";
 
-export const BottomBarShowButton = ({
-  hideBottomTabbar,
-  setHideBottomTabbar,
-  className,
-}: {
-  hideBottomTabbar: boolean;
-  setHideBottomTabbar: (value: boolean) => void;
-  className?: HTMLAttributes<HTMLDivElement>["className"];
-}) => {
-  return (
-    <div
-      onClick={() => setHideBottomTabbar(false)}
-      className={cn(
-        "absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all dark:bg-zinc-500 dark:backdrop-blur-xl",
-        hideBottomTabbar ? "opacity-100" : "opacity-0",
-        className,
-      )}
-    >
-      <ChevronUp className="text-white w-5" />
-    </div>
-  );
-};
+interface Props {
+  visible: boolean;
+  onShow: () => void;
+  className?: string;
+}
+
+/** «Язычок», который остаётся внизу экрана, когда панель скрыта */
+export const BottomBarShowButton = ({ visible, onShow, className }: Props) => (
+  <button
+    type="button"
+    onClick={onShow}
+    aria-label="Показать панель действий"
+    tabIndex={visible ? 0 : -1}
+    className={cn(
+      "fixed bottom-[calc(env(safe-area-inset-bottom)+12px)] z-40 flex h-9 -translate-x-1/2 items-center gap-1.5 rounded-full bg-slate-900 pl-3 pr-4 text-xs font-medium text-white shadow-lg shadow-slate-900/20 transition-all duration-300 hover:bg-slate-800 active:scale-95 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200",
+      visible ? "opacity-100" : "pointer-events-none translate-y-4 opacity-0",
+      className,
+    )}
+  >
+    <ChevronUp className="h-4 w-4" />
+    Действия
+  </button>
+);

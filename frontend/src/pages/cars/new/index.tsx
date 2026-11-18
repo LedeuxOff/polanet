@@ -1,3 +1,5 @@
+import { CarFrontIcon } from "lucide-react";
+import { listCardClass } from "@/components/data-list";
 import { useNavigate } from "@tanstack/react-router";
 import { useNewCarPage } from "./hooks";
 import { usePermissions } from "@/lib/contexts/permission-context";
@@ -40,21 +42,22 @@ export const NewCarPage = () => {
         sections={[
           {
             id: "main-info",
-            label: "Основная информация",
+            label: "Данные автомобиля",
+            description: "Марка и государственный номер",
+            icon: <CarFrontIcon />,
+            cardClassName: listCardClass,
             fields: [
               {
                 id: "brand",
                 label: "Марка",
                 type: "text",
                 disabled: isSubmitting,
-                className: "col-span-3",
               },
               {
                 id: "licensePlate",
                 label: "Гос номер",
                 type: "text",
                 disabled: isSubmitting,
-                className: "col-span-3",
               },
             ],
           },

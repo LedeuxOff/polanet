@@ -1,9 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useCarsListPage } from "./hooks";
-import { ColumnDef } from "@tanstack/react-table";
-import { Car } from "@/lib/types";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { DataTable } from "@/components/ui/table";
+import { PAGE_OPTIONS, useCarsListPage } from "./hooks";
+import { CarFrontIcon } from "lucide-react";
+import { listFilterControlClass, ListPageHead, ListPagination } from "@/components/data-list";
+import { CarsTable } from "./ui/cars-table";
 import { PermissionGuard } from "@/lib/components/permission-guard";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
@@ -30,55 +29,48 @@ export const CarsPage = () => {
   const { hasPermission } = usePermissions();
   const { showToast } = useToast();
 
-  const columns: ColumnDef<Car>[] = [
-    {
-      accessorKey: "brand",
-      header: "Марка",
-      cell: ({ row }) => row.getValue("brand"),
-    },
-    {
-      accessorKey: "licensePlate",
-      header: "Гос номер",
-    },
-  ];
-
   return (
     <PermissionGuard permission="cars:list">
       <div className="flex flex-col gap-4">
-        <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-          <CardHeader>
-            <CardTitle>Автомобили</CardTitle>
-          </CardHeader>
-        </Card>
+        <ListPageHead
+          icon={<CarFrontIcon />}
+          iconClassName="bg-orange-100 text-orange-600 dark:bg-orange-400/15 dark:text-orange-300"
+          title="Автомобили"
+          description="Автопарк компании"
+        />
 
         {/* Search inputs */}
-        <div className="flex flex-col sm:flex-row gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row">
           <DataTableSearchFilter
             search={searchBrand}
             handleSearchChange={handleBrandSearchChange}
             placeholder="Поиск по марке"
+            inputClassName={listFilterControlClass}
           />
           <DataTableSearchFilter
             search={searchLicensePlate}
             handleSearchChange={handleLicensePlateSearchChange}
-            placeholder="Поиск по гос номеру"
+            placeholder="Поиск по гос. номеру"
+            inputClassName={listFilterControlClass}
           />
         </div>
 
-        {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
-        ) : (
-          <DataTable
-            columns={columns}
-            data={cars}
-            pagination={{ currentPage, limit, totalRecords, totalPages }}
-            onPageChange={handlePageChange}
-            onLimitChange={handleLimitChange}
-            onRowClick={(row) =>
-              navigate({ to: "/cars/$carId", params: { carId: row.id.toString() } })
-            }
-          />
-        )}
+        <CarsTable
+          cars={cars}
+          isLoading={isLoading}
+          skeletonCount={Math.min(limit, 8)}
+          onOpen={(car) => navigate({ to: "/cars/$carId", params: { carId: car.id.toString() } })}
+        />
+
+        <ListPagination
+          pageOptions={PAGE_OPTIONS}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalRecords={totalRecords}
+          limit={limit}
+          onPageChange={handlePageChange}
+          onLimitChange={handleLimitChange}
+        />
 
         <BottomBar
           onCreate={() => {

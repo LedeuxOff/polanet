@@ -50,7 +50,8 @@ export const WorksPage = () => {
   const { statuses } = useWorkDirectories();
 
   const calendar = useWorksCalendar(selectedDate, teamFilter);
-  const { days, teams, isLoading, error, getDayWorks, getCellWorks, upsertWork, removeWork } = calendar;
+  const { days, teams, isLoading, error, getDayWorks, getCellWorks, upsertWork, removeWork } =
+    calendar;
 
   const canCreate = hasPermission("works:create");
   const canUpdate = hasPermission("works:update");
@@ -90,8 +91,7 @@ export const WorksPage = () => {
       return;
     }
     // Если включён фильтр по бригаде — новая работа сразу для неё
-    const teamId =
-      teamFilter === "all" || teamFilter === NO_TEAM ? null : Number(teamFilter);
+    const teamId = teamFilter === "all" || teamFilter === NO_TEAM ? null : Number(teamFilter);
     setCreateSlot({ ...slot, teamId });
   };
 
@@ -139,7 +139,11 @@ export const WorksPage = () => {
                 >
                   <ChevronLeftIcon className="h-4 w-4" />
                 </Button>
-                <Button type="button" className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20" variant="outline">
+                <Button
+                  type="button"
+                  className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                  variant="outline"
+                >
                   {weekLabel}
                 </Button>
                 <Button
@@ -175,10 +179,13 @@ export const WorksPage = () => {
         {statuses
           .filter((s) => s.showInCalendar)
           .map((s) => (
-          <span key={s.code} className={cn("rounded-full border px-2 py-0.5", getStatusClasses(s.color))}>
-            {s.name}
-          </span>
-        ))}
+            <span
+              key={s.code}
+              className={cn("rounded-full border px-2 py-0.5", getStatusClasses(s.color))}
+            >
+              {s.name}
+            </span>
+          ))}
         <span className="ml-auto text-muted-foreground dark:text-slate-300">
           {isLoading ? "Загрузка..." : `Работ за неделю: ${weekCount}`}
         </span>
@@ -227,7 +234,9 @@ export const WorksPage = () => {
       />
 
       <BottomBar
-        onCreate={() => openCreate({ date: toDateKey(new Date()), startTime: "09:00", endTime: "10:00" })}
+        onCreate={() =>
+          openCreate({ date: toDateKey(new Date()), startTime: "09:00", endTime: "10:00" })
+        }
         hideSaveButton={!canCreate}
       />
     </div>

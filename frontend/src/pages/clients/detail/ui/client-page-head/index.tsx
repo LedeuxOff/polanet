@@ -1,29 +1,41 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { DetailPageHead, HeadChip } from "@/components/data-list";
 import { Client } from "@/lib/types";
+import { formatPhoneDisplay } from "@/lib/utils/phone";
+import { Building2Icon, MailIcon, PhoneIcon, UserIcon } from "lucide-react";
+import { ClientTypeBadge, getClientName } from "../../../ui/client-identity";
 
 export const ClientPageHead = ({ client }: { client: Client }) => {
-  return (
-    <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-      <CardHeader>
-        <div className="flex flex-col gap-4">
-          <CardTitle>Клиенты</CardTitle>
+  const name = getClientName(client);
+  const phone = formatPhoneDisplay(client.phone || undefined);
+  const isLegal = client.type === "legal";
 
-          <Breadcrumbs
-            items={[
-              { label: "Список", active: false, href: "/clients" },
-              {
-                label: `${
-                  client.type === "individual"
-                    ? [client.lastName, client.firstName, client.middleName].filter(Boolean).join(" ")
-                    : client.organizationName
-                }`,
-                active: true,
-              },
-            ]}
-          />
-        </div>
-      </CardHeader>
-    </Card>
+  return (
+    <DetailPageHead
+      breadcrumbs={
+        <Breadcrumbs
+          items={[
+            { label: "Клиенты", active: false, href: "/clients" },
+            { label: name, active: true },
+          ]}
+        />
+      }
+      icon={isLegal ? <Building2Icon /> : <UserIcon />}
+      iconClassName={
+        isLegal
+          ? "bg-indigo-100 text-indigo-600 dark:bg-indigo-400/15 dark:text-indigo-300"
+          : "bg-amber-100 text-amber-600 dark:bg-amber-400/15 dark:text-amber-300"
+      }
+      title={name}
+      badges={<ClientTypeBadge type={client.type} />}
+      chips={
+        (phone || client.email) && (
+          <>
+            {phone && <HeadChip icon={<PhoneIcon />}>{phone}</HeadChip>}
+            {client.email && <HeadChip icon={<MailIcon />}>{client.email}</HeadChip>}
+          </>
+        )
+      }
+    />
   );
 };

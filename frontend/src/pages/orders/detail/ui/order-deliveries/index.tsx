@@ -116,9 +116,7 @@ export const OrderDeliveries = forwardRef<OrderDeliveriesHandle, Props>(
             </div>
             <div>
               <p className="font-medium">Доставок пока нет</p>
-              <p className="text-sm text-muted-foreground">
-                Нажмите «Добавить» в нижней панели
-              </p>
+              <p className="text-sm text-muted-foreground">Нажмите «Добавить» в нижней панели</p>
             </div>
           </div>
         ) : (

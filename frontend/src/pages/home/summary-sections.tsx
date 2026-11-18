@@ -1,5 +1,6 @@
+import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { usersApi } from "@/lib/api/users-api";
 import { clientsApi } from "@/lib/api/clients-api";
 import { transportCardsApi } from "@/lib/api/transport-cards";
@@ -15,7 +16,14 @@ import {
   UserIcon,
   UsersIcon,
 } from "lucide-react";
-import { homeCardClass, PulseIcon, StatTile, useSummary } from "./ui-parts";
+import {
+  cardTints,
+  homeCardClass,
+  SectionContent,
+  SectionHeader,
+  StatTile,
+  useSummary,
+} from "./ui-parts";
 
 const dash = "…";
 
@@ -25,17 +33,14 @@ export const EmployeesSection = () => {
 
   return (
     <Link to="/users" className="col-span-12">
-      <Card className={homeCardClass}>
-        <CardHeader>
-          <CardTitle className="dark:text-slate-100">Сотрудники</CardTitle>
-          <CardDescription className="dark:text-slate-200 max-w-[75%]">
-            {isLoading ? "Загрузка..." : `Всего сотрудников: ${data?.total ?? 0}`}
-          </CardDescription>
-        </CardHeader>
-        <PulseIcon color="blue">
-          <UsersIcon />
-        </PulseIcon>
-        <CardContent>
+      <Card className={cn(homeCardClass, cardTints.blue)}>
+        <SectionHeader
+          title="Сотрудники"
+          description={isLoading ? "Загрузка..." : `Всего сотрудников: ${data?.total ?? 0}`}
+          color="blue"
+          icon={<UsersIcon />}
+        />
+        <SectionContent color="blue">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
             {isLoading
               ? Array.from({ length: 4 }).map((_, i) => (
@@ -52,7 +57,7 @@ export const EmployeesSection = () => {
                   />
                 ))}
           </div>
-        </CardContent>
+        </SectionContent>
       </Card>
     </Link>
   );
@@ -65,17 +70,14 @@ export const ClientsSection = () => {
 
   return (
     <Link to="/clients" className="col-span-12 lg:col-span-5">
-      <Card className={`${homeCardClass} h-full`}>
-        <CardHeader>
-          <CardTitle className="dark:text-slate-100">Клиенты</CardTitle>
-          <CardDescription className="dark:text-slate-200 max-w-[70%]">
-            Просмотр клиентов
-          </CardDescription>
-        </CardHeader>
-        <PulseIcon color="yellow">
-          <HeartHandshake />
-        </PulseIcon>
-        <CardContent>
+      <Card className={cn(homeCardClass, cardTints.yellow, "h-full")}>
+        <SectionHeader
+          title="Клиенты"
+          description="Просмотр клиентов"
+          color="yellow"
+          icon={<HeartHandshake />}
+        />
+        <SectionContent color="yellow">
           <div className="grid grid-cols-2 gap-3">
             <StatTile
               className="col-span-2"
@@ -102,7 +104,7 @@ export const ClientsSection = () => {
               hint="Клиенты, у которых есть хотя бы одна заявка"
             />
           </div>
-        </CardContent>
+        </SectionContent>
       </Card>
     </Link>
   );
@@ -118,17 +120,14 @@ export const TransportCardsSection = () => {
 
   return (
     <Link to="/transport-cards" className="col-span-12 lg:col-span-7">
-      <Card className={`${homeCardClass} h-full`}>
-        <CardHeader>
-          <CardTitle className="dark:text-slate-100">Топливные карты</CardTitle>
-          <CardDescription className="dark:text-slate-200 max-w-[70%]">
-            Управление топливными картами
-          </CardDescription>
-        </CardHeader>
-        <PulseIcon color="green">
-          <CreditCardIcon />
-        </PulseIcon>
-        <CardContent>
+      <Card className={cn(homeCardClass, cardTints.green, "h-full")}>
+        <SectionHeader
+          title="Топливные карты"
+          description="Управление топливными картами"
+          color="green"
+          icon={<CreditCardIcon />}
+        />
+        <SectionContent color="green">
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <StatTile
               icon={<CreditCardIcon className="h-3.5 w-3.5" />}
@@ -155,7 +154,7 @@ export const TransportCardsSection = () => {
               valueClassName="text-red-600 dark:text-red-300"
             />
           </div>
-        </CardContent>
+        </SectionContent>
       </Card>
     </Link>
   );

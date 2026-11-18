@@ -99,6 +99,16 @@ export const menuItems: MenuItem[] = [
         url: "/money-statistic",
         permission: "finances:view",
       },
+      {
+        title: "Заявки и доставки",
+        url: "/statistics/operations",
+        permission: "statistics:operations",
+      },
+      {
+        title: "Стяжка",
+        url: "/statistics/works",
+        permission: "statistics:works",
+      },
     ],
   },
   {

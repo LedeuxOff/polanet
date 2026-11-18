@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { ColumnDef } from "@tanstack/react-table";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { DataTable } from "@/components/ui/table";
+import { UserRoundIcon } from "lucide-react";
+import { listFilterControlClass, ListPageHead, ListPagination } from "@/components/data-list";
 import { BottomBar } from "@/components/bottom-bar";
 import { DataTableSearchFilter } from "@/components/data-table/data-table-search-filter";
 import { PermissionGuard } from "@/lib/components/permission-guard";
@@ -10,8 +9,7 @@ import { screedClientsApi } from "@/lib/api";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
 import type { ScreedClient } from "@/lib/types";
-import { formatPhoneDisplay } from "@/lib/utils/phone";
-import { getScreedClientName } from "../shared";
+import { ScreedClientsTable } from "./ui/screed-clients-table";
 
 const SEARCH_DEBOUNCE_MS = 500;
 
@@ -63,59 +61,46 @@ export const ScreedClientsPage = () => {
     }, SEARCH_DEBOUNCE_MS);
   };
 
-  const columns: ColumnDef<ScreedClient>[] = [
-    {
-      accessorKey: "name",
-      header: "Имя",
-      cell: ({ row }) => getScreedClientName(row.original),
-    },
-    {
-      accessorKey: "phone",
-      header: "Телефон",
-      cell: ({ row }) => formatPhoneDisplay(row.original.phone) || "—",
-    },
-    {
-      accessorKey: "worksCount",
-      header: "Работ",
-      cell: ({ row }) => row.original.worksCount,
-    },
-  ];
-
   return (
     <PermissionGuard permission="screed-clients:list">
       <div className="flex flex-col gap-4">
-        <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-          <CardHeader>
-            <CardTitle>Клиенты стяжки</CardTitle>
-          </CardHeader>
-        </Card>
+        <ListPageHead
+          icon={<UserRoundIcon />}
+          iconClassName="bg-teal-100 text-teal-600 dark:bg-teal-400/15 dark:text-teal-300"
+          title="Клиенты стяжки"
+          description="Заказчики работ по стяжке"
+        />
 
         <DataTableSearchFilter
           search={search}
           handleSearchChange={handleSearchChange}
           placeholder="Поиск по имени или телефону"
+          inputClassName={listFilterControlClass}
         />
 
-        {isLoading && clients.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
-        ) : (
-          <DataTable
-            columns={columns}
-            data={clients}
-            pagination={{ currentPage, limit, totalRecords, totalPages }}
-            onPageChange={setCurrentPage}
-            onLimitChange={(l) => {
-              setLimit(l);
-              setCurrentPage(1);
-            }}
-            onRowClick={(row) =>
-              navigate({
-                to: "/screed-clients/$screedClientId",
-                params: { screedClientId: String(row.id) },
-              })
-            }
-          />
-        )}
+        <ScreedClientsTable
+          clients={clients}
+          isLoading={isLoading}
+          skeletonCount={Math.min(limit, 8)}
+          onOpen={(client) =>
+            navigate({
+              to: "/screed-clients/$screedClientId",
+              params: { screedClientId: String(client.id) },
+            })
+          }
+        />
+
+        <ListPagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalRecords={totalRecords}
+          limit={limit}
+          onPageChange={setCurrentPage}
+          onLimitChange={(l) => {
+            setLimit(l);
+            setCurrentPage(1);
+          }}
+        />
 
         <BottomBar
           onCreate={() => {

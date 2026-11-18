@@ -25,7 +25,7 @@ export const UsersPageRoleFilter = ({ roleCode, roles, handleRoleChange }: Props
       <Popover.Trigger asChild>
         <Button
           variant="outline"
-          className="rounded-xl flex items-center gap-2 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+          className="h-11 rounded-2xl border-slate-200 bg-white px-4 flex items-center gap-2 sm:min-w-48 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
         >
           <span className="truncate">{getRoleFilterLabel()}</span>
           <ChevronDownIcon className="h-4 w-4 ml-auto shrink-0" />
@@ -33,14 +33,14 @@ export const UsersPageRoleFilter = ({ roleCode, roles, handleRoleChange }: Props
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content
-          className="z-50 w-64 rounded-2xl shadow-xl bg-white border border-gray-200 p-2 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+          className="z-50 w-64 rounded-3xl shadow-xl bg-white border border-slate-200 p-2 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
           sideOffset={5}
           align="end"
         >
           <div className="flex flex-col">
             {/* Все роли */}
             <button
-              className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
+              className={`flex items-center gap-2 px-3 py-2.5 text-sm rounded-2xl transition-colors ${
                 roleCode === "all"
                   ? "bg-blue-50 text-blue-600 dark:text-zinc-100 font-medium dark:bg-white/10 dark:border-white/20"
                   : "hover:bg-gray-100 text-gray-700 dark:text-zinc-100 dark:hover:bg-white/10 dark:hover:border-white/20"
@@ -74,7 +74,7 @@ export const UsersPageRoleFilter = ({ roleCode, roles, handleRoleChange }: Props
                 .map((role) => (
                   <button
                     key={role.id}
-                    className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
+                    className={`flex items-center gap-2 px-3 py-2.5 text-sm rounded-2xl transition-colors ${
                       roleCode === role.id.toString()
                         ? "bg-blue-50 text-blue-600 dark:text-zinc-100 font-medium dark:bg-white/10 dark:border-white/20"
                         : "hover:bg-gray-100 text-gray-700 dark:text-zinc-100 dark:hover:bg-white/10 dark:hover:border-white/20"

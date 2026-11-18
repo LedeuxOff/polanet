@@ -1,10 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useClientsListPage } from "./hooks";
-import { ColumnDef } from "@tanstack/react-table";
-import { Client } from "@/lib/types";
-import { formatPhoneDisplay } from "@/lib/utils/phone";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { DataTable } from "@/components/ui/table";
+import { PAGE_OPTIONS, useClientsListPage } from "./hooks";
+import { HeartHandshake } from "lucide-react";
+import { ListPageHead, ListPagination } from "@/components/data-list";
+import { ClientsTable } from "./ui/clients-table";
 import { PermissionGuard } from "@/lib/components/permission-guard";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
@@ -27,79 +25,50 @@ export const ClientsPage = () => {
     handleLimitChange,
     handleSearchChange,
     handleTypeChange,
-    getTypeFilterLabel,
   } = useClientsListPage();
   const { hasPermission } = usePermissions();
   const { showToast } = useToast();
 
-  const columns: ColumnDef<Client>[] = [
-    {
-      accessorKey: "name",
-      header: "Наименование",
-      cell: ({ row }) => {
-        const client = row.original;
-        const name =
-          client.type === "individual"
-            ? [client.lastName, client.firstName, client.middleName].filter(Boolean).join(" ") || "—"
-            : client.organizationName || "—";
-
-        return <span>{name}</span>;
-      },
-    },
-    {
-      accessorKey: "type",
-      header: "Тип",
-      cell: ({ getValue }) => {
-        const type = getValue<"individual" | "legal">();
-        return type === "individual" ? "Физ. лицо" : "Юр. лицо";
-      },
-    },
-    {
-      accessorKey: "phone",
-      header: "Телефон",
-      cell: ({ getValue }) => formatPhoneDisplay(getValue<string>() || undefined) || "—",
-    },
-    {
-      accessorKey: "email",
-      header: "Email",
-      cell: ({ getValue }) => getValue<string>() || "—",
-    },
-  ];
-
   return (
     <PermissionGuard permission="clients:list">
       <div className="flex flex-col gap-4">
-        <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-          <CardHeader>
-            <CardTitle>Клиенты</CardTitle>
-          </CardHeader>
-        </Card>
+        <ListPageHead
+          icon={<HeartHandshake />}
+          iconClassName="bg-amber-100 text-amber-600 dark:bg-amber-400/15 dark:text-amber-300"
+          title="Клиенты"
+          description="Физические и юридические лица"
+        />
 
         {/* Search and filter */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <DataTableSearchFilter search={search} handleSearchChange={handleSearchChange} />
-
-          <ClientsTypeFilter
-            clientType={clientType}
-            handleTypeChange={handleTypeChange}
-            getTypeFilterLabel={getTypeFilterLabel}
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <DataTableSearchFilter
+            search={search}
+            handleSearchChange={handleSearchChange}
+            placeholder="Поиск по имени, телефону или email..."
+            inputClassName="h-12 rounded-2xl border-slate-200 bg-white"
           />
+
+          <ClientsTypeFilter clientType={clientType} handleTypeChange={handleTypeChange} />
         </div>
 
-        {isLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Загрузка...</div>
-        ) : (
-          <DataTable
-            columns={columns}
-            data={clients}
-            pagination={{ currentPage, limit, totalRecords, totalPages }}
-            onPageChange={handlePageChange}
-            onLimitChange={handleLimitChange}
-            onRowClick={(row) =>
-              navigate({ to: "/clients/$clientId", params: { clientId: row.id.toString() } })
-            }
-          />
-        )}
+        <ClientsTable
+          clients={clients}
+          isLoading={isLoading}
+          skeletonCount={Math.min(limit, 8)}
+          onOpen={(client) =>
+            navigate({ to: "/clients/$clientId", params: { clientId: client.id.toString() } })
+          }
+        />
+
+        <ListPagination
+          pageOptions={PAGE_OPTIONS}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalRecords={totalRecords}
+          limit={limit}
+          onPageChange={handlePageChange}
+          onLimitChange={handleLimitChange}
+        />
 
         <BottomBar
           onCreate={() => {

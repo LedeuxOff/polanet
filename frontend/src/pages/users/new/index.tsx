@@ -1,3 +1,5 @@
+import { ContactIcon, ShieldCheckIcon, UserRoundIcon } from "lucide-react";
+import { usersCardClass } from "../ui/user-identity";
 import { useNavigate } from "@tanstack/react-router";
 import { useNewUserPage } from "./hooks";
 import { usePermissions } from "@/lib/contexts/permission-context";
@@ -44,45 +46,36 @@ export const NewUserPage = () => {
         form={form}
         sections={[
           {
-            id: "main-info",
-            label: "Основная информация",
+            id: "personal",
+            label: "Личные данные",
+            description: "ФИО и дата рождения",
+            icon: <UserRoundIcon />,
+            cardClassName: usersCardClass,
             fields: [
-              {
-                id: "lastName",
-                label: "Фамилия",
-                type: "text",
-                disabled: isSubmitting,
-              },
-              {
-                id: "firstName",
-                label: "Имя",
-                type: "text",
-                disabled: isSubmitting,
-              },
-              {
-                id: "middleName",
-                label: "Отчество",
-                type: "text",
-                disabled: isSubmitting,
-              },
-              {
-                id: "email",
-                label: "Email",
-                type: "email",
-                disabled: isSubmitting,
-              },
-              {
-                id: "phone",
-                label: "Телефон",
-                type: "phone",
-                disabled: isSubmitting,
-              },
-              {
-                id: "birthDate",
-                label: "Дата рождения",
-                type: "date",
-                disabled: isSubmitting,
-              },
+              { id: "lastName", label: "Фамилия", type: "text", disabled: isSubmitting },
+              { id: "firstName", label: "Имя", type: "text", disabled: isSubmitting },
+              { id: "middleName", label: "Отчество", type: "text", disabled: isSubmitting },
+              { id: "birthDate", label: "Дата рождения", type: "date", disabled: isSubmitting },
+            ],
+          },
+          {
+            id: "contacts",
+            label: "Контакты",
+            description: "Почта для входа и телефон",
+            icon: <ContactIcon />,
+            cardClassName: usersCardClass,
+            fields: [
+              { id: "email", label: "Email", type: "email", disabled: isSubmitting },
+              { id: "phone", label: "Телефон", type: "phone", disabled: isSubmitting },
+            ],
+          },
+          {
+            id: "access",
+            label: "Доступ",
+            description: "Роль определяет права сотрудника в системе",
+            icon: <ShieldCheckIcon />,
+            cardClassName: usersCardClass,
+            fields: [
               {
                 id: "roleId",
                 label: "Роль",

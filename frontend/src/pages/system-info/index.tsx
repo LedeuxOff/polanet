@@ -1,36 +1,101 @@
-import { Link } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  HomeIcon,
-  RefreshCw,
-  HardDriveIcon,
-  NetworkIcon as NetworkIconLucide,
+  ActivityIcon,
   ClockIcon,
-  MonitorIcon,
   CpuIcon,
-  DatabaseIcon,
+  HardDriveIcon,
+  LayersIcon,
+  MemoryStickIcon,
+  MonitorIcon,
+  NetworkIcon,
+  RefreshCwIcon,
   ServerIcon,
-  MenuIcon,
-  ChevronDown,
-  ChevronUp,
+  ServerCrashIcon,
 } from "lucide-react";
+import { ReactNode } from "react";
+import { BottomBar } from "@/components/bottom-bar";
+import { listCardClass, ListPageHead, SectionCard, Shimmer } from "@/components/data-list";
+import { PermissionsLoader } from "@/components/screens/loaders/permissions-loader";
+import { NoAccessScreen } from "@/components/screens/no-access";
+import { usePermissions } from "@/lib/contexts/permission-context";
+import { cn } from "@/lib/utils";
 import { useSystemInfo } from "./hooks";
 import { DonutChart } from "./ui/donut-chart";
-import { DiskChart } from "./ui/disk-chart";
+import { DiskChart, loadTone } from "./ui/disk-chart";
 import { NetworkChart } from "./ui/network-chart";
-import { usePermissions } from "@/lib/contexts/permission-context";
-import { useIsMobile } from "@/hooks";
-import { useTabbar } from "@/lib/contexts/tabbar-context";
-import { useState } from "react";
+
+const headTone = "bg-slate-200 text-slate-700 dark:bg-white/15 dark:text-slate-200";
+
+const InfoTile = ({
+  icon,
+  label,
+  value,
+  title,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: ReactNode;
+  title?: string;
+}) => (
+  <div className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200 p-3 dark:border-white/15">
+    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-500 dark:bg-white/10 dark:text-slate-300 [&>svg]:h-5 [&>svg]:w-5">
+      {icon}
+    </div>
+    <div className="flex min-w-0 flex-col">
+      <span className="text-xs text-slate-500 dark:text-slate-400">{label}</span>
+      <span
+        className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100"
+        title={title}
+      >
+        {value}
+      </span>
+    </div>
+  </div>
+);
+
+const Gauge = ({
+  title,
+  icon,
+  value,
+  label,
+}: {
+  title: string;
+  icon: ReactNode;
+  value: number;
+  label: string;
+}) => {
+  const tone = loadTone(value, 50, 80);
+  return (
+    <div className={cn(listCardClass, "flex flex-col gap-4 p-5 sm:p-6")}>
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-200 [&>svg]:h-5 [&>svg]:w-5">
+            {icon}
+          </div>
+          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
+        </div>
+        <span
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium",
+            value > 80
+              ? "bg-red-100 text-red-700 dark:bg-red-400/20 dark:text-red-200"
+              : value > 50
+                ? "bg-amber-100 text-amber-700 dark:bg-amber-400/20 dark:text-amber-200"
+                : "bg-emerald-100 text-emerald-700 dark:bg-emerald-400/20 dark:text-emerald-200",
+          )}
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-current" />
+          {tone.label}
+        </span>
+      </div>
+      <div className="flex justify-center py-2">
+        <DonutChart value={value} label={label} colorClass={tone.text} />
+      </div>
+    </div>
+  );
+};
 
 export const SystemInfoPage = () => {
-  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
-
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
-  const isMobile = useIsMobile();
-  const { setOpen } = useTabbar();
-
   const {
     cpuUsage,
     memoryUsage,
@@ -44,284 +109,164 @@ export const SystemInfoPage = () => {
     refresh,
   } = useSystemInfo();
 
-  if (isPermissionsLoading) {
-    return (
-      <Card>
-        <CardContent className="py-8 text-center text-muted-foreground">Загрузка...</CardContent>
-      </Card>
-    );
-  }
+  if (isPermissionsLoading) return <PermissionsLoader />;
+  if (!hasPermission("system-info:view")) return <NoAccessScreen />;
 
-  if (!hasPermission("system-info:view")) {
-    return (
-      <Card>
-        <CardContent className="py-8 text-center">
-          <p className="text-muted-foreground mb-4">У вас нет доступа к этой странице</p>
-          <Link to="/">
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-              Вернуться на главную
-            </button>
-          </Link>
-        </CardContent>
-      </Card>
-    );
-  }
+  const firstLoad = isLoading && !lastUpdated;
 
-  if (isLoading && !lastUpdated) {
-    return (
-      <div className="flex flex-col gap-4">
-        <Card className="rounded-2xl shadow-xl">
-          <CardHeader>
-            <CardTitle>Информация о системе</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center h-32">
-            <p className="text-muted-foreground">Загрузка...</p>
-          </CardContent>
-        </Card>
-        <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
-          <Link to="/">
-            <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
-              <HomeIcon className="w-4 h-4" />
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col gap-4">
-        <Card className="rounded-2xl shadow-xl">
-          <CardHeader>
-            <CardTitle>Информация о системе</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center gap-4 h-32">
-            <p className="text-destructive">{error}</p>
-            <Button onClick={refresh} variant="outline">
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Повторить
-            </Button>
-          </CardContent>
-        </Card>
-        <div className="fixed bottom-8 left-1/2 flex gap-2 p-2 bg-zinc-800/80 rounded-md">
-          <Link to="/">
-            <Button type="button" className="px-3 py-4 bg-zinc-800 rounded-md hover:bg-zinc-900">
-              <HomeIcon className="w-4 h-4" />
-            </Button>
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const bottomBar = (
+    <BottomBar
+      onCreate={refresh}
+      createLabel={isLoading ? "Обновление..." : "Обновить"}
+      createIcon={<RefreshCwIcon className={cn(isLoading && "animate-spin")} />}
+      createDisabled={isLoading}
+    />
+  );
 
   return (
-    <div className="flex flex-col gap-4 pb-24">
-      {/* Header with refresh */}
-      <Card className="rounded-2xl shadow-xl">
-        <CardHeader>
+    <div className="flex flex-col gap-4">
+      <div
+        className={cn(
+          listCardClass,
+          "flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6",
+        )}
+      >
+        <div className="flex items-center gap-4">
           <div
-            className={`flex ${isMobile ? "flex-col gap-2" : "flex-row items-center"} justify-between`}
-          >
-            <div className="flex items-center gap-2">
-              <CardTitle>Информация о системе</CardTitle>
-            </div>
-            {lastUpdated && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>Обновлено: {lastUpdated}</span>
-              </div>
+            className={cn(
+              "flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl",
+              headTone,
             )}
+          >
+            <ServerIcon className="h-6 w-6" />
           </div>
-        </CardHeader>
-      </Card>
-
-      {/* OS Info Card - Top */}
-      <Card className="rounded-2xl shadow-xl">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <MonitorIcon className="w-5 h-5 text-muted-foreground" />
-            <CardTitle>Операционная система</CardTitle>
+          <div className="flex flex-col gap-0.5">
+            <h1 className="text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-2xl">
+              Информация о системе
+            </h1>
+            <span className="text-sm text-slate-500 dark:text-slate-300">
+              Состояние сервера, обновляется каждые 5 секунд
+            </span>
           </div>
-        </CardHeader>
-        <CardContent>
-          {osInfo ? (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                <ServerIcon className="w-5 h-5 text-blue-600" />
-                <div>
-                  <div className="text-xs text-muted-foreground">Платформа</div>
-                  <div className="text-sm font-medium">{osInfo.platform}</div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
-                <DatabaseIcon className="w-5 h-5 text-green-600" />
-                <div>
-                  <div className="text-xs text-muted-foreground">Дистрибутив</div>
-                  <div className="text-sm font-medium">
-                    {osInfo.distro || osInfo.type}
-                    {osInfo.distroVersion && ` ${osInfo.distroVersion}`}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
-                <CpuIcon className="w-5 h-5 text-purple-600" />
-                <div>
-                  <div className="text-xs text-muted-foreground">Процессор</div>
-                  <div className="text-sm font-medium truncate" title={osInfo.cpuModel}>
-                    {osInfo.cpuModel.split(" ").slice(0, 3).join(" ")}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-lg">
-                <MonitorIcon className="w-5 h-5 text-orange-600" />
-                <div>
-                  <div className="text-xs text-muted-foreground">Ядра / Память</div>
-                  <div className="text-sm font-medium">
-                    {osInfo.cpuCores} / {osInfo.totalMemory.toFixed(0)} GB
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <p className="text-muted-foreground">Нет данных об ОС</p>
-          )}
-        </CardContent>
-      </Card>
+        </div>
+        {lastUpdated && !error && (
+          <span className="flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-600 dark:border-white/15 dark:bg-white/5 dark:text-slate-300">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            Обновлено в <span className="tabular-nums">{lastUpdated}</span>
+          </span>
+        )}
+      </div>
 
-      {/* CPU and Memory Charts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* CPU Usage Donut Chart */}
-        <Card className="rounded-2xl shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-center">Нагрузка ЦП</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center">
-            <DonutChart
+      {error ? (
+        <div
+          className={cn(listCardClass, "flex flex-col items-center gap-3 px-6 py-12 text-center")}
+        >
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 text-red-600 dark:bg-red-400/15 dark:text-red-300">
+            <ServerCrashIcon className="h-6 w-6" />
+          </div>
+          <span className="font-medium text-slate-900 dark:text-slate-100">{error}</span>
+          <span className="text-sm text-slate-500 dark:text-slate-400">
+            Нажмите «Обновить», чтобы попробовать снова
+          </span>
+        </div>
+      ) : firstLoad ? (
+        <>
+          <Shimmer className="h-40 w-full rounded-3xl" />
+          <div className="grid gap-4 md:grid-cols-2">
+            <Shimmer className="h-72 rounded-3xl" />
+            <Shimmer className="h-72 rounded-3xl" />
+          </div>
+        </>
+      ) : (
+        <>
+          <SectionCard
+            icon={<MonitorIcon />}
+            title="Сервер"
+            description="Операционная система и железо"
+          >
+            {osInfo ? (
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <InfoTile icon={<ServerIcon />} label="Платформа" value={osInfo.platform} />
+                <InfoTile
+                  icon={<LayersIcon />}
+                  label="Дистрибутив"
+                  value={`${osInfo.distro || osInfo.type}${osInfo.distroVersion ? ` ${osInfo.distroVersion}` : ""}`}
+                />
+                <InfoTile
+                  icon={<CpuIcon />}
+                  label="Процессор"
+                  value={osInfo.cpuModel}
+                  title={osInfo.cpuModel}
+                />
+                <InfoTile
+                  icon={<MemoryStickIcon />}
+                  label="Ядра / Память"
+                  value={`${osInfo.cpuCores} ядер · ${osInfo.totalMemory.toFixed(0)} ГБ`}
+                />
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500 dark:text-slate-400">Нет данных об ОС</p>
+            )}
+          </SectionCard>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Gauge
+              title="Нагрузка процессора"
+              icon={<ActivityIcon />}
               value={cpuUsage}
               label="CPU"
-              color={cpuUsage > 80 ? "#ef4444" : cpuUsage > 50 ? "#f59e0b" : "#3b82f6"}
-              size={250}
             />
-          </CardContent>
-        </Card>
-
-        {/* Memory Usage Donut Chart */}
-        <Card className="rounded-2xl shadow-xl">
-          <CardHeader>
-            <CardTitle className="text-center">Загрузка памяти</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center">
-            <DonutChart
+            <Gauge
+              title="Использование памяти"
+              icon={<MemoryStickIcon />}
               value={memoryUsage}
               label="RAM"
-              color={memoryUsage > 80 ? "#ef4444" : memoryUsage > 50 ? "#f59e0b" : "#8b5cf6"}
-              size={250}
             />
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Disk Usage */}
-      <Card className="rounded-2xl shadow-xl">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <HardDriveIcon className="w-5 h-5 text-muted-foreground" />
-            <CardTitle>Дисковое пространство</CardTitle>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {diskUsage.length > 0 ? (
-              diskUsage.map((disk, index) => <DiskChart key={index} disk={disk} />)
-            ) : (
-              <p className="text-muted-foreground text-center py-4">Нет данных о дисках</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Network and Uptime */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Network Info */}
-        <Card className="rounded-2xl shadow-xl">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <NetworkIconLucide className="w-5 h-5 text-muted-foreground" />
-              <CardTitle>Сеть</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {network ? (
-              <NetworkChart network={network} />
-            ) : (
-              <p className="text-muted-foreground text-center py-4">Нет данных о сети</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Uptime Info */}
-        <Card className="rounded-2xl shadow-xl">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <ClockIcon className="w-5 h-5 text-muted-foreground" />
-              <CardTitle>Время работы</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center py-8">
-            <div className="text-4xl font-bold text-green-600">{formattedUptime || "0 мин."}</div>
-            <p className="text-sm text-muted-foreground mt-2">Сервер работает</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              {new Date().toLocaleString("ru-RU")}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Bottom Navigation */}
-      <div
-        className={`fixed transition-all ${isMobile ? "bottom-2" : hideBottomTabbar ? "-bottom-14" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
-      >
-        <div
-          onClick={() => setHideBottomTabbar(false)}
-          className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
-        >
-          <ChevronUp className="text-white w-5" />
-        </div>
-
-        <Link to="/">
-          <Button type="button" className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600">
-            <HomeIcon className="w-4 h-4" />
-          </Button>
-        </Link>
-
-        {isMobile && (
-          <Button
-            type="button"
-            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-            onClick={() => setOpen(true)}
+          <SectionCard
+            icon={<HardDriveIcon />}
+            title="Диски"
+            description="Занятое и свободное место"
           >
-            <MenuIcon className="w-4 h-4" />
-          </Button>
-        )}
+            {diskUsage.length > 0 ? (
+              <div className="grid gap-3 lg:grid-cols-2">
+                {diskUsage.map((disk, i) => (
+                  <DiskChart key={`${disk.mount}-${i}`} disk={disk} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500 dark:text-slate-400">Нет данных о дисках</p>
+            )}
+          </SectionCard>
 
-        <Button
-          onClick={refresh}
-          disabled={isLoading}
-          type="button"
-          className="px-4 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600 flex items-center gap-2"
-        >
-          <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
-          <span>Обновить</span>
-        </Button>
+          <div className="grid gap-4 md:grid-cols-2">
+            <SectionCard icon={<NetworkIcon />} title="Сеть" description="Объём переданных данных">
+              {network ? (
+                <NetworkChart network={network} />
+              ) : (
+                <p className="text-sm text-slate-500 dark:text-slate-400">Нет данных о сети</p>
+              )}
+            </SectionCard>
 
-        <Button
-          onClick={() => setHideBottomTabbar(true)}
-          type="button"
-          className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-        >
-          <ChevronDown className="w-4 h-4" />
-        </Button>
-      </div>
+            <SectionCard icon={<ClockIcon />} title="Время работы" description="Без перезагрузки">
+              <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-2xl bg-emerald-50 px-4 py-8 text-center dark:bg-emerald-500/10">
+                <span className="text-3xl font-bold tabular-nums text-emerald-700 dark:text-emerald-200 sm:text-4xl">
+                  {formattedUptime || "0 мин."}
+                </span>
+                <span className="text-sm text-emerald-700/70 dark:text-emerald-200/70">
+                  Сервер работает
+                </span>
+              </div>
+            </SectionCard>
+          </div>
+        </>
+      )}
+
+      {bottomBar}
     </div>
   );
 };

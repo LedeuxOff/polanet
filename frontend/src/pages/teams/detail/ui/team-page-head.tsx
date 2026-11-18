@@ -1,18 +1,40 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { DetailPageHead, HeadChip } from "@/components/data-list";
+import { HardHatIcon, UsersIcon } from "lucide-react";
+import { ReactNode } from "react";
+import { membersLabel, TeamCalendarBadge, teamTone } from "../../ui/team-identity";
 
-export const TeamPageHead = ({ title }: { title: string }) => (
-  <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-    <CardHeader>
-      <div className="flex flex-col gap-4">
-        <CardTitle>Бригады</CardTitle>
+interface Props {
+  title: string;
+  /** Для существующей бригады */
+  isActive?: boolean;
+  memberCount?: number;
+  isNew?: boolean;
+}
+
+export const TeamPageHead = ({ title, isActive = true, memberCount, isNew }: Props) => {
+  let badges: ReactNode = null;
+  if (!isNew) badges = <TeamCalendarBadge isActive={isActive} />;
+
+  return (
+    <DetailPageHead
+      breadcrumbs={
         <Breadcrumbs
           items={[
-            { label: "Список", href: "/teams", active: false },
-            { label: title, active: true },
+            { label: "Бригады", href: "/teams", active: false },
+            { label: isNew ? "Создание" : title, active: true },
           ]}
         />
-      </div>
-    </CardHeader>
-  </Card>
-);
+      }
+      icon={<HardHatIcon />}
+      iconClassName={teamTone(isActive)}
+      title={isNew ? "Новая бригада" : title}
+      badges={badges}
+      chips={
+        memberCount !== undefined && (
+          <HeadChip icon={<UsersIcon />}>{membersLabel(memberCount)}</HeadChip>
+        )
+      }
+    />
+  );
+};

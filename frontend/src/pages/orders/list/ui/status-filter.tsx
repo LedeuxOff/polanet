@@ -24,7 +24,7 @@ export const OrdersListStatusFilter = ({ status, updateFilter }: Props) => {
       <PopoverTrigger>
         <Button
           variant="outline"
-          className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 flex items-center gap-2 min-w-[180px]"
+          className="h-11 rounded-2xl border-slate-200 bg-white px-4 flex items-center gap-2 sm:min-w-[180px] dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
         >
           <span className="truncate">{getStatusFilterLabel()}</span>
           <ChevronDownIcon className="h-4 w-4 ml-auto shrink-0" />
@@ -39,7 +39,7 @@ export const OrdersListStatusFilter = ({ status, updateFilter }: Props) => {
         <div className="flex flex-col">
           {/* Все роли */}
           <button
-            className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
+            className={`flex items-center gap-2 px-3 py-2.5 text-sm rounded-xl transition-colors ${
               status === "all"
                 ? "bg-blue-50 font-medium text-blue-600 dark:bg-white/20 dark:text-white"
                 : "hover:bg-gray-100 text-gray-700 dark:hover:bg-white/20 dark:text-white"
@@ -67,7 +67,7 @@ export const OrdersListStatusFilter = ({ status, updateFilter }: Props) => {
           {Object.entries(statusLabels).map(([key, label]) => (
             <button
               key={key}
-              className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
+              className={`flex items-center gap-2 px-3 py-2.5 text-sm rounded-xl transition-colors ${
                 status === key
                   ? "bg-blue-50 font-medium text-blue-600 dark:bg-white/20 dark:text-white"
                   : "hover:bg-gray-100 text-gray-700 dark:hover:bg-white/20 dark:text-white"

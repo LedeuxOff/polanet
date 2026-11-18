@@ -2,6 +2,7 @@ import { backupsApi } from "@/lib/api/backups-api";
 import { Backup } from "@/lib/api/backups-api";
 import { useEffect, useState } from "react";
 import { usePermissions } from "@/lib/contexts/permission-context";
+import { useToast } from "@/lib/contexts/toast-context";
 
 export const useBackupsListPage = () => {
   const [backups, setBackups] = useState<Backup[]>([]);
@@ -10,11 +11,14 @@ export const useBackupsListPage = () => {
   const [isRestoring, setIsRestoring] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const { hasPermission } = usePermissions();
+  const { showToast } = useToast();
 
   const loadBackups = async () => {
     try {
       const data = await backupsApi.list();
-      setBackups(data);
+      setBackups(
+        [...data].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+      );
     } catch (error) {
       console.error("Ошибка загрузки бэкапов:", error);
     } finally {
@@ -31,8 +35,9 @@ export const useBackupsListPage = () => {
     try {
       await backupsApi.create();
       await loadBackups();
+      showToast("Резервная копия создана", "success");
     } catch (error) {
-      alert("Ошибка при создании резервной копии: " + (error as Error).message);
+      showToast("Ошибка при создании резервной копии: " + (error as Error).message, "error");
     } finally {
       setIsCreating(false);
     }
@@ -51,9 +56,9 @@ export const useBackupsListPage = () => {
     try {
       await backupsApi.restore(filename);
       await loadBackups();
-      alert("База данных успешно восстановлена!");
+      showToast("База данных успешно восстановлена", "success");
     } catch (error) {
-      alert("Ошибка при восстановлении: " + (error as Error).message);
+      showToast("Ошибка при восстановлении: " + (error as Error).message, "error");
     } finally {
       setIsRestoring(null);
     }
@@ -67,18 +72,19 @@ export const useBackupsListPage = () => {
     setIsDeleting(filename);
     try {
       await backupsApi.delete(filename);
-      setBackups(backups.filter((b) => b.filename !== filename));
+      setBackups((prev) => prev.filter((b) => b.filename !== filename));
+      showToast("Резервная копия удалена", "success");
     } catch (error) {
-      alert("Ошибка при удалении: " + (error as Error).message);
+      showToast("Ошибка при удалении: " + (error as Error).message, "error");
     } finally {
       setIsDeleting(null);
     }
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    if (bytes < 1024) return `${bytes} Б`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} КБ`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} МБ`;
   };
 
   const formatDate = (dateString: string): string => {

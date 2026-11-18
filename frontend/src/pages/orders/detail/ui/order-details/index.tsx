@@ -1,3 +1,4 @@
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -10,7 +11,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useIsMobile } from "@/hooks";
 import { OrderForm, getAvailableStatusTransitions, statusLabels } from "@/lib/types";
-import { UseFormReturn } from "react-hook-form";
+import { Controller, UseFormReturn } from "react-hook-form";
 
 interface Props {
   form: UseFormReturn<OrderForm>;
@@ -57,12 +58,18 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
 
         <div className="col-span-4 md:col-span-2 space-y-2">
           <Label htmlFor="date">Дата *</Label>
-          <Input
-            className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
-            id="date"
-            type="date"
-            disabled={isSubmitting || disabledByStatus}
-            {...form.register("date")}
+          <Controller
+            control={form.control}
+            name="date"
+            render={({ field }) => (
+              <DatePicker
+                id="date"
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                clearable={false}
+                disabled={isSubmitting || disabledByStatus}
+              />
+            )}
           />
           {form.formState.errors.date && (
             <p className="text-sm text-destructive">{form.formState.errors.date.message}</p>

@@ -11,6 +11,9 @@ import { FieldValues, UseFormReturn } from "react-hook-form";
 
 export const FormBuilderSection = <T extends FieldValues = FieldValues>({
   label,
+  description,
+  icon,
+  cardClassName,
   className,
   form,
   fields,
@@ -18,9 +21,24 @@ export const FormBuilderSection = <T extends FieldValues = FieldValues>({
   const isMobile = useIsMobile();
 
   return (
-    <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-      <CardHeader>
-        <CardTitle>{label}</CardTitle>
+    <Card
+      className={cn(
+        "rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20",
+        cardClassName,
+      )}
+    >
+      <CardHeader className={cn(icon && "flex flex-row items-center gap-3 space-y-0")}>
+        {icon && (
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-slate-200 [&>svg]:h-5 [&>svg]:w-5">
+            {icon}
+          </div>
+        )}
+        <div className="flex flex-col gap-1">
+          <CardTitle className={cn(icon && "text-base")}>{label}</CardTitle>
+          {description && (
+            <span className="text-sm text-slate-500 dark:text-slate-300">{description}</span>
+          )}
+        </div>
       </CardHeader>
       <CardContent
         className={cn(`grid ${isMobile ? "grid-cols-1" : "grid-cols-3"} gap-4`, className)}

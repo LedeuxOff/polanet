@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 import { FormBuilderFieldType } from "../../types";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { FieldValues, UseFormReturn } from "react-hook-form";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Controller, FieldValues, UseFormReturn } from "react-hook-form";
 
 export const FormBuilderDateField = <T extends FieldValues = FieldValues>({
   id,
@@ -16,12 +16,17 @@ export const FormBuilderDateField = <T extends FieldValues = FieldValues>({
   return (
     <div className={cn("space-y-2", className)}>
       <Label htmlFor={id}>{label}</Label>
-      <Input
-        className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
-        id={id}
-        type="date"
-        disabled={disabled}
-        {...form.register(id)}
+      <Controller
+        control={form.control}
+        name={id}
+        render={({ field }) => (
+          <DatePicker
+            id={id}
+            value={field.value ?? ""}
+            onChange={field.onChange}
+            disabled={disabled}
+          />
+        )}
       />
 
       {errorMessage && <p className="text-sm text-destructive">{errorMessage}</p>}

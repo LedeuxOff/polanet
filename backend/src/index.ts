@@ -30,6 +30,7 @@ import teamRoutes from "./routes/teams.js";
 import workerRoutes from "./routes/workers.js";
 import screedClientRoutes from "./routes/screed-clients.js";
 import directoryRoutes from "./routes/directories.js";
+import statisticsRoutes from "./routes/statistics.js";
 
 // Импорт обработчика ошибок
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -78,6 +79,7 @@ app.use("/api/teams", teamRoutes);
 app.use("/api/workers", workerRoutes);
 app.use("/api/screed-clients", screedClientRoutes);
 app.use("/api/directories", directoryRoutes);
+app.use("/api/statistics", statisticsRoutes);
 
 // Serve built frontend in production (после API роутов!)
 if (isProduction) {

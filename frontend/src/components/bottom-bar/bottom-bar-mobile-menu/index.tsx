@@ -1,16 +1,20 @@
-import { Button } from "@/components/ui/button";
+import { barButton } from "../styles";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
 import { MenuIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export const BottomBarMobileMenu = () => {
+export const BottomBarMobileMenu = ({ label }: { label?: string }) => {
   const { setOpen } = useTabbar();
   return (
-    <Button
+    <button
       type="button"
-      className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
       onClick={() => setOpen(true)}
+      title="Меню"
+      aria-label="Меню"
+      className={cn(barButton.secondary, !label && barButton.icon)}
     >
-      <MenuIcon className="w-4 h-4 dark:text-zinc-100" />
-    </Button>
+      <MenuIcon />
+      {label}
+    </button>
   );
 };

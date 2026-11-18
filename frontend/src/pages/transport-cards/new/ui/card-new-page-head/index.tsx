@@ -1,21 +1,19 @@
 import { Breadcrumbs } from "@/components/breadcrumbs";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { DetailPageHead } from "@/components/data-list";
+import { CreditCardIcon } from "lucide-react";
 
-export const CardNewPageHead = () => {
-  return (
-    <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-      <CardHeader>
-        <div className="flex flex-col gap-4">
-          <CardTitle>Топливные карты</CardTitle>
-
-          <Breadcrumbs
-            items={[
-              { label: "Список", active: false, href: "/transport-cards" },
-              { label: "Создание", active: true },
-            ]}
-          />
-        </div>
-      </CardHeader>
-    </Card>
-  );
-};
+export const CardNewPageHead = () => (
+  <DetailPageHead
+    breadcrumbs={
+      <Breadcrumbs
+        items={[
+          { label: "Топливные карты", href: "/transport-cards", active: false },
+          { label: "Создание", active: true },
+        ]}
+      />
+    }
+    icon={<CreditCardIcon />}
+    iconClassName="bg-emerald-100 text-emerald-600 dark:bg-emerald-400/15 dark:text-emerald-300"
+    title="Новая карта"
+  />
+);

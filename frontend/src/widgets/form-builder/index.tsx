@@ -14,7 +14,7 @@ export const FormBuilder = <T extends FieldValues = FieldValues>({
         {sections
           .filter((section) => !section.hide)
           .map((section) => (
-            <FormBuilderSection {...section} form={form} />
+            <FormBuilderSection key={section.id} {...section} form={form} />
           ))}
       </div>
 
