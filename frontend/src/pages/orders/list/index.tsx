@@ -1,20 +1,13 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { useOrdersListPage } from "./hooks";
 import { statusLabels } from "./consts";
-import { useNavigate, Link } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronUp, HomeIcon, MenuIcon } from "lucide-react";
-import { QuickCreateOrderButton } from "./ui/quick-create-order-button";
-import { useIsMobile } from "@/hooks";
-import { useTabbar } from "@/lib/contexts/tabbar-context";
 import { OrdersListFilters } from "./ui/filters";
-import { useState } from "react";
+import { BottomBar } from "@/components/bottom-bar";
 
 export const OrdersPage = () => {
-  const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
-
   const navigate = useNavigate();
   const {
     orders,
@@ -30,8 +23,6 @@ export const OrdersPage = () => {
     handlePageChange,
     handleLimitChange,
   } = useOrdersListPage();
-  const isMobile = useIsMobile();
-  const { setOpen } = useTabbar();
 
   const columns: ColumnDef<(typeof orders)[0]>[] = [
     {
@@ -63,7 +54,7 @@ export const OrdersPage = () => {
       cell: ({ row }) => {
         const receivedAmount = row.original.receivedAmount ?? 0;
         return receivedAmount > 0 ? (
-          <span className="text-green-600 font-medium">{receivedAmount} ₽</span>
+          <span className="text-green-600 dark:text-green-300 font-medium">{receivedAmount} ₽</span>
         ) : (
           <span className="text-muted-foreground">—</span>
         );
@@ -75,7 +66,9 @@ export const OrdersPage = () => {
       cell: ({ row }) => {
         const pendingAmount = row.original.pendingAmount ?? 0;
         return pendingAmount > 0 ? (
-          <span className="text-yellow-600 font-medium">{pendingAmount} ₽</span>
+          <span className="text-yellow-600 dark:text-yellow-300 font-medium">
+            {pendingAmount} ₽
+          </span>
         ) : (
           <span className="text-muted-foreground">—</span>
         );
@@ -87,7 +80,7 @@ export const OrdersPage = () => {
       cell: ({ row }) => {
         const customerDebt = row.original.customerDebt ?? 0;
         return customerDebt > 0 ? (
-          <span className="text-destructive font-medium">{customerDebt} ₽</span>
+          <span className="text-destructive dark:text-red-200 font-medium">{customerDebt} ₽</span>
         ) : (
           <span className="text-muted-foreground">—</span>
         );
@@ -132,7 +125,7 @@ export const OrdersPage = () => {
 
   return (
     <div className="flex flex-col gap-4 pb-32">
-      <Card className="rounded-2xl shadow-xl">
+      <Card className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
         <CardHeader>
           <div className="flex flex-col gap-2">
             <CardTitle>Заявки</CardTitle>
@@ -165,58 +158,12 @@ export const OrdersPage = () => {
         />
       )}
 
-      <div
-        className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? "-bottom-[108px]" : "bottom-2") : hideBottomTabbar ? "-bottom-[108px]" : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
-      >
-        <div
-          onClick={() => setHideBottomTabbar(false)}
-          className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
-        >
-          <ChevronUp className="text-white w-5" />
-        </div>
-
-        <div className="flex flex-col gap-3">
-          <div className="flex gap-3">
-            <Link to="/">
-              <Button
-                type="button"
-                className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-              >
-                <HomeIcon className="w-4 h-4" />
-              </Button>
-            </Link>
-
-            {isMobile && (
-              <Button
-                type="button"
-                className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-                onClick={() => setOpen(true)}
-              >
-                <MenuIcon className="w-4 h-4" />
-              </Button>
-            )}
-
-            <Link to="/orders/new">
-              <Button
-                type="button"
-                className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600"
-              >
-                Создать заявку
-              </Button>
-            </Link>
-
-            <Button
-              onClick={() => setHideBottomTabbar(true)}
-              type="button"
-              className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
-            >
-              <ChevronDown className="w-4 h-4" />
-            </Button>
-          </div>
-
-          <QuickCreateOrderButton />
-        </div>
-      </div>
+      <BottomBar
+        onCreate={() => {
+          navigate({ to: "/orders/new" });
+        }}
+        quickCreate
+      />
     </div>
   );
 };

@@ -2,7 +2,7 @@ import { clientsApi } from "@/lib/api";
 import { NewClientForm, newClientSchema } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { cleanPhone } from "@/lib/utils/phone";
 
@@ -10,7 +10,6 @@ export const useNewClientPage = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [clientType, setClientType] = useState<"individual" | "legal">("individual");
 
   const form = useForm<NewClientForm>({
     resolver: zodResolver(newClientSchema),
@@ -30,6 +29,18 @@ export const useNewClientPage = () => {
       },
     },
   });
+
+  const clientType = form.watch("type");
+
+  useEffect(() => {
+    if (clientType === "individual") {
+      form.setValue("organizationName", undefined);
+    } else {
+      form.setValue("lastName", undefined);
+      form.setValue("firstName", undefined);
+      form.setValue("middleName", undefined);
+    }
+  }, [clientType]);
 
   const onSubmit = async (data: NewClientForm) => {
     setError(null);
@@ -66,8 +77,6 @@ export const useNewClientPage = () => {
     form,
     onSubmit,
     error,
-    clientType,
-    setClientType,
     isSubmitting,
   };
 };

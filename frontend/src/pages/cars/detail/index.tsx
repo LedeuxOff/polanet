@@ -6,8 +6,7 @@ import { PermissionsLoader } from "@/components/screens/loaders/permissions-load
 import { NoAccessScreen } from "@/components/screens/no-access";
 import { PageError } from "@/components/screens/error";
 import { CarPageHead } from "./ui/car-page-head";
-import { CarPageForm } from "./ui/car-page-form";
-import { BottomBar } from "@/components/bottom-bar";
+import { FormBuilder } from "@/widgets/form-builder";
 
 export const EditCarPage = () => {
   const navigate = useNavigate();
@@ -42,23 +41,50 @@ export const EditCarPage = () => {
     <div className="flex flex-col gap-4">
       <CarPageHead car={car} />
 
-      <form onSubmit={handleSubmit}>
-        <CarPageForm form={form} disabled={isSubmitting} />
-
-        <BottomBar
-          onBack={() => navigate({ to: "/cars" })}
-          showDeleteButton
-          handleDelete={() => {
-            if (!hasPermission("cars:delete")) {
-              showToast("У вас нет прав на удаление автомобиля", "error");
-              return;
-            }
-            handleDelete();
-          }}
-          isSumitting={isSubmitting}
-          isDeleting={isDeleting}
-        />
-      </form>
+      <FormBuilder
+        form={form}
+        sections={[
+          {
+            id: "main-info",
+            label: "Основная информация",
+            fields: [
+              {
+                id: "brand",
+                label: "Марка",
+                type: "text",
+                disabled: isSubmitting,
+                className: "col-span-3",
+              },
+              {
+                id: "licensePlate",
+                label: "Гос номер",
+                type: "text",
+                disabled: isSubmitting,
+                className: "col-span-3",
+              },
+            ],
+          },
+        ]}
+        actions={{
+          submit: {
+            onSubmit: handleSubmit,
+            isSubmitting: isSubmitting,
+            disabled: isSubmitting,
+          },
+          back: () => navigate({ to: "/cars" }),
+          delete: {
+            onDelete: () => {
+              if (!hasPermission("cars:delete")) {
+                showToast("У вас нет прав на удаление автомобиля", "error");
+                return;
+              }
+              handleDelete();
+            },
+            isDeleting: isDeleting,
+            disabled: isDeleting,
+          },
+        }}
+      />
     </div>
   );
 };

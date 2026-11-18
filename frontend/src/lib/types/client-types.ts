@@ -44,7 +44,8 @@ export const clientSchema = z
   .object({
     type: z.enum(["individual", "legal"]).optional(),
     // Для физического лица
-    lastName: z.string().min(1, "Фамилия обязательна").optional(),
+    // Фамилия необязательна: у клиентов из старой системы есть только имя
+    lastName: z.string().optional(),
     firstName: z.string().min(1, "Имя обязательно").optional(),
     middleName: z.string().optional(),
     // Для юридического лица
@@ -66,13 +67,6 @@ export const clientSchema = z
   .superRefine((data, ctx) => {
     // На странице редактирования проверяем только если тип individual и поля пустые
     if (data.type === "individual") {
-      if (data.lastName === "") {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Фамилия обязательна для физического лица",
-          path: ["lastName"],
-        });
-      }
       if (data.firstName === "") {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,

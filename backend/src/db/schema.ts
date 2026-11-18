@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 
 export const roles = sqliteTable("roles", {
@@ -42,6 +42,8 @@ export const users = sqliteTable("users", {
   phone: text("phone"),
   telegramChatId: text("telegram_chat_id"),
   passwordHash: text("password_hash").notNull(),
+  // Бригада рабочего (роль WORKER); у остальных пользователей — null
+  teamId: integer("team_id"),
   roleId: integer("role_id")
     .references(() => roles.id)
     .notNull(),
@@ -555,3 +557,94 @@ export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => 
     references: [permissions.id],
   }),
 }));
+
+// ===================== РАБОТЫ (стяжка) =====================
+
+// Бригады — строки календаря работ
+export const teams = sqliteTable("teams", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  // Id бригады в старой системе (для импорта)
+  legacyId: integer("legacy_id").unique(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+// Справочник статусов работ (код хранится в works.status)
+export const workStatuses = sqliteTable("work_statuses", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  code: text("code").notNull().unique(),
+  name: text("name").notNull(),
+  // Ключ цвета из палитры фронтенда: amber, violet, orange, blue, green, zinc, red, slate, cyan, pink
+  color: text("color").notNull().default("blue"),
+  sortOrder: integer("sort_order").notNull().default(0),
+  // Показывать ли работы с этим статусом в календаре (Удалено/Архив — нет)
+  showInCalendar: integer("show_in_calendar", { mode: "boolean" }).notNull().default(true),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+// Справочник типов работ (код хранится в works.work_type)
+export const workTypes = sqliteTable("work_types", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  code: text("code").notNull().unique(),
+  name: text("name").notNull(),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+// Работа (заявка на стяжку) — занимает слот «день × бригада»
+export const works = sqliteTable("works", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  // Слот
+  date: text("date").notNull(), // YYYY-MM-DD
+  startTime: text("start_time"), // HH:MM, начало работы
+  endTime: text("end_time"), // HH:MM, окончание работы
+  teamId: integer("team_id").references(() => teams.id, { onDelete: "set null" }),
+  // Привязка к клиенту
+  clientId: integer("client_id").references(() => clients.id, { onDelete: "set null" }),
+  // Объект
+  address: text("address"),
+  area: real("area"), // м²
+  thickness: real("thickness"), // мм
+  strength: text("strength"), // M150, M200...
+  workType: text("work_type").notNull().default("standard"), // код из work_types
+  hoseLength: real("hose_length"), // длина рукава, м
+  isTransmix: integer("is_transmix", { mode: "boolean" }).notNull().default(false),
+  // Деньги
+  price: integer("price"),
+  // Устарело: окончательность цены теперь задаётся статусом «Выезд». Колонка оставлена для истории
+  isFinalPrice: integer("is_final_price", { mode: "boolean" }).notNull().default(false),
+  // Прочее
+  status: text("status").notNull().default("preliminary"), // код из work_statuses
+  // Замерщик — рабочий (роль WORKER)
+  measurerId: integer("measurer_id").references(() => users.id, { onDelete: "set null" }),
+  // Имя замерщика из старой системы (если measurerId не выбран)
+  measurerName: text("measurer_name"),
+  notes: text("notes"),
+  // Id заявки в старой системе (для импорта)
+  legacyId: integer("legacy_id").unique(),
+  createdById: integer("created_by_id").references(() => users.id, { onDelete: "set null" }),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
+export const teamsRelations = relations(teams, ({ many }) => ({
+  works: many(works),
+}));
+
+export const worksRelations = relations(works, ({ one }) => ({
+  team: one(teams, { fields: [works.teamId], references: [teams.id] }),
+  client: one(clients, { fields: [works.clientId], references: [clients.id] }),
+  createdBy: one(users, { fields: [works.createdById], references: [users.id] }),
+}));
+
+export type Team = typeof teams.$inferSelect;
+export type NewTeam = typeof teams.$inferInsert;
+export type Work = typeof works.$inferSelect;
+export type WorkStatusRef = typeof workStatuses.$inferSelect;
+export type WorkTypeRef = typeof workTypes.$inferSelect;
+export type NewWork = typeof works.$inferInsert;

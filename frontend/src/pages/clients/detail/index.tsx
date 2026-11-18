@@ -4,10 +4,10 @@ import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
 import { PermissionsLoader } from "@/components/screens/loaders/permissions-loader";
 import { PageError } from "@/components/screens/error";
-import { ClientPageForm } from "./ui/client-page-form";
-import { BottomBar } from "@/components/bottom-bar";
 import { NoAccessScreen } from "@/components/screens/no-access";
 import { ClientPageHead } from "./ui/client-page-head";
+import { FormBuilder } from "@/widgets/form-builder";
+import { ClientWorks } from "./ui/client-works";
 
 export const EditClientPage = () => {
   const navigate = useNavigate();
@@ -15,18 +15,8 @@ export const EditClientPage = () => {
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
   const { showToast } = useToast();
 
-  const {
-    isLoading,
-    client,
-    handleDelete,
-    isDeleting,
-    form,
-    onSubmit,
-    clientType,
-    setClientType,
-    isSubmitting,
-    error,
-  } = useClientDetailPage(clientId);
+  const { isLoading, client, handleDelete, isDeleting, form, onSubmit, isSubmitting, error } =
+    useClientDetailPage(clientId);
 
   if (isLoading || isPermissionsLoading) {
     return <PermissionsLoader />;
@@ -57,32 +47,157 @@ export const EditClientPage = () => {
     }
   };
 
+  const clientType = form.watch("type");
+
   return (
     <div className="flex flex-col gap-4 pb-4">
       <ClientPageHead client={client} />
 
-      <form onSubmit={form.handleSubmit(handleSubmit)}>
-        <ClientPageForm
-          form={form}
-          clientType={clientType}
-          setClientType={setClientType}
-          isSubmitting={isSubmitting}
-        />
+      {hasPermission("works:list") && <ClientWorks clientId={client.id} />}
 
-        <BottomBar
-          onBack={() => navigate({ to: "/clients" })}
-          isSumitting={isSubmitting}
-          showDeleteButton
-          handleDelete={() => {
-            if (!hasPermission("clients:delete")) {
-              showToast("У вас нет прав на удаление клиента", "error");
-              return;
-            }
-            handleDelete(showToast);
-          }}
-          isDeleting={isDeleting}
-        />
-      </form>
+      <FormBuilder
+        form={form}
+        sections={[
+          {
+            id: "main-info",
+            label: "Основная информация",
+            fields: [
+              {
+                id: "type",
+                label: "Тип клиента",
+                type: "select",
+                disabled: true,
+                className: "col-span-3",
+                select: {
+                  options: [
+                    { id: "individual", name: "Физическое лицо" },
+                    { id: "legal", name: "Юридическое лицо" },
+                  ],
+                },
+              },
+              {
+                id: "lastName",
+                label: "Фамилия",
+                type: "text",
+                disabled: isSubmitting,
+                hide: clientType === "legal",
+              },
+              {
+                id: "firstName",
+                label: "Имя",
+                type: "text",
+                disabled: isSubmitting,
+                hide: clientType === "legal",
+              },
+              {
+                id: "middleName",
+                label: "Отчество",
+                type: "text",
+                disabled: isSubmitting,
+                hide: clientType === "legal",
+              },
+              {
+                id: "organizationName",
+                label: "Название организации",
+                type: "text",
+                disabled: isSubmitting,
+                hide: clientType === "individual",
+              },
+              {
+                id: "phone",
+                label: "Телефон",
+                type: "phone",
+                disabled: isSubmitting,
+              },
+              {
+                id: "email",
+                label: "Email",
+                type: "email",
+                disabled: isSubmitting,
+              },
+            ],
+          },
+          {
+            id: "payer",
+            label: "Плательщик",
+            fields: [
+              {
+                id: "payerFirstName",
+                label: "Имя",
+                type: "text",
+                disabled: isSubmitting,
+              },
+              {
+                id: "payerLastName",
+                label: "Отчество",
+                type: "text",
+                disabled: isSubmitting,
+              },
+              {
+                id: "payerMiddleName",
+                label: "Отчество",
+                type: "text",
+                disabled: isSubmitting,
+              },
+              {
+                id: "payerPhone",
+                label: "Телефон",
+                type: "phone",
+                disabled: isSubmitting,
+              },
+            ],
+          },
+          {
+            id: "receiver",
+            label: "Приемщик",
+            fields: [
+              {
+                id: "receiverFirstName",
+                label: "Имя",
+                type: "text",
+                disabled: isSubmitting,
+              },
+              {
+                id: "receiverLastName",
+                label: "Отчество",
+                type: "text",
+                disabled: isSubmitting,
+              },
+              {
+                id: "receiverMiddleName",
+                label: "Отчество",
+                type: "text",
+                disabled: isSubmitting,
+              },
+              {
+                id: "receiverPhone",
+                label: "Телефон",
+                type: "phone",
+                disabled: isSubmitting,
+              },
+            ],
+          },
+        ]}
+        actions={{
+          submit: {
+            onSubmit: handleSubmit,
+            isSubmitting: isSubmitting,
+            disabled: isSubmitting,
+          },
+          back: () => navigate({ to: "/clients" }),
+          delete: {
+            onDelete: () => {
+              if (!hasPermission("clients:delete")) {
+                showToast("У вас нет прав на удаление клиента", "error");
+                return;
+              }
+              handleDelete(showToast);
+            },
+            isDeleting: isDeleting,
+            disabled: isDeleting,
+          },
+        }}
+      />
     </div>
   );
 };

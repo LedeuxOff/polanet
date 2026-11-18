@@ -22,14 +22,17 @@ export const OrdersListStatusFilter = ({ status, updateFilter }: Props) => {
   return (
     <Popover open={showStatusPopover} onOpenChange={setShowStatusPopover}>
       <PopoverTrigger>
-        <Button variant="outline" className="rounded-xl flex items-center gap-2 min-w-[180px]">
+        <Button
+          variant="outline"
+          className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 flex items-center gap-2 min-w-[180px]"
+        >
           <span className="truncate">{getStatusFilterLabel()}</span>
           <ChevronDownIcon className="h-4 w-4 ml-auto shrink-0" />
         </Button>
       </PopoverTrigger>
 
       <PopoverContent
-        className="z-50 w-64 rounded-xl bg-white border border-gray-200 shadow-lg p-1"
+        className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 z-50 w-64 p-1"
         sideOffset={5}
         align="end"
       >
@@ -38,8 +41,8 @@ export const OrdersListStatusFilter = ({ status, updateFilter }: Props) => {
           <button
             className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
               status === "all"
-                ? "bg-blue-50 text-blue-600 font-medium"
-                : "hover:bg-gray-100 text-gray-700"
+                ? "bg-blue-50 font-medium text-blue-600 dark:bg-white/20 dark:text-white"
+                : "hover:bg-gray-100 text-gray-700 dark:hover:bg-white/20 dark:text-white"
             }`}
             onClick={() => {
               updateFilter("status", "all");
@@ -48,7 +51,9 @@ export const OrdersListStatusFilter = ({ status, updateFilter }: Props) => {
           >
             <span
               className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
-                status === "all" ? "border-blue-600 bg-blue-600" : "border-gray-300"
+                status === "all"
+                  ? "border-blue-600 bg-blue-600 dark:border-blue-600/40 dark:bg-blue-600/40"
+                  : "border-gray-300"
               }`}
             >
               {status === "all" && <span className="h-1.5 w-1.5 rounded-full bg-white" />}
@@ -64,8 +69,8 @@ export const OrdersListStatusFilter = ({ status, updateFilter }: Props) => {
               key={key}
               className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
                 status === key
-                  ? "bg-blue-50 text-blue-600 font-medium"
-                  : "hover:bg-gray-100 text-gray-700"
+                  ? "bg-blue-50 font-medium text-blue-600 dark:bg-white/20 dark:text-white"
+                  : "hover:bg-gray-100 text-gray-700 dark:hover:bg-white/20 dark:text-white"
               }`}
               onClick={() => {
                 updateFilter("status", key);
@@ -74,7 +79,9 @@ export const OrdersListStatusFilter = ({ status, updateFilter }: Props) => {
             >
               <span
                 className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
-                  status === key ? "border-blue-600 bg-blue-600" : "border-gray-300"
+                  status === key
+                    ? "border-blue-600 bg-blue-600 dark:border-blue-600/40 dark:bg-blue-600/40"
+                    : "border-gray-300"
                 }`}
               >
                 {status === key && <span className="h-1.5 w-1.5 rounded-full bg-white" />}

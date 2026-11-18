@@ -25,6 +25,10 @@ import permissionsRoutes from "./routes/permissions.js";
 import telegramRoutes from "./routes/telegram.js";
 import templateRoutes from "./routes/templates.js";
 import transportCardsRoutes from "./routes/transport-cards.js";
+import workRoutes from "./routes/works.js";
+import teamRoutes from "./routes/teams.js";
+import workerRoutes from "./routes/workers.js";
+import directoryRoutes from "./routes/directories.js";
 
 // Импорт обработчика ошибок
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -68,6 +72,10 @@ app.use("/api/permissions", permissionsRoutes);
 app.use("/api/telegram", telegramRoutes);
 app.use("/api/templates", templateRoutes);
 app.use("/api/transport-cards", transportCardsRoutes);
+app.use("/api/works", workRoutes);
+app.use("/api/teams", teamRoutes);
+app.use("/api/workers", workerRoutes);
+app.use("/api/directories", directoryRoutes);
 
 // Serve built frontend in production (после API роутов!)
 if (isProduction) {

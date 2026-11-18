@@ -9,22 +9,28 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WorksRouteImport } from './routes/works'
+import { Route as WorkersRouteImport } from './routes/workers'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as TransportCardsRouteImport } from './routes/transport-cards'
 import { Route as TemplatesRouteImport } from './routes/templates'
+import { Route as TeamsRouteImport } from './routes/teams'
 import { Route as SystemLogsRouteImport } from './routes/system-logs'
 import { Route as SystemInfoRouteImport } from './routes/system-info'
 import { Route as RolesRouteImport } from './routes/roles'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DirectoriesRouteImport } from './routes/directories'
 import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as ChangePasswordRouteImport } from './routes/change-password'
 import { Route as CarsRouteImport } from './routes/cars'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as BackupsRouteImport } from './routes/backups'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as WorkersIndexRouteImport } from './routes/workers/index'
 import { Route as UsersIndexRouteImport } from './routes/users/index'
 import { Route as TransportCardsIndexRouteImport } from './routes/transport-cards/index'
 import { Route as TemplatesIndexRouteImport } from './routes/templates/index'
+import { Route as TeamsIndexRouteImport } from './routes/teams/index'
 import { Route as SystemLogsIndexRouteImport } from './routes/system-logs/index'
 import { Route as SystemInfoIndexRouteImport } from './routes/system-info/index'
 import { Route as RolesIndexRouteImport } from './routes/roles/index'
@@ -34,10 +40,14 @@ import { Route as DevelopersIndexRouteImport } from './routes/developers/index'
 import { Route as ClientsIndexRouteImport } from './routes/clients/index'
 import { Route as CarsIndexRouteImport } from './routes/cars/index'
 import { Route as BackupsIndexRouteImport } from './routes/backups/index'
+import { Route as WorkersNewRouteImport } from './routes/workers/new'
+import { Route as WorkersWorkerIdRouteImport } from './routes/workers/$workerId'
 import { Route as UsersNewRouteImport } from './routes/users/new'
 import { Route as UsersUserIdRouteImport } from './routes/users/$userId'
 import { Route as TransportCardsNewRouteImport } from './routes/transport-cards/new'
 import { Route as TransportCardsCardIdRouteImport } from './routes/transport-cards/$cardId'
+import { Route as TeamsNewRouteImport } from './routes/teams/new'
+import { Route as TeamsTeamIdRouteImport } from './routes/teams/$teamId'
 import { Route as RolesNewRouteImport } from './routes/roles/new'
 import { Route as RolesRoleIdRouteImport } from './routes/roles/$roleId'
 import { Route as OrdersNewRouteImport } from './routes/orders/new'
@@ -49,6 +59,16 @@ import { Route as ClientsClientIdRouteImport } from './routes/clients/$clientId'
 import { Route as CarsNewRouteImport } from './routes/cars/new'
 import { Route as CarsCarIdRouteImport } from './routes/cars/$carId'
 
+const WorksRoute = WorksRouteImport.update({
+  id: '/works',
+  path: '/works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WorkersRoute = WorkersRouteImport.update({
+  id: '/workers',
+  path: '/workers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UsersRoute = UsersRouteImport.update({
   id: '/users',
   path: '/users',
@@ -62,6 +82,11 @@ const TransportCardsRoute = TransportCardsRouteImport.update({
 const TemplatesRoute = TemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TeamsRoute = TeamsRouteImport.update({
+  id: '/teams',
+  path: '/teams',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SystemLogsRoute = SystemLogsRouteImport.update({
@@ -82,6 +107,11 @@ const RolesRoute = RolesRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DirectoriesRoute = DirectoriesRouteImport.update({
+  id: '/directories',
+  path: '/directories',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DevelopersRoute = DevelopersRouteImport.update({
@@ -114,6 +144,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const WorkersIndexRoute = WorkersIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => WorkersRoute,
+} as any)
 const UsersIndexRoute = UsersIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -128,6 +163,11 @@ const TemplatesIndexRoute = TemplatesIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => TemplatesRoute,
+} as any)
+const TeamsIndexRoute = TeamsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TeamsRoute,
 } as any)
 const SystemLogsIndexRoute = SystemLogsIndexRouteImport.update({
   id: '/',
@@ -174,6 +214,16 @@ const BackupsIndexRoute = BackupsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => BackupsRoute,
 } as any)
+const WorkersNewRoute = WorkersNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => WorkersRoute,
+} as any)
+const WorkersWorkerIdRoute = WorkersWorkerIdRouteImport.update({
+  id: '/$workerId',
+  path: '/$workerId',
+  getParentRoute: () => WorkersRoute,
+} as any)
 const UsersNewRoute = UsersNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -193,6 +243,16 @@ const TransportCardsCardIdRoute = TransportCardsCardIdRouteImport.update({
   id: '/$cardId',
   path: '/$cardId',
   getParentRoute: () => TransportCardsRoute,
+} as any)
+const TeamsNewRoute = TeamsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => TeamsRoute,
+} as any)
+const TeamsTeamIdRoute = TeamsTeamIdRouteImport.update({
+  id: '/$teamId',
+  path: '/$teamId',
+  getParentRoute: () => TeamsRoute,
 } as any)
 const RolesNewRoute = RolesNewRouteImport.update({
   id: '/new',
@@ -252,13 +312,17 @@ export interface FileRoutesByFullPath {
   '/cars': typeof CarsRouteWithChildren
   '/change-password': typeof ChangePasswordRoute
   '/developers': typeof DevelopersRouteWithChildren
+  '/directories': typeof DirectoriesRoute
   '/login': typeof LoginRoute
   '/roles': typeof RolesRouteWithChildren
   '/system-info': typeof SystemInfoRouteWithChildren
   '/system-logs': typeof SystemLogsRouteWithChildren
+  '/teams': typeof TeamsRouteWithChildren
   '/templates': typeof TemplatesRouteWithChildren
   '/transport-cards': typeof TransportCardsRouteWithChildren
   '/users': typeof UsersRouteWithChildren
+  '/workers': typeof WorkersRouteWithChildren
+  '/works': typeof WorksRoute
   '/cars/$carId': typeof CarsCarIdRoute
   '/cars/new': typeof CarsNewRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
@@ -269,10 +333,14 @@ export interface FileRoutesByFullPath {
   '/orders/new': typeof OrdersNewRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
   '/roles/new': typeof RolesNewRoute
+  '/teams/$teamId': typeof TeamsTeamIdRoute
+  '/teams/new': typeof TeamsNewRoute
   '/transport-cards/$cardId': typeof TransportCardsCardIdRoute
   '/transport-cards/new': typeof TransportCardsNewRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/users/new': typeof UsersNewRoute
+  '/workers/$workerId': typeof WorkersWorkerIdRoute
+  '/workers/new': typeof WorkersNewRoute
   '/backups/': typeof BackupsIndexRoute
   '/cars/': typeof CarsIndexRoute
   '/clients/': typeof ClientsIndexRoute
@@ -282,15 +350,19 @@ export interface FileRoutesByFullPath {
   '/roles/': typeof RolesIndexRoute
   '/system-info/': typeof SystemInfoIndexRoute
   '/system-logs/': typeof SystemLogsIndexRoute
+  '/teams/': typeof TeamsIndexRoute
   '/templates/': typeof TemplatesIndexRoute
   '/transport-cards/': typeof TransportCardsIndexRoute
   '/users/': typeof UsersIndexRoute
+  '/workers/': typeof WorkersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/calendar': typeof CalendarRoute
   '/change-password': typeof ChangePasswordRoute
+  '/directories': typeof DirectoriesRoute
   '/login': typeof LoginRoute
+  '/works': typeof WorksRoute
   '/cars/$carId': typeof CarsCarIdRoute
   '/cars/new': typeof CarsNewRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
@@ -301,10 +373,14 @@ export interface FileRoutesByTo {
   '/orders/new': typeof OrdersNewRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
   '/roles/new': typeof RolesNewRoute
+  '/teams/$teamId': typeof TeamsTeamIdRoute
+  '/teams/new': typeof TeamsNewRoute
   '/transport-cards/$cardId': typeof TransportCardsCardIdRoute
   '/transport-cards/new': typeof TransportCardsNewRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/users/new': typeof UsersNewRoute
+  '/workers/$workerId': typeof WorkersWorkerIdRoute
+  '/workers/new': typeof WorkersNewRoute
   '/backups': typeof BackupsIndexRoute
   '/cars': typeof CarsIndexRoute
   '/clients': typeof ClientsIndexRoute
@@ -314,9 +390,11 @@ export interface FileRoutesByTo {
   '/roles': typeof RolesIndexRoute
   '/system-info': typeof SystemInfoIndexRoute
   '/system-logs': typeof SystemLogsIndexRoute
+  '/teams': typeof TeamsIndexRoute
   '/templates': typeof TemplatesIndexRoute
   '/transport-cards': typeof TransportCardsIndexRoute
   '/users': typeof UsersIndexRoute
+  '/workers': typeof WorkersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -326,13 +404,17 @@ export interface FileRoutesById {
   '/cars': typeof CarsRouteWithChildren
   '/change-password': typeof ChangePasswordRoute
   '/developers': typeof DevelopersRouteWithChildren
+  '/directories': typeof DirectoriesRoute
   '/login': typeof LoginRoute
   '/roles': typeof RolesRouteWithChildren
   '/system-info': typeof SystemInfoRouteWithChildren
   '/system-logs': typeof SystemLogsRouteWithChildren
+  '/teams': typeof TeamsRouteWithChildren
   '/templates': typeof TemplatesRouteWithChildren
   '/transport-cards': typeof TransportCardsRouteWithChildren
   '/users': typeof UsersRouteWithChildren
+  '/workers': typeof WorkersRouteWithChildren
+  '/works': typeof WorksRoute
   '/cars/$carId': typeof CarsCarIdRoute
   '/cars/new': typeof CarsNewRoute
   '/clients/$clientId': typeof ClientsClientIdRoute
@@ -343,10 +425,14 @@ export interface FileRoutesById {
   '/orders/new': typeof OrdersNewRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
   '/roles/new': typeof RolesNewRoute
+  '/teams/$teamId': typeof TeamsTeamIdRoute
+  '/teams/new': typeof TeamsNewRoute
   '/transport-cards/$cardId': typeof TransportCardsCardIdRoute
   '/transport-cards/new': typeof TransportCardsNewRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/users/new': typeof UsersNewRoute
+  '/workers/$workerId': typeof WorkersWorkerIdRoute
+  '/workers/new': typeof WorkersNewRoute
   '/backups/': typeof BackupsIndexRoute
   '/cars/': typeof CarsIndexRoute
   '/clients/': typeof ClientsIndexRoute
@@ -356,9 +442,11 @@ export interface FileRoutesById {
   '/roles/': typeof RolesIndexRoute
   '/system-info/': typeof SystemInfoIndexRoute
   '/system-logs/': typeof SystemLogsIndexRoute
+  '/teams/': typeof TeamsIndexRoute
   '/templates/': typeof TemplatesIndexRoute
   '/transport-cards/': typeof TransportCardsIndexRoute
   '/users/': typeof UsersIndexRoute
+  '/workers/': typeof WorkersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -369,13 +457,17 @@ export interface FileRouteTypes {
     | '/cars'
     | '/change-password'
     | '/developers'
+    | '/directories'
     | '/login'
     | '/roles'
     | '/system-info'
     | '/system-logs'
+    | '/teams'
     | '/templates'
     | '/transport-cards'
     | '/users'
+    | '/workers'
+    | '/works'
     | '/cars/$carId'
     | '/cars/new'
     | '/clients/$clientId'
@@ -386,10 +478,14 @@ export interface FileRouteTypes {
     | '/orders/new'
     | '/roles/$roleId'
     | '/roles/new'
+    | '/teams/$teamId'
+    | '/teams/new'
     | '/transport-cards/$cardId'
     | '/transport-cards/new'
     | '/users/$userId'
     | '/users/new'
+    | '/workers/$workerId'
+    | '/workers/new'
     | '/backups/'
     | '/cars/'
     | '/clients/'
@@ -399,15 +495,19 @@ export interface FileRouteTypes {
     | '/roles/'
     | '/system-info/'
     | '/system-logs/'
+    | '/teams/'
     | '/templates/'
     | '/transport-cards/'
     | '/users/'
+    | '/workers/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/calendar'
     | '/change-password'
+    | '/directories'
     | '/login'
+    | '/works'
     | '/cars/$carId'
     | '/cars/new'
     | '/clients/$clientId'
@@ -418,10 +518,14 @@ export interface FileRouteTypes {
     | '/orders/new'
     | '/roles/$roleId'
     | '/roles/new'
+    | '/teams/$teamId'
+    | '/teams/new'
     | '/transport-cards/$cardId'
     | '/transport-cards/new'
     | '/users/$userId'
     | '/users/new'
+    | '/workers/$workerId'
+    | '/workers/new'
     | '/backups'
     | '/cars'
     | '/clients'
@@ -431,9 +535,11 @@ export interface FileRouteTypes {
     | '/roles'
     | '/system-info'
     | '/system-logs'
+    | '/teams'
     | '/templates'
     | '/transport-cards'
     | '/users'
+    | '/workers'
   id:
     | '__root__'
     | '/'
@@ -442,13 +548,17 @@ export interface FileRouteTypes {
     | '/cars'
     | '/change-password'
     | '/developers'
+    | '/directories'
     | '/login'
     | '/roles'
     | '/system-info'
     | '/system-logs'
+    | '/teams'
     | '/templates'
     | '/transport-cards'
     | '/users'
+    | '/workers'
+    | '/works'
     | '/cars/$carId'
     | '/cars/new'
     | '/clients/$clientId'
@@ -459,10 +569,14 @@ export interface FileRouteTypes {
     | '/orders/new'
     | '/roles/$roleId'
     | '/roles/new'
+    | '/teams/$teamId'
+    | '/teams/new'
     | '/transport-cards/$cardId'
     | '/transport-cards/new'
     | '/users/$userId'
     | '/users/new'
+    | '/workers/$workerId'
+    | '/workers/new'
     | '/backups/'
     | '/cars/'
     | '/clients/'
@@ -472,9 +586,11 @@ export interface FileRouteTypes {
     | '/roles/'
     | '/system-info/'
     | '/system-logs/'
+    | '/teams/'
     | '/templates/'
     | '/transport-cards/'
     | '/users/'
+    | '/workers/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -484,13 +600,17 @@ export interface RootRouteChildren {
   CarsRoute: typeof CarsRouteWithChildren
   ChangePasswordRoute: typeof ChangePasswordRoute
   DevelopersRoute: typeof DevelopersRouteWithChildren
+  DirectoriesRoute: typeof DirectoriesRoute
   LoginRoute: typeof LoginRoute
   RolesRoute: typeof RolesRouteWithChildren
   SystemInfoRoute: typeof SystemInfoRouteWithChildren
   SystemLogsRoute: typeof SystemLogsRouteWithChildren
+  TeamsRoute: typeof TeamsRouteWithChildren
   TemplatesRoute: typeof TemplatesRouteWithChildren
   TransportCardsRoute: typeof TransportCardsRouteWithChildren
   UsersRoute: typeof UsersRouteWithChildren
+  WorkersRoute: typeof WorkersRouteWithChildren
+  WorksRoute: typeof WorksRoute
   ClientsClientIdRoute: typeof ClientsClientIdRoute
   ClientsNewRoute: typeof ClientsNewRoute
   OrdersOrderIdRoute: typeof OrdersOrderIdRoute
@@ -502,6 +622,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/works': {
+      id: '/works'
+      path: '/works'
+      fullPath: '/works'
+      preLoaderRoute: typeof WorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/workers': {
+      id: '/workers'
+      path: '/workers'
+      fullPath: '/workers'
+      preLoaderRoute: typeof WorkersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/users': {
       id: '/users'
       path: '/users'
@@ -521,6 +655,13 @@ declare module '@tanstack/react-router' {
       path: '/templates'
       fullPath: '/templates'
       preLoaderRoute: typeof TemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/teams': {
+      id: '/teams'
+      path: '/teams'
+      fullPath: '/teams'
+      preLoaderRoute: typeof TeamsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/system-logs': {
@@ -549,6 +690,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/directories': {
+      id: '/directories'
+      path: '/directories'
+      fullPath: '/directories'
+      preLoaderRoute: typeof DirectoriesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/developers': {
@@ -593,6 +741,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/workers/': {
+      id: '/workers/'
+      path: '/'
+      fullPath: '/workers/'
+      preLoaderRoute: typeof WorkersIndexRouteImport
+      parentRoute: typeof WorkersRoute
+    }
     '/users/': {
       id: '/users/'
       path: '/'
@@ -613,6 +768,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/templates/'
       preLoaderRoute: typeof TemplatesIndexRouteImport
       parentRoute: typeof TemplatesRoute
+    }
+    '/teams/': {
+      id: '/teams/'
+      path: '/'
+      fullPath: '/teams/'
+      preLoaderRoute: typeof TeamsIndexRouteImport
+      parentRoute: typeof TeamsRoute
     }
     '/system-logs/': {
       id: '/system-logs/'
@@ -677,6 +839,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BackupsIndexRouteImport
       parentRoute: typeof BackupsRoute
     }
+    '/workers/new': {
+      id: '/workers/new'
+      path: '/new'
+      fullPath: '/workers/new'
+      preLoaderRoute: typeof WorkersNewRouteImport
+      parentRoute: typeof WorkersRoute
+    }
+    '/workers/$workerId': {
+      id: '/workers/$workerId'
+      path: '/$workerId'
+      fullPath: '/workers/$workerId'
+      preLoaderRoute: typeof WorkersWorkerIdRouteImport
+      parentRoute: typeof WorkersRoute
+    }
     '/users/new': {
       id: '/users/new'
       path: '/new'
@@ -704,6 +880,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/transport-cards/$cardId'
       preLoaderRoute: typeof TransportCardsCardIdRouteImport
       parentRoute: typeof TransportCardsRoute
+    }
+    '/teams/new': {
+      id: '/teams/new'
+      path: '/new'
+      fullPath: '/teams/new'
+      preLoaderRoute: typeof TeamsNewRouteImport
+      parentRoute: typeof TeamsRoute
+    }
+    '/teams/$teamId': {
+      id: '/teams/$teamId'
+      path: '/$teamId'
+      fullPath: '/teams/$teamId'
+      preLoaderRoute: typeof TeamsTeamIdRouteImport
+      parentRoute: typeof TeamsRoute
     }
     '/roles/new': {
       id: '/roles/new'
@@ -857,6 +1047,20 @@ const SystemLogsRouteWithChildren = SystemLogsRoute._addFileChildren(
   SystemLogsRouteChildren,
 )
 
+interface TeamsRouteChildren {
+  TeamsTeamIdRoute: typeof TeamsTeamIdRoute
+  TeamsNewRoute: typeof TeamsNewRoute
+  TeamsIndexRoute: typeof TeamsIndexRoute
+}
+
+const TeamsRouteChildren: TeamsRouteChildren = {
+  TeamsTeamIdRoute: TeamsTeamIdRoute,
+  TeamsNewRoute: TeamsNewRoute,
+  TeamsIndexRoute: TeamsIndexRoute,
+}
+
+const TeamsRouteWithChildren = TeamsRoute._addFileChildren(TeamsRouteChildren)
+
 interface TemplatesRouteChildren {
   TemplatesIndexRoute: typeof TemplatesIndexRoute
 }
@@ -899,6 +1103,21 @@ const UsersRouteChildren: UsersRouteChildren = {
 
 const UsersRouteWithChildren = UsersRoute._addFileChildren(UsersRouteChildren)
 
+interface WorkersRouteChildren {
+  WorkersWorkerIdRoute: typeof WorkersWorkerIdRoute
+  WorkersNewRoute: typeof WorkersNewRoute
+  WorkersIndexRoute: typeof WorkersIndexRoute
+}
+
+const WorkersRouteChildren: WorkersRouteChildren = {
+  WorkersWorkerIdRoute: WorkersWorkerIdRoute,
+  WorkersNewRoute: WorkersNewRoute,
+  WorkersIndexRoute: WorkersIndexRoute,
+}
+
+const WorkersRouteWithChildren =
+  WorkersRoute._addFileChildren(WorkersRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BackupsRoute: BackupsRouteWithChildren,
@@ -906,13 +1125,17 @@ const rootRouteChildren: RootRouteChildren = {
   CarsRoute: CarsRouteWithChildren,
   ChangePasswordRoute: ChangePasswordRoute,
   DevelopersRoute: DevelopersRouteWithChildren,
+  DirectoriesRoute: DirectoriesRoute,
   LoginRoute: LoginRoute,
   RolesRoute: RolesRouteWithChildren,
   SystemInfoRoute: SystemInfoRouteWithChildren,
   SystemLogsRoute: SystemLogsRouteWithChildren,
+  TeamsRoute: TeamsRouteWithChildren,
   TemplatesRoute: TemplatesRouteWithChildren,
   TransportCardsRoute: TransportCardsRouteWithChildren,
   UsersRoute: UsersRouteWithChildren,
+  WorkersRoute: WorkersRouteWithChildren,
+  WorksRoute: WorksRoute,
   ClientsClientIdRoute: ClientsClientIdRoute,
   ClientsNewRoute: ClientsNewRoute,
   OrdersOrderIdRoute: OrdersOrderIdRoute,

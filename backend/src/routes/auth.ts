@@ -34,7 +34,8 @@ router.post("/login", async (req, res) => {
     const userRole = db.select().from(roles).where(eq(roles.id, user.roleId!)).get();
 
     // Проверяем, есть ли у пользователя доступ к административной панели
-    if (userRole?.code === "DRIVER") {
+    // Водители и рабочие не входят в административную панель
+    if (userRole?.code === "DRIVER" || userRole?.code === "WORKER") {
       return res.status(403).json({ error: "У вас нет доступа в административную панель" });
     }
 

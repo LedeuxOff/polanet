@@ -31,7 +31,6 @@ export const useClientDetailPage = (clientId: string) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [clientType, setClientType] = useState<"individual" | "legal">("individual");
 
   const form = useForm<ClientForm>({
     resolver: zodResolver(clientSchema),
@@ -42,7 +41,6 @@ export const useClientDetailPage = (clientId: string) => {
       .get(Number(clientId))
       .then((data) => {
         setClient(data);
-        setClientType(data.type);
         form.setValue("type", data.type);
         form.setValue("lastName", data.lastName || "");
         form.setValue("firstName", data.firstName || "");
@@ -132,8 +130,6 @@ export const useClientDetailPage = (clientId: string) => {
     form,
     onSubmit,
     error,
-    clientType,
-    setClientType,
     isSubmitting,
   };
 };

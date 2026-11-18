@@ -76,12 +76,12 @@ export function QuickCreateOrderButton() {
         <DrawerTrigger>
           <Button
             type="button"
-            className="w-full px-8 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+            className="w-full px-8 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 dark:text-white"
           >
             Создать черновик
           </Button>
         </DrawerTrigger>
-        <DrawerContent className="rounded-2xl">
+        <DrawerContent className="rounded-t-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
           <div className="px-2 flex-1 max-h-[90vh] pb-8">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
@@ -90,10 +90,10 @@ export function QuickCreateOrderButton() {
                   value={formData.clientId}
                   onValueChange={(value) => setFormData({ ...formData, clientId: value })}
                 >
-                  <SelectTrigger className="rounded-2xl">
+                  <SelectTrigger className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                     <SelectValue placeholder="Выберите клиента" />
                   </SelectTrigger>
-                  <SelectContent className="rounded-2xl shadow-xl">
+                  <SelectContent className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                     {clients.map((client) => (
                       <SelectItem key={client.id} value={String(client.id)}>
                         {client.type === "legal"
@@ -107,7 +107,7 @@ export function QuickCreateOrderButton() {
               <div className="space-y-2">
                 <Label htmlFor="volume">Объем груза (м³)</Label>
                 <Input
-                  className="rounded-2xl"
+                  className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                   id="volume"
                   type="number"
                   step="0.1"
@@ -117,7 +117,7 @@ export function QuickCreateOrderButton() {
               </div>
               <div className="flex flex-col gap-2 pt-4">
                 <Button
-                  className="rounded-2xl"
+                  className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
                   type="button"
                   variant="outline"
                   onClick={() => setOpen(false)}
@@ -125,7 +125,7 @@ export function QuickCreateOrderButton() {
                   Отмена
                 </Button>
                 <Button
-                  className="rounded-2xl bg-blue-500 hover:bg-blue-600"
+                  className="bg-blue-500/90 dark:bg-blue-600/40 dark:text-zinc-100 dark:border dark:border-white/10 rounded-2xl hover:bg-blue-600 dark:hover:bg-blue-600/30"
                   type="submit"
                   disabled={isLoading || !formData.clientId}
                 >
@@ -142,11 +142,14 @@ export function QuickCreateOrderButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button type="button" className="px-8 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600">
+        <Button
+          type="button"
+          className="px-8 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 dark:text-white"
+        >
           Создать черновик
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] !rounded-2xl">
+      <DialogContent className="!rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Создать черновик заявки</DialogTitle>
         </DialogHeader>
@@ -157,10 +160,10 @@ export function QuickCreateOrderButton() {
               value={formData.clientId}
               onValueChange={(value) => setFormData({ ...formData, clientId: value })}
             >
-              <SelectTrigger className="rounded-2xl">
+              <SelectTrigger className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                 <SelectValue placeholder="Выберите клиента" />
               </SelectTrigger>
-              <SelectContent className="rounded-2xl shadow-xl">
+              <SelectContent className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                 {clients.map((client) => (
                   <SelectItem key={client.id} value={String(client.id)}>
                     {client.type === "legal"
@@ -177,14 +180,14 @@ export function QuickCreateOrderButton() {
               id="volume"
               type="number"
               step="0.1"
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               value={formData.volume}
               onChange={(e) => setFormData({ ...formData, volume: e.target.value })}
             />
           </div>
           <div className="flex justify-end gap-2 pt-4">
             <Button
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
@@ -192,7 +195,7 @@ export function QuickCreateOrderButton() {
               Отмена
             </Button>
             <Button
-              className="rounded-2xl bg-blue-500 hover:bg-blue-600"
+              className="bg-blue-500/90 dark:bg-blue-600/40 dark:text-zinc-100 dark:border dark:border-white/10 rounded-2xl hover:bg-blue-600 dark:hover:bg-blue-600/30"
               type="submit"
               disabled={isLoading || !formData.clientId}
             >

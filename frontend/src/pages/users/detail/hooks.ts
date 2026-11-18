@@ -66,11 +66,13 @@ export const useUserDetailPage = () => {
       form.setValue("email", user.email);
       form.setValue("phone", convertPhoneToMask(user.phone));
       form.setValue("roleId", user.roleId);
+      form.setValue("telegramId", user.telegramChatId);
     }
   }, [user, form.setValue]);
 
   // Load available cards (not attached to any user)
   const loadAvailableCards = useCallback(async () => {
+    setIsFetchingCards(true);
     try {
       const [cardsResponse, usersResponse] = await Promise.all([
         transportCardsApi.list({ limit: 1000 }),
@@ -88,8 +90,10 @@ export const useUserDetailPage = () => {
       const available = cardsResponse.data.filter((card) => !attachedCardIds.has(card.id));
 
       setAvailableCards(available);
+      setIsFetchingCards(false);
     } catch (err) {
       console.error("Failed to load available cards:", err);
+      setIsFetchingCards(false);
     }
   }, []);
 
@@ -120,7 +124,7 @@ export const useUserDetailPage = () => {
       if (data.email) updateData.email = data.email;
       if (data.phone !== undefined)
         updateData.phone = data.phone ? cleanPhone(data.phone) : undefined;
-      if (data.roleId) updateData.roleId = data.roleId;
+      if (data.roleId) updateData.roleId = Number(data.roleId);
 
       await usersApi.update(Number(userId), updateData);
       return { success: true };

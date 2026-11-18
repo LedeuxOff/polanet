@@ -7,7 +7,7 @@ export const TransportCardPageHead = ({ card }: { card: TransportCard }) => {
     <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
       <CardHeader>
         <div className="flex flex-col gap-4">
-          <CardTitle>Транспортные карты</CardTitle>
+          <CardTitle>Топливные карты</CardTitle>
 
           <Breadcrumbs
             items={[

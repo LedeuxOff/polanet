@@ -389,3 +389,116 @@ export type CreateTransportCardExpenseInput = z.infer<typeof createTransportCard
 export type UpdateTransportCardExpenseInput = z.infer<typeof updateTransportCardExpenseSchema>;
 export type CreateDeliveryInput = z.infer<typeof createDeliverySchema>;
 export type UpdateDeliveryInput = z.infer<typeof updateDeliverySchema>;
+
+// ===================== Работы (стяжка) =====================
+
+const dateOnly = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Дата должна быть в формате YYYY-MM-DD");
+
+// Новый клиент, создаваемый прямо из формы работы
+export const workNewClientSchema = z.object({
+  firstName: z.string().trim().min(1, "Имя клиента обязательно").max(255),
+  lastName: z.string().trim().max(255).optional().nullable(),
+  phone: z.string().max(20).optional().nullable(),
+});
+
+const workBaseSchema = z.object({
+  date: dateOnly,
+  // HH:MM — начало и окончание работы
+  startTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Время должно быть в формате ЧЧ:ММ")
+    .nullable()
+    .optional(),
+  // 24:00 — конец дня (работа до конца последнего часа сетки)
+  endTime: z
+    .string()
+    .regex(/^(([01]\d|2[0-3]):[0-5]\d|24:00)$/, "Время должно быть в формате ЧЧ:ММ")
+    .nullable()
+    .optional(),
+  teamId: z.number().int().positive().nullable().optional(),
+  clientId: z.number().int().positive().nullable().optional(),
+  newClient: workNewClientSchema.optional(),
+  address: z.string().max(1000).nullable().optional(),
+  area: z.number().nonnegative().nullable().optional(),
+  thickness: z.number().nonnegative().nullable().optional(),
+  strength: z.string().max(20).nullable().optional(),
+  workType: z.string().min(1).max(50).optional(), // код из справочника work_types
+  hoseLength: z.number().nonnegative().nullable().optional(),
+  isTransmix: z.boolean().optional(),
+  price: z.number().int().nonnegative().nullable().optional(),
+
+  status: z.string().min(1).max(50).optional(), // код из справочника work_statuses
+  measurerId: z.number().int().positive().nullable().optional(),
+  measurerName: z.string().max(255).nullable().optional(),
+  notes: z.string().max(10000).nullable().optional(),
+});
+
+// Окончание должно быть позже начала (HH:MM сравниваются как строки)
+export const isValidWorkTimeRange = (start?: string | null, end?: string | null) =>
+  !start || !end || end > start;
+
+export const createWorkSchema = workBaseSchema
+  .refine((d) => !(d.clientId && d.newClient), {
+    message: "Укажите либо существующего клиента, либо нового",
+    path: ["clientId"],
+  })
+  .refine((d) => isValidWorkTimeRange(d.startTime, d.endTime), {
+    message: "Время окончания должно быть позже начала",
+    path: ["endTime"],
+  });
+
+export const updateWorkSchema = workBaseSchema.partial().refine((d) => !(d.clientId && d.newClient), {
+  message: "Укажите либо существующего клиента, либо нового",
+  path: ["clientId"],
+});
+
+export const teamSchema = z.object({
+  name: z.string().trim().min(1, "Название бригады обязательно").max(255),
+  isActive: z.boolean().optional(),
+  sortOrder: z.number().int().optional(),
+  // Состав бригады — id пользователей с ролью WORKER (полная замена состава)
+  memberIds: z.array(z.number().int().positive()).optional(),
+});
+
+// ===================== Рабочие (роль WORKER) =====================
+
+export const workerSchema = z.object({
+  lastName: z.string().trim().min(1, "Фамилия обязательна").max(100),
+  firstName: z.string().trim().min(1, "Имя обязательно").max(100),
+  middleName: z.string().trim().max(100).nullable().optional(),
+  phone: z.string().max(20).nullable().optional(),
+  teamId: z.number().int().positive().nullable().optional(),
+});
+
+export type WorkerInput = z.infer<typeof workerSchema>;
+
+export type CreateWorkInput = z.infer<typeof createWorkSchema>;
+export type UpdateWorkInput = z.infer<typeof updateWorkSchema>;
+export type TeamInput = z.infer<typeof teamSchema>;
+
+// ===================== Справочники =====================
+
+export const STATUS_COLORS = [
+  "amber",
+  "violet",
+  "orange",
+  "blue",
+  "green",
+  "zinc",
+  "red",
+  "slate",
+  "cyan",
+  "pink",
+] as const;
+
+export const workStatusRefSchema = z.object({
+  name: z.string().trim().min(1, "Название обязательно").max(100),
+  color: z.enum(STATUS_COLORS).optional(),
+  sortOrder: z.number().int().optional(),
+  showInCalendar: z.boolean().optional(),
+});
+
+export const workTypeRefSchema = z.object({
+  name: z.string().trim().min(1, "Название обязательно").max(100),
+  sortOrder: z.number().int().optional(),
+});

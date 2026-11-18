@@ -78,9 +78,9 @@ function Index() {
       <Link to="/transport-cards" className="col-span-12 lg:col-span-7">
         <Card className="rounded-2xl shadow-xl relative overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20">
           <CardHeader>
-            <CardTitle className="dark:text-slate-100">Транспортные карты</CardTitle>
+            <CardTitle className="dark:text-slate-100">Топливные карты</CardTitle>
             <CardDescription className="dark:text-slate-200">
-              Управление транспортными картами
+              Управление топливными картами
             </CardDescription>
           </CardHeader>
 
