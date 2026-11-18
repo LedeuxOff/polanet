@@ -33,7 +33,6 @@ interface Props {
   cars: Car[];
   handleCancelDelivery: () => void;
   users: User[];
-  completingDelivery?: boolean;
 }
 
 export const AddDeliveryDesktopModal = ({
@@ -47,7 +46,6 @@ export const AddDeliveryDesktopModal = ({
   cars,
   handleCancelDelivery,
   users,
-  completingDelivery = false,
 }: Props) => {
   const isEditing = !!editingDelivery;
   const isComplete = editingDelivery?.status === "completed";
@@ -59,8 +57,9 @@ export const AddDeliveryDesktopModal = ({
 
   const isPaid = form.watch("isPaid");
 
-  // Показываем поля получателя если isPaid = true или если мы в режиме завершения доставки
-  const showRecipientFields = (isPaid || completingDelivery) && !isReadOnly;
+  // Получатель средств выбирается только при создании оплаченной доставки.
+  // При редактировании получатель не меняется (он выбирается при завершении)
+  const showRecipientFields = isPaid && !isEditing;
 
   useEffect(() => {
     if (showDeliveryDialog && editingDelivery) {
@@ -93,7 +92,7 @@ export const AddDeliveryDesktopModal = ({
 
   return (
     <Dialog open={showDeliveryDialog} onOpenChange={setShowDeliveryDialog}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="!rounded-2xl max-w-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
         <DialogHeader>
           <DialogTitle>
             {isEditing
@@ -110,7 +109,14 @@ export const AddDeliveryDesktopModal = ({
               : "Заполните данные о доставке"}
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(handleSaveDelivery)} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            // Модалка в портале, но submit всплывает до формы заявки — останавливаем
+            e.stopPropagation();
+            form.handleSubmit(handleSaveDelivery)(e);
+          }}
+          className="space-y-4"
+        >
           {error && (
             <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">{error}</div>
           )}
@@ -123,10 +129,10 @@ export const AddDeliveryDesktopModal = ({
                 onValueChange={(value) => form.setValue("driverId", Number(value))}
                 {...selectProps}
               >
-                <SelectTrigger>
+                <SelectTrigger className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                   <SelectValue placeholder="Выберите водителя" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                   {drivers.map((driver) => (
                     <SelectItem key={driver.id} value={String(driver.id)}>
                       {driver.lastName} {driver.firstName} {driver.middleName}
@@ -143,10 +149,10 @@ export const AddDeliveryDesktopModal = ({
                 onValueChange={(value) => form.setValue("carId", Number(value))}
                 {...selectProps}
               >
-                <SelectTrigger>
+                <SelectTrigger className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                   <SelectValue placeholder="Выберите автомобиль" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                   {cars.map((car) => (
                     <SelectItem key={car.id} value={String(car.id)}>
                       {car.brand} ({car.licensePlate})
@@ -160,17 +166,33 @@ export const AddDeliveryDesktopModal = ({
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Дата и время *</Label>
-              <Input type="datetime-local" {...form.register("dateTime")} {...inputProps} />
+              <Input
+                className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                type="datetime-local"
+                {...form.register("dateTime")}
+                {...inputProps}
+              />
             </div>
 
             <div className="space-y-2">
               <Label>Объем груза (м³)</Label>
-              <Input type="number" step="0.1" {...form.register("volume")} {...inputProps} />
+              <Input
+                className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                type="number"
+                step="0.1"
+                {...form.register("volume")}
+                {...inputProps}
+              />
             </div>
 
             <div className="space-y-2">
               <Label>Стоимость *</Label>
-              <Input type="number" {...form.register("amount")} {...inputProps} />
+              <Input
+                className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                type="number"
+                {...form.register("amount")}
+                {...inputProps}
+              />
               {form.formState.errors.amount && (
                 <p className="text-sm text-destructive">{form.formState.errors.amount.message}</p>
               )}
@@ -179,7 +201,12 @@ export const AddDeliveryDesktopModal = ({
 
           <div className="space-y-2">
             <Label>Комментарий</Label>
-            <Textarea {...form.register("comment")} rows={2} {...inputProps} />
+            <Textarea
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+              {...form.register("comment")}
+              rows={2}
+              {...inputProps}
+            />
           </div>
 
           <div className="grid grid-cols-1 gap-4">
@@ -192,10 +219,10 @@ export const AddDeliveryDesktopModal = ({
                 }
                 {...selectProps}
               >
-                <SelectTrigger>
+                <SelectTrigger className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                   <SelectValue placeholder="Выберите тип оплаты" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                   <SelectItem value="cash">Наличные</SelectItem>
                   <SelectItem value="bank_transfer">Безналичный расчет</SelectItem>
                 </SelectContent>
@@ -224,7 +251,7 @@ export const AddDeliveryDesktopModal = ({
 
           {/* Поля получателя средств - показываются только если isPaid = true */}
           {showRecipientFields && (
-            <div className="space-y-4 p-4 border rounded-md bg-muted/20">
+            <div className="space-y-4 p-4 border rounded-md bg-muted/20 dark:border-white/20">
               <Label className="text-base font-semibold">Получатель средств</Label>
 
               <div className="space-y-2">
@@ -234,10 +261,10 @@ export const AddDeliveryDesktopModal = ({
                   onValueChange={(value) => form.setValue("recipientId", Number(value))}
                   {...selectProps}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                     <SelectValue placeholder="Выберите сотрудника" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                     {users.map((user) => (
                       <SelectItem key={user.id} value={String(user.id)}>
                         {user.lastName} {user.firstName} {user.middleName || ""}
@@ -290,29 +317,8 @@ export const AddDeliveryDesktopModal = ({
             <Button type="button" variant="outline" onClick={handleCancelDelivery}>
               Отмена
             </Button>
-            {!isComplete && isEditing && (
-              <Button
-                type="button"
-                onClick={async () => {
-                  try {
-                    await handleSaveDelivery(form.getValues());
-                  } catch (error) {
-                    console.error("Error saving delivery:", error);
-                  }
-                }}
-                className={
-                  completingDelivery
-                    ? "bg-green-600 hover:bg-green-700 text-white"
-                    : "bg-blue-600 hover:bg-blue-700 text-white"
-                }
-              >
-                {completingDelivery ? "Завершить и выбрать получателя" : "Завершить доставку"}
-              </Button>
-            )}
             {!isEditing && <Button type="submit">Добавить</Button>}
-            {isEditing && !isComplete && !completingDelivery && (
-              <Button type="submit">Сохранить</Button>
-            )}
+            {isEditing && !isComplete && <Button type="submit">Сохранить</Button>}
           </DialogFooter>
         </form>
       </DialogContent>

@@ -124,7 +124,7 @@ CREATE TABLE IF NOT EXISTS payments (
 CREATE TABLE IF NOT EXISTS deliveries (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
-  driver_id INTEGER NOT NULL REFERENCES drivers(id),
+  driver_id INTEGER NOT NULL REFERENCES users(id),
   car_id INTEGER NOT NULL REFERENCES cars(id),
   date_time TEXT NOT NULL,
   volume INTEGER,
@@ -221,7 +221,7 @@ CREATE TABLE IF NOT EXISTS expenses (
   expense_type TEXT NOT NULL CHECK(expense_type IN ('salary', 'fuel')),
   payment_type TEXT NOT NULL CHECK(payment_type IN ('cash', 'bank_transfer')),
   transport_card_id INTEGER REFERENCES transport_cards(id) ON DELETE SET NULL,
-  driver_id INTEGER REFERENCES drivers(id) ON DELETE SET NULL,
+  driver_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
   date_time TEXT NOT NULL,
   amount INTEGER NOT NULL,
   comment TEXT,
@@ -246,7 +246,9 @@ async function initData() {
       return;
     }
 
-    console.log("\n🚀 Initializing database with roles, permissions, and admin user...\n");
+    console.log(
+      "\n🚀 Initializing database with roles, permissions, and admin user...\n",
+    );
 
     // 1. Create default roles
     const roles = [
@@ -261,48 +263,110 @@ async function initData() {
         .prepare("INSERT INTO roles (code, name) VALUES (?, ?)")
         .run(role.code, role.name);
       roleIds[role.code] = result.lastInsertRowid as number;
-      console.log(`✓ Created role: ${role.code} (${role.name}) - ID: ${roleIds[role.code]}`);
+      console.log(
+        `✓ Created role: ${role.code} (${role.name}) - ID: ${roleIds[role.code]}`,
+      );
     }
 
     // 2. Create all permissions
     const permissions = [
       // Users permissions
-      { module: "users", code: "users:list", name: "Просмотр списка пользователей" },
-      { module: "users", code: "users:detail", name: "Просмотр деталей пользователя" },
+      {
+        module: "users",
+        code: "users:list",
+        name: "Просмотр списка пользователей",
+      },
+      {
+        module: "users",
+        code: "users:detail",
+        name: "Просмотр деталей пользователя",
+      },
       { module: "users", code: "users:create", name: "Создание пользователя" },
-      { module: "users", code: "users:update", name: "Редактирование пользователя" },
+      {
+        module: "users",
+        code: "users:update",
+        name: "Редактирование пользователя",
+      },
       { module: "users", code: "users:delete", name: "Удаление пользователя" },
-      { module: "users", code: "users:sendPassword", name: "Сброс пароля пользователя" },
+      {
+        module: "users",
+        code: "users:sendPassword",
+        name: "Сброс пароля пользователя",
+      },
       // Roles permissions
       { module: "roles", code: "roles:list", name: "Просмотр списка ролей" },
       { module: "roles", code: "roles:detail", name: "Просмотр деталей роли" },
       { module: "roles", code: "roles:create", name: "Создание роли" },
       { module: "roles", code: "roles:update", name: "Редактирование роли" },
       { module: "roles", code: "roles:delete", name: "Удаление роли" },
-      { module: "roles", code: "permissions:manage", name: "Управление правами доступа" },
+      {
+        module: "roles",
+        code: "permissions:manage",
+        name: "Управление правами доступа",
+      },
       // Orders permissions
       { module: "orders", code: "orders:list", name: "Просмотр списка заявок" },
-      { module: "orders", code: "orders:detail", name: "Просмотр деталей заявки" },
+      {
+        module: "orders",
+        code: "orders:detail",
+        name: "Просмотр деталей заявки",
+      },
       { module: "orders", code: "orders:create", name: "Создание заявки" },
       { module: "orders", code: "orders:update", name: "Обновление заявки" },
       { module: "orders", code: "orders:delete", name: "Удаление заявки" },
       // Clients permissions
-      { module: "clients", code: "clients:list", name: "Просмотр списка клиентов" },
-      { module: "clients", code: "clients:detail", name: "Просмотр деталей клиента" },
+      {
+        module: "clients",
+        code: "clients:list",
+        name: "Просмотр списка клиентов",
+      },
+      {
+        module: "clients",
+        code: "clients:detail",
+        name: "Просмотр деталей клиента",
+      },
       { module: "clients", code: "clients:create", name: "Создание клиента" },
-      { module: "clients", code: "clients:update", name: "Редактирование клиента" },
+      {
+        module: "clients",
+        code: "clients:update",
+        name: "Редактирование клиента",
+      },
       { module: "clients", code: "clients:delete", name: "Удаление клиента" },
       // Cars permissions
-      { module: "cars", code: "cars:list", name: "Просмотр списка автомобилей" },
-      { module: "cars", code: "cars:detail", name: "Просмотр деталей автомобиля" },
+      {
+        module: "cars",
+        code: "cars:list",
+        name: "Просмотр списка автомобилей",
+      },
+      {
+        module: "cars",
+        code: "cars:detail",
+        name: "Просмотр деталей автомобиля",
+      },
       { module: "cars", code: "cars:create", name: "Создание автомобиля" },
-      { module: "cars", code: "cars:update", name: "Редактирование автомобиля" },
+      {
+        module: "cars",
+        code: "cars:update",
+        name: "Редактирование автомобиля",
+      },
       { module: "cars", code: "cars:delete", name: "Удаление автомобиля" },
       // Drivers permissions
-      { module: "drivers", code: "drivers:list", name: "Просмотр списка водителей" },
-      { module: "drivers", code: "drivers:detail", name: "Просмотр деталей водителя" },
+      {
+        module: "drivers",
+        code: "drivers:list",
+        name: "Просмотр списка водителей",
+      },
+      {
+        module: "drivers",
+        code: "drivers:detail",
+        name: "Просмотр деталей водителя",
+      },
       { module: "drivers", code: "drivers:create", name: "Создание водителя" },
-      { module: "drivers", code: "drivers:update", name: "Редактирование водителя" },
+      {
+        module: "drivers",
+        code: "drivers:update",
+        name: "Редактирование водителя",
+      },
       { module: "drivers", code: "drivers:delete", name: "Удаление водителя" },
       // Transport cards permissions
       {
@@ -310,54 +374,186 @@ async function initData() {
         code: "transport-cards:list",
         name: "Просмотр списка транспортных карт",
       },
-      { module: "transport-cards", code: "transport-cards:detail", name: "Просмотр деталей карты" },
-      { module: "transport-cards", code: "transport-cards:create", name: "Создание карты" },
-      { module: "transport-cards", code: "transport-cards:update", name: "Редактирование карты" },
-      { module: "transport-cards", code: "transport-cards:delete", name: "Удаление карты" },
+      {
+        module: "transport-cards",
+        code: "transport-cards:detail",
+        name: "Просмотр деталей карты",
+      },
+      {
+        module: "transport-cards",
+        code: "transport-cards:create",
+        name: "Создание карты",
+      },
+      {
+        module: "transport-cards",
+        code: "transport-cards:update",
+        name: "Редактирование карты",
+      },
+      {
+        module: "transport-cards",
+        code: "transport-cards:delete",
+        name: "Удаление карты",
+      },
       // Deliveries permissions
-      { module: "deliveries", code: "deliveries:list", name: "Просмотр доставок" },
-      { module: "deliveries", code: "deliveries:detail", name: "Просмотр деталей доставки" },
-      { module: "deliveries", code: "deliveries:create", name: "Создание доставки" },
-      { module: "deliveries", code: "deliveries:update", name: "Обновление доставки" },
-      { module: "deliveries", code: "deliveries:delete", name: "Удаление доставки" },
-      { module: "deliveries", code: "deliveries:complete", name: "Завершение доставки" },
+      {
+        module: "deliveries",
+        code: "deliveries:list",
+        name: "Просмотр доставок",
+      },
+      {
+        module: "deliveries",
+        code: "deliveries:detail",
+        name: "Просмотр деталей доставки",
+      },
+      {
+        module: "deliveries",
+        code: "deliveries:create",
+        name: "Создание доставки",
+      },
+      {
+        module: "deliveries",
+        code: "deliveries:update",
+        name: "Обновление доставки",
+      },
+      {
+        module: "deliveries",
+        code: "deliveries:delete",
+        name: "Удаление доставки",
+      },
+      {
+        module: "deliveries",
+        code: "deliveries:complete",
+        name: "Завершение доставки",
+      },
       // Finances permissions
-      { module: "finances", code: "incomes:list", name: "Просмотр списка доходов" },
+      {
+        module: "finances",
+        code: "incomes:list",
+        name: "Просмотр списка доходов",
+      },
       { module: "finances", code: "incomes:create", name: "Создание дохода" },
-      { module: "finances", code: "incomes:update", name: "Редактирование дохода" },
+      {
+        module: "finances",
+        code: "incomes:update",
+        name: "Редактирование дохода",
+      },
       { module: "finances", code: "incomes:delete", name: "Удаление дохода" },
-      { module: "finances", code: "expenses:list", name: "Просмотр списка расходов" },
+      {
+        module: "finances",
+        code: "expenses:list",
+        name: "Просмотр списка расходов",
+      },
       { module: "finances", code: "expenses:create", name: "Создание расхода" },
-      { module: "finances", code: "expenses:update", name: "Редактирование расхода" },
+      {
+        module: "finances",
+        code: "expenses:update",
+        name: "Редактирование расхода",
+      },
       { module: "finances", code: "expenses:delete", name: "Удаление расхода" },
-      { module: "finances", code: "finances:view", name: "Просмотр финансовой статистики" },
+      {
+        module: "finances",
+        code: "finances:view",
+        name: "Просмотр финансовой статистики",
+      },
       // Backups permissions
-      { module: "backups", code: "backups:list", name: "Просмотр списка резервных копий" },
-      { module: "backups", code: "backups:create", name: "Создание резервной копии" },
-      { module: "backups", code: "backups:delete", name: "Удаление резервной копии" },
-      { module: "backups", code: "backups:restore", name: "Восстановление из резервной копии" },
+      {
+        module: "backups",
+        code: "backups:list",
+        name: "Просмотр списка резервных копий",
+      },
+      {
+        module: "backups",
+        code: "backups:create",
+        name: "Создание резервной копии",
+      },
+      {
+        module: "backups",
+        code: "backups:delete",
+        name: "Удаление резервной копии",
+      },
+      {
+        module: "backups",
+        code: "backups:restore",
+        name: "Восстановление из резервной копии",
+      },
       // System info permissions
-      { module: "system-info", code: "system-info:view", name: "Просмотр информации о системе" },
+      {
+        module: "system-info",
+        code: "system-info:view",
+        name: "Просмотр информации о системе",
+      },
       // System logs permissions
-      { module: "system-logs", code: "system-logs:view", name: "Просмотр системных логов" },
-      { module: "system-logs", code: "system-logs:clear", name: "Очистка системных логов" },
+      {
+        module: "system-logs",
+        code: "system-logs:view",
+        name: "Просмотр системных логов",
+      },
+      {
+        module: "system-logs",
+        code: "system-logs:clear",
+        name: "Очистка системных логов",
+      },
       // Templates permissions
-      { module: "templates", code: "templates:list", name: "Просмотр списка шаблонов" },
-      { module: "templates", code: "templates:create", name: "Создание шаблона" },
-      { module: "templates", code: "templates:delete", name: "Удаление шаблона" },
+      {
+        module: "templates",
+        code: "templates:list",
+        name: "Просмотр списка шаблонов",
+      },
+      {
+        module: "templates",
+        code: "templates:create",
+        name: "Создание шаблона",
+      },
+      {
+        module: "templates",
+        code: "templates:delete",
+        name: "Удаление шаблона",
+      },
       // Works (calendar of screed works) permissions
       { module: "works", code: "works:list", name: "Просмотр календаря работ" },
-      { module: "works", code: "works:detail", name: "Просмотр деталей работы" },
+      {
+        module: "works",
+        code: "works:detail",
+        name: "Просмотр деталей работы",
+      },
       { module: "works", code: "works:create", name: "Создание работы" },
       { module: "works", code: "works:update", name: "Редактирование работы" },
       { module: "works", code: "works:delete", name: "Удаление работы" },
-      { module: "works", code: "teams:manage", name: "Управление бригадами" },
+      { module: "teams", code: "teams:manage", name: "Управление бригадами" },
+      // Screed clients permissions
+      {
+        module: "screed-clients",
+        code: "screed-clients:list",
+        name: "Просмотр списка клиентов стяжки",
+      },
+      {
+        module: "screed-clients",
+        code: "screed-clients:detail",
+        name: "Просмотр клиента стяжки",
+      },
+      {
+        module: "screed-clients",
+        code: "screed-clients:create",
+        name: "Создание клиента стяжки",
+      },
+      {
+        module: "screed-clients",
+        code: "screed-clients:update",
+        name: "Редактирование клиента стяжки",
+      },
+      {
+        module: "screed-clients",
+        code: "screed-clients:delete",
+        name: "Удаление клиента стяжки",
+      },
     ];
 
     const permissionIds: Record<string, number> = {};
     for (const perm of permissions) {
       const result = sqlite
-        .prepare("INSERT INTO permissions (module, code, name) VALUES (?, ?, ?)")
+        .prepare(
+          "INSERT INTO permissions (module, code, name) VALUES (?, ?, ?)",
+        )
         .run(perm.module, perm.code, perm.name);
       permissionIds[perm.code] = result.lastInsertRowid as number;
     }
@@ -366,11 +562,15 @@ async function initData() {
     // 3. Assign all permissions to ADMIN role
     const adminPermInserts = Object.values(permissionIds).map((permId) =>
       sqlite
-        .prepare("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)")
+        .prepare(
+          "INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)",
+        )
         .run(roleIds.ADMIN, permId),
     );
     await Promise.all(adminPermInserts);
-    console.log(`\n✓ Assigned all ${permissions.length} permissions to ADMIN role`);
+    console.log(
+      `\n✓ Assigned all ${permissions.length} permissions to ADMIN role`,
+    );
 
     // 4. Assign some permissions to USER role (basic operations)
     const userPermissions = [
@@ -399,11 +599,15 @@ async function initData() {
     for (const code of userPermissions) {
       if (permissionIds[code]) {
         sqlite
-          .prepare("INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)")
+          .prepare(
+            "INSERT OR IGNORE INTO role_permissions (role_id, permission_id) VALUES (?, ?)",
+          )
           .run(roleIds.USER, permissionIds[code]);
       }
     }
-    console.log(`✓ Assigned ${userPermissions.length} permissions to USER role`);
+    console.log(
+      `✓ Assigned ${userPermissions.length} permissions to USER role`,
+    );
 
     // 5. Create admin user
     const passwordHash = await bcrypt.hash("admin123", 10);
@@ -412,7 +616,15 @@ async function initData() {
       .prepare(
         "INSERT INTO users (last_name, first_name, email, password_hash, role_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
       )
-      .run("Админ", "Админ", "admin@polanet.local", passwordHash, roleIds.ADMIN, now, now);
+      .run(
+        "Админ",
+        "Админ",
+        "admin@polanet.local",
+        passwordHash,
+        roleIds.ADMIN,
+        now,
+        now,
+      );
     console.log("\n✓ Created admin user:");
     console.log(`  Email: admin@polanet.local`);
     console.log(`  Password: admin123`);

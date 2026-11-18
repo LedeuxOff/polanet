@@ -56,15 +56,13 @@ export interface TeamDetail extends Team {
   members: TeamMember[];
 }
 
+/** Клиент работы — клиент стяжки */
 export interface WorkClient {
   id: number;
-  type: "individual" | "legal";
   lastName: string | null;
-  firstName: string | null;
+  firstName: string;
   middleName: string | null;
-  organizationName: string | null;
   phone: string | null;
-  email: string | null;
 }
 
 export interface Work {

@@ -47,9 +47,12 @@ export const users = sqliteTable("users", {
   roleId: integer("role_id")
     .references(() => roles.id)
     .notNull(),
-  transportCardId: integer("transport_card_id").references(() => transportCards.id, {
-    onDelete: "set null",
-  }),
+  transportCardId: integer("transport_card_id").references(
+    () => transportCards.id,
+    {
+      onDelete: "set null",
+    },
+  ),
   createdAt: text("created_at").default("CURRENT_TIMESTAMP").notNull(),
   updatedAt: text("updated_at").default("CURRENT_TIMESTAMP").notNull(),
 });
@@ -164,8 +167,12 @@ export const deliveries = sqliteTable("deliveries", {
     .notNull()
     .default(false),
   // Уведомления
-  notifyClient: integer("notify_client", { mode: "boolean" }).notNull().default(false),
-  notifyDriver: integer("notify_driver", { mode: "boolean" }).notNull().default(false),
+  notifyClient: integer("notify_client", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  notifyDriver: integer("notify_driver", { mode: "boolean" })
+    .notNull()
+    .default(false),
   // Статус доставки - in_progress | completed
   status: text("status", {
     enum: ["in_progress", "completed"],
@@ -371,37 +378,51 @@ export const transportCardHistory = sqliteTable("transport_card_history", {
 });
 
 // Relations для transport cards
-export const transportCardsRelations = relations(transportCards, ({ many }) => ({
-  expenses: many(transportCardExpenses),
-  history: many(transportCardHistory),
-}));
+export const transportCardsRelations = relations(
+  transportCards,
+  ({ many }) => ({
+    expenses: many(transportCardExpenses),
+    history: many(transportCardHistory),
+  }),
+);
 
-export const transportCardExpensesRelations = relations(transportCardExpenses, ({ one }) => ({
-  card: one(transportCards, {
-    fields: [transportCardExpenses.cardId],
-    references: [transportCards.id],
+export const transportCardExpensesRelations = relations(
+  transportCardExpenses,
+  ({ one }) => ({
+    card: one(transportCards, {
+      fields: [transportCardExpenses.cardId],
+      references: [transportCards.id],
+    }),
   }),
-}));
+);
 
-export const transportCardHistoryRelations = relations(transportCardHistory, ({ one }) => ({
-  card: one(transportCards, {
-    fields: [transportCardHistory.cardId],
-    references: [transportCards.id],
+export const transportCardHistoryRelations = relations(
+  transportCardHistory,
+  ({ one }) => ({
+    card: one(transportCards, {
+      fields: [transportCardHistory.cardId],
+      references: [transportCards.id],
+    }),
+    user: one(users, {
+      fields: [transportCardHistory.userId],
+      references: [users.id],
+    }),
   }),
-  user: one(users, {
-    fields: [transportCardHistory.userId],
-    references: [users.id],
-  }),
-}));
+);
 
 // Expenses table - driverId теперь ссылается на users.id
 export const expenses = sqliteTable("expenses", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   expenseType: text("expense_type", { enum: ["salary", "fuel"] }).notNull(),
-  paymentType: text("payment_type", { enum: ["cash", "bank_transfer"] }).notNull(),
-  transportCardId: integer("transport_card_id").references(() => transportCards.id, {
-    onDelete: "set null",
-  }),
+  paymentType: text("payment_type", {
+    enum: ["cash", "bank_transfer"],
+  }).notNull(),
+  transportCardId: integer("transport_card_id").references(
+    () => transportCards.id,
+    {
+      onDelete: "set null",
+    },
+  ),
   driverId: integer("driver_id").references(() => users.id, {
     onDelete: "set null",
   }),
@@ -454,7 +475,9 @@ export const recipientHistory = sqliteTable("recipient_history", {
   deliveryId: integer("delivery_id")
     .notNull()
     .references(() => deliveries.id, { onDelete: "cascade" }),
-  incomeId: integer("income_id").references(() => incomes.id, { onDelete: "set null" }),
+  incomeId: integer("income_id").references(() => incomes.id, {
+    onDelete: "set null",
+  }),
   userId: integer("user_id")
     .notNull()
     .references(() => users.id, { onDelete: "restrict" }),
@@ -466,20 +489,23 @@ export const recipientHistory = sqliteTable("recipient_history", {
 });
 
 // Relations for recipient history
-export const recipientHistoryRelations = relations(recipientHistory, ({ one }) => ({
-  delivery: one(deliveries, {
-    fields: [recipientHistory.deliveryId],
-    references: [deliveries.id],
+export const recipientHistoryRelations = relations(
+  recipientHistory,
+  ({ one }) => ({
+    delivery: one(deliveries, {
+      fields: [recipientHistory.deliveryId],
+      references: [deliveries.id],
+    }),
+    income: one(incomes, {
+      fields: [recipientHistory.incomeId],
+      references: [incomes.id],
+    }),
+    user: one(users, {
+      fields: [recipientHistory.userId],
+      references: [users.id],
+    }),
   }),
-  income: one(incomes, {
-    fields: [recipientHistory.incomeId],
-    references: [incomes.id],
-  }),
-  user: one(users, {
-    fields: [recipientHistory.userId],
-    references: [users.id],
-  }),
-}));
+);
 
 // Relations for expenses
 export const expensesRelations = relations(expenses, ({ one }) => ({
@@ -547,16 +573,19 @@ export const permissionsRelations = relations(permissions, ({ many }) => ({
 }));
 
 // Отношения для rolePermissions
-export const rolePermissionsRelations = relations(rolePermissions, ({ one }) => ({
-  role: one(roles, {
-    fields: [rolePermissions.roleId],
-    references: [roles.id],
+export const rolePermissionsRelations = relations(
+  rolePermissions,
+  ({ one }) => ({
+    role: one(roles, {
+      fields: [rolePermissions.roleId],
+      references: [roles.id],
+    }),
+    permission: one(permissions, {
+      fields: [rolePermissions.permissionId],
+      references: [permissions.id],
+    }),
   }),
-  permission: one(permissions, {
-    fields: [rolePermissions.permissionId],
-    references: [permissions.id],
-  }),
-}));
+);
 
 // ===================== РАБОТЫ (стяжка) =====================
 
@@ -581,7 +610,9 @@ export const workStatuses = sqliteTable("work_statuses", {
   color: text("color").notNull().default("blue"),
   sortOrder: integer("sort_order").notNull().default(0),
   // Показывать ли работы с этим статусом в календаре (Удалено/Архив — нет)
-  showInCalendar: integer("show_in_calendar", { mode: "boolean" }).notNull().default(true),
+  showInCalendar: integer("show_in_calendar", { mode: "boolean" })
+    .notNull()
+    .default(true),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
@@ -597,15 +628,40 @@ export const workTypes = sqliteTable("work_types", {
 });
 
 // Работа (заявка на стяжку) — занимает слот «день × бригада»
+// Клиенты стяжки (раздел «Стяжка») — отдельно от клиентов заявок
+export const screedClients = sqliteTable("screed_clients", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  lastName: text("last_name"),
+  firstName: text("first_name").notNull(),
+  middleName: text("middle_name"),
+  phone: text("phone"),
+  notes: text("notes"),
+  // id записи в clients, из которой перенесён клиент (служебное)
+  sourceClientId: integer("source_client_id").unique(),
+  createdAt: text("created_at").notNull(),
+  updatedAt: text("updated_at").notNull(),
+});
+
 export const works = sqliteTable("works", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   // Слот
   date: text("date").notNull(), // YYYY-MM-DD
   startTime: text("start_time"), // HH:MM, начало работы
   endTime: text("end_time"), // HH:MM, окончание работы
-  teamId: integer("team_id").references(() => teams.id, { onDelete: "set null" }),
-  // Привязка к клиенту
-  clientId: integer("client_id").references(() => clients.id, { onDelete: "set null" }),
+  teamId: integer("team_id").references(() => teams.id, {
+    onDelete: "set null",
+  }),
+  // Устарело: клиенты работ перенесены в screed_clients. Колонка оставлена для истории
+  clientId: integer("client_id").references(() => clients.id, {
+    onDelete: "set null",
+  }),
+  // Клиент стяжки
+  screedClientId: integer("screed_client_id").references(
+    () => screedClients.id,
+    {
+      onDelete: "set null",
+    },
+  ),
   // Объект
   address: text("address"),
   area: real("area"), // м²
@@ -613,21 +669,29 @@ export const works = sqliteTable("works", {
   strength: text("strength"), // M150, M200...
   workType: text("work_type").notNull().default("standard"), // код из work_types
   hoseLength: real("hose_length"), // длина рукава, м
-  isTransmix: integer("is_transmix", { mode: "boolean" }).notNull().default(false),
+  isTransmix: integer("is_transmix", { mode: "boolean" })
+    .notNull()
+    .default(false),
   // Деньги
   price: integer("price"),
   // Устарело: окончательность цены теперь задаётся статусом «Выезд». Колонка оставлена для истории
-  isFinalPrice: integer("is_final_price", { mode: "boolean" }).notNull().default(false),
+  isFinalPrice: integer("is_final_price", { mode: "boolean" })
+    .notNull()
+    .default(false),
   // Прочее
   status: text("status").notNull().default("preliminary"), // код из work_statuses
   // Замерщик — рабочий (роль WORKER)
-  measurerId: integer("measurer_id").references(() => users.id, { onDelete: "set null" }),
+  measurerId: integer("measurer_id").references(() => users.id, {
+    onDelete: "set null",
+  }),
   // Имя замерщика из старой системы (если measurerId не выбран)
   measurerName: text("measurer_name"),
   notes: text("notes"),
   // Id заявки в старой системе (для импорта)
   legacyId: integer("legacy_id").unique(),
-  createdById: integer("created_by_id").references(() => users.id, { onDelete: "set null" }),
+  createdById: integer("created_by_id").references(() => users.id, {
+    onDelete: "set null",
+  }),
   createdAt: text("created_at").notNull(),
   updatedAt: text("updated_at").notNull(),
 });
@@ -638,10 +702,21 @@ export const teamsRelations = relations(teams, ({ many }) => ({
 
 export const worksRelations = relations(works, ({ one }) => ({
   team: one(teams, { fields: [works.teamId], references: [teams.id] }),
-  client: one(clients, { fields: [works.clientId], references: [clients.id] }),
-  createdBy: one(users, { fields: [works.createdById], references: [users.id] }),
+  client: one(screedClients, {
+    fields: [works.screedClientId],
+    references: [screedClients.id],
+  }),
+  createdBy: one(users, {
+    fields: [works.createdById],
+    references: [users.id],
+  }),
 }));
 
+export const screedClientsRelations = relations(screedClients, ({ many }) => ({
+  works: many(works),
+}));
+
+export type ScreedClient = typeof screedClients.$inferSelect;
 export type Team = typeof teams.$inferSelect;
 export type NewTeam = typeof teams.$inferInsert;
 export type Work = typeof works.$inferSelect;

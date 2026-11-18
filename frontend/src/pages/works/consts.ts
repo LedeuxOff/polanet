@@ -153,7 +153,6 @@ export const formatDateLong = (key: string) =>
 
 export const getClientName = (client: WorkClient | null) => {
   if (!client) return "Без клиента";
-  if (client.type === "legal") return client.organizationName || "Без названия";
   return (
     [client.lastName, client.firstName, client.middleName].filter(Boolean).join(" ") ||
     "Без имени"

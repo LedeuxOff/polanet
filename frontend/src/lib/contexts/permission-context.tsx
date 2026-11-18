@@ -29,19 +29,25 @@ export const PermissionProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-  // Отслеживаем загрузку permissions отдельно
-  const [hasLoadedPermissions, setHasLoadedPermissions] = useState(false);
+  // Для какого пользователя/роли права уже загружены.
+  // Сбрасывается при выходе, чтобы после повторного входа права подгрузились заново
+  const [loadedFor, setLoadedFor] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user?.roleId && !hasLoadedPermissions) {
-      setHasLoadedPermissions(true);
-      loadPermissions(user.roleId);
+    if (user?.roleId) {
+      const key = `${user.id}:${user.roleId}`;
+      if (loadedFor !== key) {
+        setLoadedFor(key);
+        setIsLoading(true);
+        loadPermissions(user.roleId);
+      }
     } else if (!isAuthLoading && !user) {
       // Пользователь не авторизован
+      setLoadedFor(null);
       setRolePermissions([]);
       setIsLoading(false);
     }
-  }, [user, isAuthLoading, loadPermissions, hasLoadedPermissions]);
+  }, [user, isAuthLoading, loadPermissions, loadedFor]);
 
   const hasPermission = useCallback(
     (permission: string) => {

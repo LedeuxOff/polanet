@@ -1,33 +1,36 @@
-import { Badge } from "@/components/ui/badge";
+import { Income } from "@/lib/types";
+import { getFormattedAmount } from "@/lib/utils";
+import { incomeTypeLabels, paymentMethodLabels } from "../../../consts";
 import { OrderPaymentsIncomeItemStatus } from "./payment-item-status";
 import { OrderPaymentsIncomeItemType } from "./payment-item-type";
-import { OrderPaymentsIncomeItemCost } from "./payment-item-cost";
-import { CalendarIcon } from "lucide-react";
-import { Income } from "@/lib/types";
 
 interface Props {
   income: Income;
 }
 
-export const PaymentItemDesktop = ({ income }: Props) => {
-  return (
-    <div className="flex flex-col gap-4 border rounded-2xl p-4">
-      <div className="flex justify-between gap-4">
-        <div className="flex gap-2 items-center">
-          <OrderPaymentsIncomeItemType incomeType={income.incomeType} />
-          <OrderPaymentsIncomeItemStatus isPaid={income.isPaid} />
-        </div>
-        {income.deliveryId && <Badge variant="outline">Номер доставки: {income.deliveryId}</Badge>}
-      </div>
+export const PaymentItemDesktop = ({ income }: Props) => (
+  <div className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-muted/30 dark:hover:bg-white/5">
+    <OrderPaymentsIncomeItemType incomeType={income.incomeType} />
 
-      <div className="flex flex-col gap-2">
-        <OrderPaymentsIncomeItemCost amount={income.amount} paymentMethod={income.paymentMethod} />
-
-        <div className="flex items-center gap-2 text-[14px] text-gray-600">
-          <CalendarIcon className="w-4 h-4" />
-          <span>{new Date(income.paymentDate).toLocaleDateString("ru-RU")}</span>
-        </div>
+    <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex items-center gap-2">
+        <span className="font-medium">{incomeTypeLabels[income.incomeType]}</span>
+        {income.deliveryId && (
+          <span className="rounded-md bg-muted px-1.5 text-xs text-muted-foreground dark:bg-white/10">
+            Доставка № {income.deliveryId}
+          </span>
+        )}
       </div>
+      <span className="text-sm text-muted-foreground">
+        {new Date(income.paymentDate).toLocaleDateString("ru-RU")} ·{" "}
+        {paymentMethodLabels[income.paymentMethod]}
+      </span>
     </div>
-  );
-};
+
+    <OrderPaymentsIncomeItemStatus isPaid={income.isPaid} />
+
+    <span className="w-32 text-right text-base font-semibold tabular-nums">
+      {getFormattedAmount(income.amount)} ₽
+    </span>
+  </div>
+);

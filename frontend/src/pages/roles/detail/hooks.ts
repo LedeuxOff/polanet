@@ -174,6 +174,13 @@ export const useRoleDetailPage = (roleId: number) => {
     backups: "Резервные копии",
     "system-info": "Информация о системе",
     "system-logs": "Системные логи",
+    templates: "Шаблоны",
+    permissions: "Права доступа",
+    works: "Работы",
+    directories: "Справочники",
+    teams: "Бригады",
+    "screed-clients": "Клиенты стяжки",
+    developers: "Разработчики",
   };
 
   const canDelete = hasPermission("roles:delete");

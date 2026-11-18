@@ -3,8 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OrderHeader } from "./ui/order-header";
 import { OrderDetails } from "./ui/order-details";
 import { OrderClient } from "./ui/order-client";
-import { OrderPayments } from "./ui/order-payments";
-import { OrderDeliveries } from "./ui/order-deliveries";
+import { OrderPayments, OrderPaymentsHandle } from "./ui/order-payments";
+import { OrderDeliveries, OrderDeliveriesHandle } from "./ui/order-deliveries";
 import { OrderHistory } from "./ui/order-history";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,11 +21,13 @@ import {
 import { useOrderDetailPage } from "./hooks";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 export const OrderDetailPage = () => {
   const [hideBottomTabbar, setHideBottomTabbar] = useState(false);
   const [activeTab, setActiveTab] = useState("details");
+  const deliveriesRef = useRef<OrderDeliveriesHandle>(null);
+  const paymentsRef = useRef<OrderPaymentsHandle>(null);
 
   const navigate = useNavigate();
   const isMobile = useIsMobile();
@@ -51,7 +53,7 @@ export const OrderDetailPage = () => {
 
   if (isLoading || !order || error) {
     return (
-      <Card className="rounded-2xl shadow-xl">
+      <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
         <CardContent className="py-8 text-center text-muted-foreground">Загрузка...</CardContent>
       </Card>
     );
@@ -63,7 +65,7 @@ export const OrderDetailPage = () => {
         <Button
           type="button"
           disabled={isDeleting || isSubmitting}
-          className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+          className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 dark:text-white dark:hover:bg-white/20"
           onClick={() => navigate({ to: "/orders" })}
         >
           <ChevronLeft className="w-4 h-4" />
@@ -72,7 +74,7 @@ export const OrderDetailPage = () => {
         {isMobile && (
           <Button
             type="button"
-            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+            className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 dark:text-white dark:hover:bg-white/20"
             onClick={() => setOpen(true)}
           >
             <MenuIcon className="w-4 h-4" />
@@ -83,7 +85,7 @@ export const OrderDetailPage = () => {
           <Button
             type="submit"
             disabled={isDeleting || isSubmitting}
-            className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600 flex-1"
+            className="px-8 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600 flex-1 dark:bg-blue-600/40 dark:border dark:border-white/20 dark:text-white dark:hover:bg-blue-600/60"
           >
             {isSubmitting ? "Сохранение..." : "Сохранить"}
           </Button>
@@ -91,7 +93,7 @@ export const OrderDetailPage = () => {
 
         <Button
           type="button"
-          className="rounded-2xl px-3 py-4 bg-red-400 hover:bg-red-500"
+          className="rounded-2xl px-3 py-4 bg-red-400 hover:bg-red-500 dark:bg-red-600/40 dark:border dark:border-white/20 dark:text-white dark:hover:bg-red-600/60"
           onClick={handleDelete}
           disabled={isDeleting || isSubmitting}
         >
@@ -101,15 +103,35 @@ export const OrderDetailPage = () => {
         <Button
           onClick={() => setHideBottomTabbar(true)}
           type="button"
-          className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+          className="px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 dark:text-white dark:hover:bg-white/20"
         >
           <ChevronDown className="w-4 h-4" />
         </Button>
       </div>
+      {activeTab === "deliveries" && (
+        <Button
+          type="button"
+          disabled={disabledByStatus || isDeleting || isSubmitting}
+          onClick={() => deliveriesRef.current?.openAddDialog()}
+          className="px-3 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600 dark:bg-blue-600/40 dark:border dark:border-white/20 dark:text-white dark:hover:bg-blue-600/60"
+        >
+          Добавить
+        </Button>
+      )}
+      {activeTab === "finances" && (
+        <Button
+          type="button"
+          disabled={disabledByStatus || isDeleting || isSubmitting}
+          onClick={() => paymentsRef.current?.openIncomeDialog()}
+          className="px-3 py-4 bg-blue-500/90 rounded-2xl hover:bg-blue-600 dark:bg-blue-600/40 dark:border dark:border-white/20 dark:text-white dark:hover:bg-blue-600/60"
+        >
+          Добавить
+        </Button>
+      )}
       {activeTab === "details" && (
         <Button
           type="button"
-          className="flex items-center gap-2 px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600"
+          className="flex items-center gap-2 px-3 py-4 bg-zinc-500/90 rounded-2xl hover:bg-zinc-600 dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20 dark:text-white dark:hover:bg-white/20"
           onClick={handleSaveTemplate}
           disabled={isDeleting || isSubmitting}
         >
@@ -181,7 +203,7 @@ export const OrderDetailPage = () => {
         {activeTab === "details" && (
           <div className="space-y-4">
             <div className="flex flex-col gap-6">
-              <Card className="rounded-2xl shadow-xl">
+              <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                 <CardHeader>
                   <CardTitle>Основная информация</CardTitle>
                 </CardHeader>
@@ -195,7 +217,7 @@ export const OrderDetailPage = () => {
                 </CardContent>
               </Card>
 
-              <Card className="rounded-2xl shadow-xl">
+              <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
                 <CardHeader>
                   <CardTitle>Информация о клиенте</CardTitle>
                 </CardHeader>
@@ -213,13 +235,18 @@ export const OrderDetailPage = () => {
 
         {/* Финансы */}
         {activeTab === "finances" && (
-          <div className="mt-4 space-y-4">
-            <Card className="rounded-2xl shadow-xl">
+          <div className="mt-4 space-y-4 pb-24">
+            <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
               <CardHeader>
                 <CardTitle>Финансы</CardTitle>
               </CardHeader>
               <CardContent>
-                <OrderPayments orderId={orderId} order={order} setOrder={setOrder} />
+                <OrderPayments
+                  ref={paymentsRef}
+                  orderId={orderId}
+                  order={order}
+                  setOrder={setOrder}
+                />
               </CardContent>
             </Card>
           </div>
@@ -227,13 +254,14 @@ export const OrderDetailPage = () => {
 
         {/* Доставки */}
         {activeTab === "deliveries" && (
-          <div className="mt-4 space-y-4">
-            <Card className="rounded-2xl shadow-xl">
+          <div className="mt-4 space-y-4 pb-24">
+            <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
               <CardHeader>
                 <CardTitle>Информация о доставках</CardTitle>
               </CardHeader>
               <CardContent>
                 <OrderDeliveries
+                  ref={deliveriesRef}
                   orderId={orderId}
                   setOrder={setOrder}
                   order={order}
@@ -246,8 +274,8 @@ export const OrderDetailPage = () => {
 
         {/* История изменений */}
         {activeTab === "history" && (
-          <div className="mt-4 space-y-4">
-            <Card className="rounded-2xl shadow-xl">
+          <div className="mt-4 space-y-4 pb-24">
+            <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
               <CardHeader>
                 <CardTitle>История изменений</CardTitle>
               </CardHeader>
@@ -259,11 +287,11 @@ export const OrderDetailPage = () => {
         )}
 
         <div
-          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? `-bottom-[${activeTab === "details" ? "112" : "56"}px]` : "bottom-2") : hideBottomTabbar ? `-bottom-[${activeTab === "details" ? "112" : "56"}px]` : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl`}
+          className={`fixed transition-all ${isMobile ? (hideBottomTabbar ? `-bottom-[${activeTab === "history" ? "56" : "112"}px]` : "bottom-2") : hideBottomTabbar ? `-bottom-[${activeTab === "history" ? "56" : "112"}px]` : "bottom-4"} left-1/2 -translate-x-1/2 flex gap-3 p-3 bg-zinc-600/30 backdrop-blur-md shadow-xl border-zinc-200 rounded-2xl dark:bg-white/10 dark:border dark:border-white/20`}
         >
           <div
             onClick={() => setHideBottomTabbar(false)}
-            className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
+            className={`absolute -top-4 left-1/2 -translate-x-1/2 px-1 pb-2 bg-[rgb(194,194,197)] rounded-2xl hover:bg-[rgb(173,173,176)] flex items-center justify-center cursor-pointer z-10 transition-all dark:bg-zinc-500 dark:backdrop-blur-xl ${hideBottomTabbar ? "opacity-100" : "opacity-0"}`}
           >
             <ChevronUp className="text-white w-5" />
           </div>

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
-import { db } from "../db/index.js";
+import { db, sqlite } from "../db/index.js";
 import { users, roles, transportCards } from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { requirePermission } from "../middleware/permissions.js";
@@ -145,6 +145,40 @@ router.get("/", authenticate, requirePermission("users:list"), (req: AuthRequest
 });
 
 // Получить пользователя по ID
+// Сводка по сотрудникам для главной страницы (без разработчиков)
+router.get(
+  "/stats/summary",
+  authenticate,
+  requirePermission("users:list"),
+  (_req: AuthRequest, res) => {
+    try {
+      const byRole = sqlite
+        .prepare(
+          `
+          SELECT r.id, r.code, r.name, COUNT(u.id) AS count
+          FROM roles r
+          LEFT JOIN users u ON u.role_id = r.id
+          WHERE r.code != 'DEVELOPER'
+          GROUP BY r.id
+          ORDER BY count DESC, r.name ASC
+        `,
+        )
+        .all() as { id: number; code: string; name: string; count: number }[];
+
+      res.json({
+        total: byRole.reduce((sum, r) => sum + Number(r.count), 0),
+        byRole: byRole.map((r) => ({ ...r, count: Number(r.count) })),
+      });
+    } catch (error) {
+      console.error("Error fetching users summary:", error);
+      res.status(500).json({
+        error: "Ошибка сервера",
+        details: error instanceof Error ? error.message : error,
+      });
+    }
+  },
+);
+
 router.get("/:id", authenticate, requirePermission("users:detail"), (req: AuthRequest, res) => {
   try {
     const user = db
@@ -281,6 +315,17 @@ router.delete("/:id", authenticate, requirePermission("users:delete"), (req: Aut
     // Нельзя удалить самого себя
     if (userId === req.userId) {
       return res.status(400).json({ error: "Нельзя удалить самого себя" });
+    }
+
+    // Удалять сотрудников может только разработчик
+    const currentRole = db
+      .select({ code: roles.code })
+      .from(users)
+      .innerJoin(roles, eq(users.roleId, roles.id))
+      .where(eq(users.id, req.userId!))
+      .get();
+    if (currentRole?.code !== "DEVELOPER") {
+      return res.status(403).json({ error: "Удалять сотрудников может только разработчик" });
     }
 
     db.delete(users).where(eq(users.id, userId)).run();

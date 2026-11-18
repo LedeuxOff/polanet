@@ -67,7 +67,7 @@ export const WorksWeekGrid = ({
               key={hour}
               className="grid grid-cols-[70px_repeat(7,minmax(0,1fr))] border-b last:border-b-0 hover:bg-zinc-50 transition-colors dark:border-white/30 dark:hover:bg-white/10"
             >
-              <div className="p-2 text-center text-xs text-muted-foreground border-r bg-zinc-50 whitespace-nowrap dark:text-zinc-100 dark:bg-white/10 dark:border-white/20">
+              <div className="p-2 text-center text-xs text-muted-foreground border-r bg-zinc-50 whitespace-nowrap sticky left-0 z-20 dark:text-zinc-100 dark:bg-white/10 dark:backdrop-blur-xl dark:border-white/20">
                 {formatHour(hour)}
               </div>
 

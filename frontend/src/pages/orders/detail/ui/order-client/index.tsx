@@ -81,10 +81,13 @@ export const OrderClient = ({ form, isSubmitting, disabledByStatus }: Props) => 
           value={String(form.watch("clientId") || "")}
           onValueChange={(value) => form.setValue("clientId", value ? Number(value) : null)}
         >
-          <SelectTrigger disabled={isSubmitting || disabledByStatus} className="rounded-2xl">
+          <SelectTrigger
+            disabled={isSubmitting || disabledByStatus}
+            className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+          >
             <SelectValue placeholder="Не выбран" />
           </SelectTrigger>
-          <SelectContent className="rounded-2xl shadow-xl">
+          <SelectContent className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
             {clients.map((client) => (
               <SelectItem key={client.id} value={String(client.id)}>
                 {client.type === "individual"
@@ -103,7 +106,7 @@ export const OrderClient = ({ form, isSubmitting, disabledByStatus }: Props) => 
           <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="payerLastName">Фамилия *</Label>
             <Input
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               id="payerLastName"
               disabled={isSubmitting || disabledByStatus}
               {...form.register("payerLastName")}
@@ -118,7 +121,7 @@ export const OrderClient = ({ form, isSubmitting, disabledByStatus }: Props) => 
           <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="payerFirstName">Имя *</Label>
             <Input
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               id="payerFirstName"
               disabled={isSubmitting || disabledByStatus}
               {...form.register("payerFirstName")}
@@ -133,7 +136,7 @@ export const OrderClient = ({ form, isSubmitting, disabledByStatus }: Props) => 
           <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="payerMiddleName">Отчество</Label>
             <Input
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               id="payerMiddleName"
               disabled={isSubmitting || disabledByStatus}
               {...form.register("payerMiddleName")}
@@ -143,7 +146,7 @@ export const OrderClient = ({ form, isSubmitting, disabledByStatus }: Props) => 
           <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="payerPhone">Телефон</Label>
             <InputPhone
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               id="payerPhone"
               disabled={isSubmitting || disabledByStatus}
               value={form.watch("payerPhone") || ""}
@@ -162,7 +165,7 @@ export const OrderClient = ({ form, isSubmitting, disabledByStatus }: Props) => 
           <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="receiverLastName">Фамилия *</Label>
             <Input
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               id="receiverLastName"
               disabled={isSubmitting || disabledByStatus}
               {...form.register("receiverLastName")}
@@ -177,7 +180,7 @@ export const OrderClient = ({ form, isSubmitting, disabledByStatus }: Props) => 
           <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="receiverFirstName">Имя *</Label>
             <Input
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               id="receiverFirstName"
               disabled={isSubmitting || disabledByStatus}
               {...form.register("receiverFirstName")}
@@ -192,7 +195,7 @@ export const OrderClient = ({ form, isSubmitting, disabledByStatus }: Props) => 
           <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="receiverMiddleName">Отчество</Label>
             <Input
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               id="receiverMiddleName"
               disabled={isSubmitting || disabledByStatus}
               {...form.register("receiverMiddleName")}
@@ -202,7 +205,7 @@ export const OrderClient = ({ form, isSubmitting, disabledByStatus }: Props) => 
           <div className={`space-y-2 ${isMobile ? "col-span-1" : "col-span-2"}`}>
             <Label htmlFor="receiverPhone">Телефон</Label>
             <InputPhone
-              className="rounded-2xl"
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
               id="receiverPhone"
               disabled={isSubmitting || disabledByStatus}
               value={form.watch("receiverPhone") || ""}

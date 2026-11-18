@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { ChevronLeftIcon, ChevronRightIcon, UsersIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -44,10 +44,6 @@ export const WorksPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(() =>
     search.date && isValidDateKey(search.date) ? fromDateKey(search.date) : new Date(),
   );
-  // Текст поля даты отдельно от выбранной даты: пока год вводится по цифрам,
-  // браузер присылает промежуточные значения (0002, 0020, 0202...) — их не применяем
-  const [dateInput, setDateInput] = useState(() => toDateKey(selectedDate));
-  useEffect(() => setDateInput(toDateKey(selectedDate)), [selectedDate]);
   const [openWork, setOpenWork] = useState<Work | null>(null);
   const [createSlot, setCreateSlot] = useState<Slot | null>(null);
   const [teamFilter, setTeamFilter] = useState<TeamFilter>("all");
@@ -120,59 +116,57 @@ export const WorksPage = () => {
   return (
     <div className="flex flex-col gap-4 pb-28">
       <Card className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
-        <CardHeader className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between space-y-0">
-          <CardTitle>Календарь работ</CardTitle>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={() => setSelectedDate((d) => addDays(d, -7))}
-            >
-              <ChevronLeftIcon className="h-4 w-4" />
-            </Button>
-            <div className="min-w-[120px] text-center font-medium">{weekLabel}</div>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              onClick={() => setSelectedDate((d) => addDays(d, 7))}
-            >
-              <ChevronRightIcon className="h-4 w-4" />
-            </Button>
-            <Button type="button" variant="outline" onClick={() => setSelectedDate(new Date())}>
-              Сегодня
-            </Button>
-            <input
-              type="date"
-              className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-              value={dateInput}
-              onChange={(e) => {
-                const value = e.target.value;
-                setDateInput(value);
-                if (isValidDateKey(value)) setSelectedDate(fromDateKey(value));
-              }}
-              onBlur={() => setDateInput(toDateKey(selectedDate))}
-            />
-            <Select value={teamFilter} onValueChange={setTeamFilter}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все бригады</SelectItem>
-                {teams.map((t) => (
-                  <SelectItem key={t.id} value={String(t.id)}>
-                    {t.name}
-                  </SelectItem>
-                ))}
-                <SelectItem value={NO_TEAM}>Без бригады</SelectItem>
-              </SelectContent>
-            </Select>
-            {hasPermission("teams:list") && (
-              <Button type="button" variant="outline" onClick={() => navigate({ to: "/teams" })}>
-                <UsersIcon className="mr-2 h-4 w-4" /> Бригады
+        <CardHeader>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <CardTitle>Календарь</CardTitle>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedDate(new Date())}
+                className="bg-blue-500 rounded-2xl text-white shadow-none hover:bg-blue-600 hover:text-white dark:bg-blue-600/60 dark:backdrop-blur-xl dark:border dark:border-white/20"
+              >
+                Сегодня
               </Button>
-            )}
+              <div className="flex items-center gap-1">
+                <Button
+                  type="button"
+                  className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setSelectedDate((d) => addDays(d, -7))}
+                >
+                  <ChevronLeftIcon className="h-4 w-4" />
+                </Button>
+                <Button type="button" className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20" variant="outline">
+                  {weekLabel}
+                </Button>
+                <Button
+                  type="button"
+                  className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setSelectedDate((d) => addDays(d, 7))}
+                >
+                  <ChevronRightIcon className="h-4 w-4" />
+                </Button>
+              </div>
+              <Select value={teamFilter} onValueChange={setTeamFilter}>
+                <SelectTrigger className="w-[200px] rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все бригады</SelectItem>
+                  {teams.map((t) => (
+                    <SelectItem key={t.id} value={String(t.id)}>
+                      {t.name}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value={NO_TEAM}>Без бригады</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </CardHeader>
       </Card>

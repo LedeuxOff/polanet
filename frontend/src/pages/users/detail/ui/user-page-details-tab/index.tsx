@@ -4,6 +4,7 @@ import { UseFormReturn } from "react-hook-form";
 import { UserDetailPageTelegramController } from "./user-page-telegram-controller";
 import { BaseSyntheticEvent } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useAuth } from "@/lib/contexts/auth-context";
 
 interface Props {
   form: UseFormReturn<UserForm>;
@@ -37,6 +38,8 @@ export const UserPageDetailsTab = ({
   isSendingPassword,
 }: Props) => {
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
+  const isCurrentUserDeveloper = currentUser?.roleCode === "DEVELOPER";
 
   const isDriver = user?.roleCode === "DRIVER";
 
@@ -127,7 +130,7 @@ export const UserPageDetailsTab = ({
           onDelete: handleDelete,
           isDeleting: isDeleting,
           disabled: isSubmitting || isDeleting || isDetachingCard,
-          isHide: user?.roleCode !== "DEVELOPER" || isOwnUser,
+          isHide: !isCurrentUserDeveloper || isOwnUser,
         },
         back: () => navigate({ to: "/users" }),
       }}

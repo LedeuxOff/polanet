@@ -1,13 +1,13 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { PermissionGuard } from "@/lib/components/permission-guard";
 
-export const Route = createFileRoute("/workers")({
-  component: WorkersLayout,
+export const Route = createFileRoute("/screed-clients")({
+  component: ScreedClientsLayout,
 });
 
-function WorkersLayout() {
+function ScreedClientsLayout() {
   return (
-    <PermissionGuard permission="workers:list">
+    <PermissionGuard permission="screed-clients:list">
       <div className="space-y-4">
         <Outlet />
       </div>

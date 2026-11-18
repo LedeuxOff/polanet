@@ -1,4 +1,4 @@
-import { BarChartIcon, FileText, Home, MonitorIcon, SettingsIcon } from "lucide-react";
+import { BarChartIcon, FileText, Home, Layers, MonitorIcon, SettingsIcon } from "lucide-react";
 
 export interface MenuItem {
   title: string;
@@ -53,20 +53,27 @@ export const menuItems: MenuItem[] = [
         url: "/calendar",
         permission: "deliveries:list",
       },
+    ],
+  },
+  {
+    title: "Стяжка",
+    id: "1.2",
+    icon: Layers,
+    links: [
       {
-        title: "Календарь работ",
+        title: "Календарь",
         url: "/works",
         permission: "works:list",
-      },
-      {
-        title: "Рабочие",
-        url: "/workers",
-        permission: "workers:list",
       },
       {
         title: "Бригады",
         url: "/teams",
         permission: "teams:list",
+      },
+      {
+        title: "Клиенты",
+        url: "/screed-clients",
+        permission: "screed-clients:list",
       },
     ],
   },
@@ -90,6 +97,7 @@ export const menuItems: MenuItem[] = [
       {
         title: "Статистика по финансам",
         url: "/money-statistic",
+        permission: "finances:view",
       },
     ],
   },

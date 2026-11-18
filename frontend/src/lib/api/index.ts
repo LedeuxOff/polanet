@@ -14,6 +14,7 @@ export { templatesApi } from "./templates-api";
 export { worksApi, type WorksListQuery } from "./works-api";
 export { teamsApi } from "./teams-api";
 export { workersApi, type WorkersListQuery } from "./workers-api";
+export { screedClientsApi } from "./screed-clients-api";
 export {
   directoriesApi,
   type WorkStatusRefInput,

@@ -7,7 +7,6 @@ import { PageError } from "@/components/screens/error";
 import { NoAccessScreen } from "@/components/screens/no-access";
 import { ClientPageHead } from "./ui/client-page-head";
 import { FormBuilder } from "@/widgets/form-builder";
-import { ClientWorks } from "./ui/client-works";
 
 export const EditClientPage = () => {
   const navigate = useNavigate();
@@ -52,8 +51,6 @@ export const EditClientPage = () => {
   return (
     <div className="flex flex-col gap-4 pb-4">
       <ClientPageHead client={client} />
-
-      {hasPermission("works:list") && <ClientWorks clientId={client.id} />}
 
       <FormBuilder
         form={form}

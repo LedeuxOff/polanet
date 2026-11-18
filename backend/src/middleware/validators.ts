@@ -69,8 +69,18 @@ export const createClientSchema = z
       errorMap: () => ({ message: "Тип клиента обязателен" }),
     }),
     // Для физического лица
-    lastName: z.string().min(1, "Фамилия обязательна").max(100).optional().nullable(),
-    firstName: z.string().min(1, "Имя обязательно").max(100).optional().nullable(),
+    lastName: z
+      .string()
+      .min(1, "Фамилия обязательна")
+      .max(100)
+      .optional()
+      .nullable(),
+    firstName: z
+      .string()
+      .min(1, "Имя обязательно")
+      .max(100)
+      .optional()
+      .nullable(),
     middleName: z.string().max(100).optional().nullable(),
     // Для юридического лица
     organizationName: z
@@ -222,7 +232,10 @@ export const orderStatusTransitions: Record<string, string[]> = {
   archived: [], // Архив - конечный статус
 };
 
-export function validateOrderStatusTransition(currentStatus: string, newStatus: string): boolean {
+export function validateOrderStatusTransition(
+  currentStatus: string,
+  newStatus: string,
+): boolean {
   const allowedTransitions = orderStatusTransitions[currentStatus];
   if (!allowedTransitions) {
     return false;
@@ -233,19 +246,37 @@ export function validateOrderStatusTransition(currentStatus: string, newStatus: 
 export const updateOrderSchema = z.object({
   type: z.enum(["delivery", "pickup"]).optional(),
   address: z.string().min(1, "Адрес обязателен").max(500).optional(),
-  payerLastName: z.string().min(1, "Фамилия плательщика обязательна").max(100).optional(),
-  payerFirstName: z.string().min(1, "Имя плательщика обязательно").max(100).optional(),
+  payerLastName: z
+    .string()
+    .min(1, "Фамилия плательщика обязательна")
+    .max(100)
+    .optional(),
+  payerFirstName: z
+    .string()
+    .min(1, "Имя плательщика обязательно")
+    .max(100)
+    .optional(),
   payerMiddleName: z.string().max(100).optional(),
   payerPhone: z.string().max(20).optional(),
-  receiverLastName: z.string().min(1, "Фамилия приемщика обязательна").max(100).optional(),
-  receiverFirstName: z.string().min(1, "Имя приемщика обязательно").max(100).optional(),
+  receiverLastName: z
+    .string()
+    .min(1, "Фамилия приемщика обязательна")
+    .max(100)
+    .optional(),
+  receiverFirstName: z
+    .string()
+    .min(1, "Имя приемщика обязательно")
+    .max(100)
+    .optional(),
   receiverMiddleName: z.string().max(100).optional(),
   receiverPhone: z.string().max(20).optional(),
   date: z.string().min(1, "Дата обязательна").optional(),
   volume: z.number().optional().nullable(),
   hasPass: z.boolean().optional(),
   addressComment: z.string().max(1000).optional(),
-  status: z.enum(["new", "in_progress", "completed", "cancelled", "archived", "draft"]).optional(),
+  status: z
+    .enum(["new", "in_progress", "completed", "cancelled", "archived", "draft"])
+    .optional(),
   clientId: z.number().int().positive().optional().nullable(),
 });
 
@@ -260,7 +291,11 @@ export const createPaymentSchema = z.object({
 });
 
 export const updatePaymentSchema = z.object({
-  amount: z.number().int().positive("Сумма выплаты должна быть положительной").optional(),
+  amount: z
+    .number()
+    .int()
+    .positive("Сумма выплаты должна быть положительной")
+    .optional(),
   paymentDate: z.string().min(1, "Дата выплаты обязательна").optional(),
   type: z.enum(["prepayment", "transfer", "delivery"]).optional(),
 });
@@ -286,7 +321,11 @@ export const createTransportCardExpenseSchema = z.object({
 });
 
 export const updateTransportCardExpenseSchema = z.object({
-  amount: z.number().int().positive("Сумма должна быть положительной").optional(),
+  amount: z
+    .number()
+    .int()
+    .positive("Сумма должна быть положительной")
+    .optional(),
   paymentDate: z.string().min(1, "Дата оплаты обязательна").optional(),
 });
 
@@ -313,7 +352,11 @@ export const updateDeliverySchema = z.object({
   driverId: z.number().int().positive().optional(),
   carId: z.number().int().positive().optional(),
   dateTime: z.string().min(1, "Дата и время обязательны").optional(),
-  amount: z.number().int().positive("Стоимость должна быть положительной").optional(),
+  amount: z
+    .number()
+    .int()
+    .positive("Стоимость должна быть положительной")
+    .optional(),
   volume: z.number().int().positive().optional().nullable(),
   comment: z.string().optional(),
   paymentMethod: z.enum(["cash", "bank_transfer"]).optional(),
@@ -357,7 +400,11 @@ export const updateIncomeSchema = z.object({
   paymentMethod: z.enum(["cash", "bank_transfer"]).optional(),
   isPaid: z.boolean().optional(),
   orderId: z.number().int().positive().optional(),
-  amount: z.number().int().positive("Сумма должна быть положительной").optional(),
+  amount: z
+    .number()
+    .int()
+    .positive("Сумма должна быть положительной")
+    .optional(),
   paymentDate: z.string().min(1, "Дата оплаты обязательна").optional(),
   deliveryId: z.number().int().positive().optional().nullable(),
   recipientType: z.enum(["employee", "driver"]).optional().nullable(),
@@ -383,18 +430,37 @@ export type QuickCreateOrderInput = z.infer<typeof quickCreateOrderSchema>;
 export type UpdateOrderInput = z.infer<typeof updateOrderSchema>;
 export type CreatePaymentInput = z.infer<typeof createPaymentSchema>;
 export type UpdatePaymentInput = z.infer<typeof updatePaymentSchema>;
-export type CreateTransportCardInput = z.infer<typeof createTransportCardSchema>;
-export type UpdateTransportCardInput = z.infer<typeof updateTransportCardSchema>;
-export type CreateTransportCardExpenseInput = z.infer<typeof createTransportCardExpenseSchema>;
-export type UpdateTransportCardExpenseInput = z.infer<typeof updateTransportCardExpenseSchema>;
+export type CreateTransportCardInput = z.infer<
+  typeof createTransportCardSchema
+>;
+export type UpdateTransportCardInput = z.infer<
+  typeof updateTransportCardSchema
+>;
+export type CreateTransportCardExpenseInput = z.infer<
+  typeof createTransportCardExpenseSchema
+>;
+export type UpdateTransportCardExpenseInput = z.infer<
+  typeof updateTransportCardExpenseSchema
+>;
 export type CreateDeliveryInput = z.infer<typeof createDeliverySchema>;
 export type UpdateDeliveryInput = z.infer<typeof updateDeliverySchema>;
 
 // ===================== Работы (стяжка) =====================
 
-const dateOnly = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Дата должна быть в формате YYYY-MM-DD");
+const dateOnly = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Дата должна быть в формате YYYY-MM-DD");
 
 // Новый клиент, создаваемый прямо из формы работы
+// Клиент стяжки
+export const screedClientSchema = z.object({
+  lastName: z.string().trim().max(255).optional().nullable(),
+  firstName: z.string().trim().min(1, "Имя обязательно").max(255),
+  middleName: z.string().trim().max(255).optional().nullable(),
+  phone: z.string().max(20).optional().nullable(),
+  notes: z.string().max(10000).optional().nullable(),
+});
+
 export const workNewClientSchema = z.object({
   firstName: z.string().trim().min(1, "Имя клиента обязательно").max(255),
   lastName: z.string().trim().max(255).optional().nullable(),
@@ -412,7 +478,10 @@ const workBaseSchema = z.object({
   // 24:00 — конец дня (работа до конца последнего часа сетки)
   endTime: z
     .string()
-    .regex(/^(([01]\d|2[0-3]):[0-5]\d|24:00)$/, "Время должно быть в формате ЧЧ:ММ")
+    .regex(
+      /^(([01]\d|2[0-3]):[0-5]\d|24:00)$/,
+      "Время должно быть в формате ЧЧ:ММ",
+    )
     .nullable()
     .optional(),
   teamId: z.number().int().positive().nullable().optional(),
@@ -434,8 +503,10 @@ const workBaseSchema = z.object({
 });
 
 // Окончание должно быть позже начала (HH:MM сравниваются как строки)
-export const isValidWorkTimeRange = (start?: string | null, end?: string | null) =>
-  !start || !end || end > start;
+export const isValidWorkTimeRange = (
+  start?: string | null,
+  end?: string | null,
+) => !start || !end || end > start;
 
 export const createWorkSchema = workBaseSchema
   .refine((d) => !(d.clientId && d.newClient), {
@@ -447,10 +518,12 @@ export const createWorkSchema = workBaseSchema
     path: ["endTime"],
   });
 
-export const updateWorkSchema = workBaseSchema.partial().refine((d) => !(d.clientId && d.newClient), {
-  message: "Укажите либо существующего клиента, либо нового",
-  path: ["clientId"],
-});
+export const updateWorkSchema = workBaseSchema
+  .partial()
+  .refine((d) => !(d.clientId && d.newClient), {
+    message: "Укажите либо существующего клиента, либо нового",
+    path: ["clientId"],
+  });
 
 export const teamSchema = z.object({
   name: z.string().trim().min(1, "Название бригады обязательно").max(255),

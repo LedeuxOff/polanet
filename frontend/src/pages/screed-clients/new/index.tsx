@@ -4,35 +4,39 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "@tanstack/react-router";
 import { PermissionsLoader } from "@/components/screens/loaders/permissions-loader";
 import { NoAccessScreen } from "@/components/screens/no-access";
-import { workersApi } from "@/lib/api";
+import { screedClientsApi } from "@/lib/api";
 import { usePermissions } from "@/lib/contexts/permission-context";
 import { useToast } from "@/lib/contexts/toast-context";
-import { WorkerForm, workerSchema } from "@/lib/types";
 import { FormBuilder } from "@/widgets/form-builder";
-import { WorkerPageHead } from "../detail/ui/worker-page-head";
-import { NO_TEAM, getWorkerSections, toWorkerInput, useTeamOptions } from "../shared";
+import {
+  ScreedClientForm,
+  emptyScreedClientForm,
+  getScreedClientSections,
+  screedClientFormSchema,
+  toScreedClientInput,
+} from "../shared";
+import { ScreedClientPageHead } from "../detail/ui/screed-client-page-head";
 
-export const NewWorkerPage = () => {
+export const NewScreedClientPage = () => {
   const navigate = useNavigate();
   const { hasPermission, isLoading: isPermissionsLoading } = usePermissions();
   const { showToast } = useToast();
-  const teams = useTeamOptions();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<WorkerForm>({
-    resolver: zodResolver(workerSchema),
-    defaultValues: { lastName: "", firstName: "", middleName: "", phone: "", teamId: NO_TEAM },
+  const form = useForm<ScreedClientForm>({
+    resolver: zodResolver(screedClientFormSchema),
+    defaultValues: emptyScreedClientForm,
   });
 
   if (isPermissionsLoading) return <PermissionsLoader />;
-  if (!hasPermission("workers:create")) return <NoAccessScreen />;
+  if (!hasPermission("screed-clients:create")) return <NoAccessScreen />;
 
   const handleSubmit = form.handleSubmit(async (data) => {
     setIsSubmitting(true);
     try {
-      await workersApi.create(toWorkerInput(data));
-      showToast("Рабочий создан", "success");
-      navigate({ to: "/workers" });
+      await screedClientsApi.create(toScreedClientInput(data));
+      showToast("Клиент создан", "success");
+      navigate({ to: "/screed-clients" });
     } catch (err) {
       showToast(err instanceof Error ? err.message : "Ошибка при создании", "error");
     } finally {
@@ -41,15 +45,14 @@ export const NewWorkerPage = () => {
   });
 
   return (
-    <div className="flex flex-col gap-4 pb-4">
-      <WorkerPageHead title="Создание" />
+    <div className="flex flex-col gap-4 pb-28">
+      <ScreedClientPageHead title="Создание" />
       <FormBuilder
         form={form}
-        sections={getWorkerSections(teams, isSubmitting)}
+        sections={getScreedClientSections(form, isSubmitting)}
         actions={{
           submit: { onSubmit: handleSubmit, isSubmitting, disabled: isSubmitting },
-          back: () => navigate({ to: "/workers" }),
-          delete: { onDelete: () => {}, isHide: true },
+          back: () => navigate({ to: "/screed-clients" }),
         }}
       />
     </div>

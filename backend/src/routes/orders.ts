@@ -208,6 +208,36 @@ router.get("/", authenticate, requirePermission("orders:list"), (req: AuthReques
   }
 });
 
+// Количество заявок по статусам (для главной страницы)
+router.get(
+  "/stats/status",
+  authenticate,
+  requirePermission("orders:list"),
+  (_req: AuthRequest, res) => {
+    try {
+      const rows = db
+        .select({ status: orders.status, count: sql<number>`count(*)` })
+        .from(orders)
+        .groupBy(orders.status)
+        .all();
+
+      const counts: Record<string, number> = {};
+      for (const row of rows) counts[row.status] = Number(row.count);
+
+      res.json({
+        counts,
+        total: Object.values(counts).reduce((sum, n) => sum + n, 0),
+      });
+    } catch (error) {
+      console.error("Error fetching orders status stats:", error);
+      res.status(500).json({
+        error: "Ошибка сервера",
+        details: error instanceof Error ? error.message : error,
+      });
+    }
+  },
+);
+
 // Получить заявку по ID
 router.get("/:id", authenticate, requirePermission("orders:detail"), (req: AuthRequest, res) => {
   try {

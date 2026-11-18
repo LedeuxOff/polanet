@@ -316,7 +316,7 @@ export const WorkForm = ({ initial, teams, submitLabel, onSubmit, onCancel }: Pr
           value={client}
           onChange={setClient}
           disabled={isSubmitting}
-          canCreateClient={hasPermission("clients:create")}
+          canCreateClient={hasPermission("screed-clients:create")}
         />
       </section>
 

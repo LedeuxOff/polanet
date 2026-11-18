@@ -5,8 +5,8 @@ import { Combobox, type ComboboxOption } from "@/components/ui/combobox";
 import { Input } from "@/components/ui/input";
 import { InputPhone } from "@/components/ui/input-phone";
 import { Label } from "@/components/ui/label";
-import { clientsApi } from "@/lib/api";
-import type { Client, WorkClient } from "@/lib/types";
+import { screedClientsApi } from "@/lib/api";
+import type { ScreedClient, WorkClient } from "@/lib/types";
 import { formatPhoneDisplay } from "@/lib/utils/phone";
 import { getClientName } from "../consts";
 
@@ -22,21 +22,18 @@ interface Props {
   canCreateClient: boolean;
 }
 
-const toWorkClient = (c: Client): WorkClient => ({
+const toWorkClient = (c: ScreedClient): WorkClient => ({
   id: c.id,
-  type: c.type,
   lastName: c.lastName,
   firstName: c.firstName,
   middleName: c.middleName,
-  organizationName: c.organizationName,
   phone: c.phone,
-  email: c.email,
 });
 
-/** Клиент работы: выпадающий список с поиском по имени/названию и телефону или новый клиент */
+/** Клиент стяжки: выпадающий список с поиском по имени и телефону или новый клиент */
 export const ClientPicker = ({ value, onChange, disabled, canCreateClient }: Props) => {
   const [search, setSearch] = useState("");
-  const [clients, setClients] = useState<Client[]>([]);
+  const [clients, setClients] = useState<ScreedClient[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -45,19 +42,22 @@ export const ClientPicker = ({ value, onChange, disabled, canCreateClient }: Pro
     if (value.mode !== "existing") return;
     if (timer.current) clearTimeout(timer.current);
     const term = search.trim();
-    timer.current = setTimeout(async () => {
-      setIsLoading(true);
-      try {
-        const digits = term.replace(/\D/g, "");
-        const query = digits.length >= 4 && /^[\d\s()+-]+$/.test(term) ? digits : term;
-        const res = await clientsApi.list({ search: query || undefined, limit: 20 });
-        setClients(res.data);
-      } catch {
-        setClients([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }, term ? 300 : 0);
+    timer.current = setTimeout(
+      async () => {
+        setIsLoading(true);
+        try {
+          const digits = term.replace(/\D/g, "");
+          const query = digits.length >= 4 && /^[\d\s()+-]+$/.test(term) ? digits : term;
+          const res = await screedClientsApi.list({ search: query || undefined, limit: 20 });
+          setClients(res.data);
+        } catch {
+          setClients([]);
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      term ? 300 : 0,
+    );
     return () => {
       if (timer.current) clearTimeout(timer.current);
     };
@@ -114,7 +114,7 @@ export const ClientPicker = ({ value, onChange, disabled, canCreateClient }: Pro
       selectedLabel={selected ? getClientName(selected) : undefined}
       options={options}
       placeholder="Выберите клиента"
-      searchPlaceholder="Поиск по имени, названию или телефону"
+      searchPlaceholder="Поиск по имени или телефону"
       emptyText="Клиенты не найдены"
       disabled={disabled}
       clearable

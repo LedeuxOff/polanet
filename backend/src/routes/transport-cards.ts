@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db } from "../db/index.js";
+import { db, sqlite } from "../db/index.js";
 import { transportCards, expenses, transportCardHistory, users } from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { requirePermission } from "../middleware/permissions.js";
@@ -99,6 +99,42 @@ router.get(
 );
 
 // Детали транспортной карты по ID
+// Сводка по топливным картам для главной страницы
+router.get(
+  "/stats/summary",
+  authenticate,
+  requirePermission("transport-cards:list"),
+  (_req: AuthRequest, res) => {
+    try {
+      const row = sqlite
+        .prepare(
+          `
+          SELECT
+            COUNT(*) AS total,
+            SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active,
+            SUM(CASE WHEN status != 'active' THEN 1 ELSE 0 END) AS inactive,
+            (SELECT COALESCE(SUM(amount), 0) FROM expenses WHERE transport_card_id IS NOT NULL) AS totalExpenses
+          FROM transport_cards
+        `,
+        )
+        .get() as Record<string, number | null>;
+
+      res.json({
+        total: Number(row.total ?? 0),
+        active: Number(row.active ?? 0),
+        inactive: Number(row.inactive ?? 0),
+        totalExpenses: Number(row.totalExpenses ?? 0),
+      });
+    } catch (error) {
+      console.error("Error fetching transport cards summary:", error);
+      res.status(500).json({
+        error: "Ошибка сервера",
+        details: error instanceof Error ? error.message : error,
+      });
+    }
+  },
+);
+
 router.get(
   "/:id",
   authenticate,

@@ -39,10 +39,13 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
             onValueChange={(value: "delivery" | "pickup") => form.setValue("type", value)}
             disabled={disabledByStatus}
           >
-            <SelectTrigger disabled={isSubmitting} className="rounded-2xl">
+            <SelectTrigger
+              disabled={isSubmitting}
+              className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
+            >
               <SelectValue placeholder="Выберите тип" />
             </SelectTrigger>
-            <SelectContent className="rounded-2xl shadow-xl">
+            <SelectContent className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
               <SelectItem value="delivery">Доставка</SelectItem>
               <SelectItem value="pickup">Вывоз</SelectItem>
             </SelectContent>
@@ -55,7 +58,7 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
         <div className="col-span-4 md:col-span-2 space-y-2">
           <Label htmlFor="date">Дата *</Label>
           <Input
-            className="rounded-2xl"
+            className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
             id="date"
             type="date"
             disabled={isSubmitting || disabledByStatus}
@@ -69,7 +72,7 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
         <div className="col-span-4 md:col-span-2 space-y-2">
           <Label htmlFor="volume">Объем груза (м³)</Label>
           <Input
-            className="rounded-2xl"
+            className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
             id="volume"
             type="number"
             step="0.001"
@@ -91,10 +94,10 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
             ) => form.setValue("status", value)}
             disabled={isSubmitting}
           >
-            <SelectTrigger className="rounded-2xl">
+            <SelectTrigger className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
               <SelectValue placeholder="Выберите статус" />
             </SelectTrigger>
-            <SelectContent className="rounded-2xl shadow-xl">
+            <SelectContent className="rounded-2xl shadow-xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20">
               {allStatusOptions.map((status) => (
                 <SelectItem key={status} value={status}>
                   {statusLabels[status] || status}
@@ -113,7 +116,7 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
         <div className="space-y-2">
           <Label htmlFor="address">Адрес *</Label>
           <Textarea
-            className="rounded-2xl"
+            className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
             id="address"
             disabled={isSubmitting || disabledByStatus}
             {...form.register("address")}
@@ -127,7 +130,7 @@ export const OrderDetails = ({ form, isSubmitting, originalStatus, disabledBySta
         <div className="space-y-2">
           <Label htmlFor="addressComment">Комментарий к адресу</Label>
           <Textarea
-            className="rounded-2xl"
+            className="rounded-2xl dark:bg-white/10 dark:backdrop-blur-xl dark:border dark:border-white/20"
             id="addressComment"
             disabled={isSubmitting || disabledByStatus}
             {...form.register("addressComment")}

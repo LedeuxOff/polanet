@@ -4,6 +4,7 @@ import {
   CreateDeliveryInput,
   Delivery,
   DeliveryForm,
+  DeliveryWithIncome,
   deliverySchema,
   Order,
   UpdateDeliveryInput,
@@ -26,7 +27,10 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
   const [error, setError] = useState<string | null>(null);
   const [showDeliveryDialog, setShowDeliveryDialog] = useState(false);
   const [editingDelivery, setEditingDelivery] = useState<Delivery | null>(null);
-  const [completingDelivery, setCompletingDelivery] = useState(false);
+  const [completingDelivery, setCompletingDelivery] = useState<Delivery | null>(null);
+  const [recipientModalMode, setRecipientModalMode] = useState<"complete" | "change-recipient">(
+    "complete",
+  );
 
   useEffect(() => {
     Promise.all([
@@ -87,30 +91,57 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
     form.reset();
   };
 
-  const handleCompleteDelivery = async (delivery: Delivery) => {
-    // Всегда открываем модальное окно для выбора получателя при завершении доставки
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const income = (delivery as any).income;
-    const isPaid = income?.isPaid || false;
+  const refreshData = async () => {
+    const updatedDeliveries = await deliveriesApi.list(Number(orderId));
+    setDeliveries(updatedDeliveries);
+    // Обновляем заявку для пересчета долгов
+    const updated = await ordersApi.get(Number(orderId));
+    setOrder(updated);
+  };
 
-    setEditingDelivery(delivery);
-    setCompletingDelivery(true);
-    setShowDeliveryDialog(true);
-    // Устанавливаем значения формы для редактирования
-    form.reset({
-      driverId: delivery.driverId,
-      carId: delivery.carId,
-      dateTime: delivery.dateTime,
-      amount: income?.amount || delivery.amount || 0,
-      volume: delivery.volume || undefined,
-      comment: delivery.comment || undefined,
-      paymentMethod: delivery.paymentMethod,
-      isPaid: isPaid,
-      isPaymentBeforeUnloading: delivery.isPaymentBeforeUnloading,
-      notifyClient: delivery.notifyClient,
-      notifyDriver: delivery.notifyDriver,
-      recipientId: delivery.recipientId || undefined,
-    });
+  // Открывает модалку завершения доставки (информация + выбор получателя)
+  const handleCompleteDelivery = async (delivery: Delivery) => {
+    setError(null);
+    setRecipientModalMode("complete");
+    setCompletingDelivery(delivery);
+  };
+
+  // Открывает ту же модалку для смены получателя у завершённой доставки
+  const handleChangeRecipient = (delivery: Delivery) => {
+    setError(null);
+    setRecipientModalMode("change-recipient");
+    setCompletingDelivery(delivery);
+  };
+
+  const handleCloseCompleteDelivery = () => {
+    setCompletingDelivery(null);
+    setError(null);
+  };
+
+  const handleConfirmCompleteDelivery = async (recipientId: number) => {
+    if (!completingDelivery) return;
+    setError(null);
+    try {
+      const currentRecipientId =
+        (completingDelivery as DeliveryWithIncome).income?.recipientId ??
+        completingDelivery.recipientId;
+      if (currentRecipientId !== recipientId) {
+        await deliveriesApi.update(completingDelivery.id, { recipientId });
+      }
+      if (recipientModalMode === "complete") {
+        await deliveriesApi.complete(completingDelivery.id);
+      }
+      setCompletingDelivery(null);
+      await refreshData();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : recipientModalMode === "complete"
+            ? "Ошибка при завершении доставки"
+            : "Ошибка при смене получателя",
+      );
+    }
   };
 
   const handleDeleteDelivery = async (deliveryId: number) => {
@@ -146,14 +177,8 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
           isPaymentBeforeUnloading: data.isPaymentBeforeUnloading,
           notifyClient: data.notifyClient,
           notifyDriver: data.notifyDriver,
-          recipientId: data.recipientId,
         };
         await deliveriesApi.update(editingDelivery.id, updateData);
-
-        // Если режим завершения доставки, автоматически завершаем её
-        if (completingDelivery) {
-          await deliveriesApi.complete(editingDelivery.id);
-        }
       } else {
         const createData: CreateDeliveryInput = {
           orderId: Number(orderId),
@@ -174,14 +199,8 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
       }
       setShowDeliveryDialog(false);
       setEditingDelivery(null);
-      setCompletingDelivery(false);
       form.reset();
-      // Обновляем список доставок
-      const updatedDeliveries = await deliveriesApi.list(Number(orderId));
-      setDeliveries(updatedDeliveries);
-      // Обновляем заявку для пересчета долгов
-      const updated = await ordersApi.get(Number(orderId));
-      setOrder(updated);
+      await refreshData();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка при сохранении доставки");
     }
@@ -204,6 +223,9 @@ export const useOrderDeliveries = ({ orderId, setOrder }: Props) => {
     setEditingDelivery,
     users,
     completingDelivery,
-    setCompletingDelivery,
+    handleCloseCompleteDelivery,
+    handleConfirmCompleteDelivery,
+    handleChangeRecipient,
+    recipientModalMode,
   };
 };

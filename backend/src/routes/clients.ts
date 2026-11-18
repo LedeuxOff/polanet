@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db } from "../db/index.js";
+import { db, sqlite } from "../db/index.js";
 import { clients } from "../db/schema.js";
 import { authenticate, type AuthRequest } from "../middleware/auth.js";
 import { requirePermission } from "../middleware/permissions.js";
@@ -80,6 +80,42 @@ router.get("/", authenticate, requirePermission("clients:list"), (req: AuthReque
 });
 
 // Получить клиента по ID
+// Сводка по клиентам для главной страницы
+router.get(
+  "/stats/summary",
+  authenticate,
+  requirePermission("clients:list"),
+  (_req: AuthRequest, res) => {
+    try {
+      const row = sqlite
+        .prepare(
+          `
+          SELECT
+            COUNT(*) AS total,
+            SUM(CASE WHEN type = 'individual' THEN 1 ELSE 0 END) AS individual,
+            SUM(CASE WHEN type = 'legal' THEN 1 ELSE 0 END) AS legal,
+            (SELECT COUNT(DISTINCT client_id) FROM orders WHERE client_id IS NOT NULL) AS withOrders
+          FROM clients
+        `,
+        )
+        .get() as Record<string, number | null>;
+
+      res.json({
+        total: Number(row.total ?? 0),
+        individual: Number(row.individual ?? 0),
+        legal: Number(row.legal ?? 0),
+        withOrders: Number(row.withOrders ?? 0),
+      });
+    } catch (error) {
+      console.error("Error fetching clients summary:", error);
+      res.status(500).json({
+        error: "Ошибка сервера",
+        details: error instanceof Error ? error.message : error,
+      });
+    }
+  },
+);
+
 router.get("/:id", authenticate, requirePermission("clients:detail"), (req: AuthRequest, res) => {
   try {
     const client = db

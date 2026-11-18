@@ -4,7 +4,7 @@
  * Источник — SQLite-файл, сконвертированный из бэкапа MS SQL (old_system.sqlite).
  * Переносит:
  *   - Teams  → teams (бригады, строки календаря работ)
- *   - Orders → works (работы) + clients (клиенты, склейка по телефону)
+ *   - Orders → works (работы) + screed_clients (клиенты стяжки, склейка по телефону)
  *     В старой системе работы были на целый день — ставим 08:00–24:00 (весь рабочий диапазон календаря)
  *
  * Скрипт идемпотентен: повторный запуск пропускает уже импортированные записи (по legacy_id).
@@ -141,23 +141,23 @@ function main() {
       teamByLegacy.set(t.legacy_id, t.id);
     }
 
-    // 2. Клиенты, уже существующие в PolaNet (по телефону)
+    // 2. Клиенты стяжки, уже существующие в PolaNet (по телефону)
     const clientByPhone = new Map<string, number>();
     for (const c of target
-      .prepare("SELECT id, phone FROM clients WHERE phone IS NOT NULL")
+      .prepare("SELECT id, phone FROM screed_clients WHERE phone IS NOT NULL")
       .all() as { id: number; phone: string }[]) {
       const p = extractPhone(c.phone);
       if (p && !clientByPhone.has(p)) clientByPhone.set(p, c.id);
     }
 
     const insertClient = target.prepare(
-      `INSERT INTO clients (type, first_name, phone, created_at, updated_at)
-       VALUES ('individual', ?, ?, ?, ?)`,
+      `INSERT INTO screed_clients (first_name, phone, created_at, updated_at)
+       VALUES (?, ?, ?, ?)`,
     );
     const workExists = target.prepare("SELECT 1 FROM works WHERE legacy_id = ?");
     const insertWork = target.prepare(
       `INSERT INTO works (
-         date, start_time, end_time, team_id, client_id, address, area, thickness, strength, work_type, hose_length,
+         date, start_time, end_time, team_id, screed_client_id, address, area, thickness, strength, work_type, hose_length,
          is_transmix, price, is_final_price, status, measurer_name, notes, legacy_id,
          created_by_id, created_at, updated_at
        ) VALUES (?, '08:00', '24:00', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?)`,

@@ -72,6 +72,74 @@ async function logOrderHistory(
 }
 
 // Получить все доставки с фильтрацией по дате (для календаря)
+// Сводка по доставкам для главной страницы.
+// Даты в БД хранятся как локальное время "YYYY-MM-DDTHH:mm", поэтому
+// границы периодов передаёт клиент в своём часовом поясе.
+router.get(
+  "/stats/summary",
+  authenticate,
+  requirePermission("deliveries:list"),
+  (req: AuthRequest, res) => {
+    try {
+      const localDateTime = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+      const localDate = /^\d{4}-\d{2}-\d{2}$/;
+      const { now, today, weekStart, weekEnd } = req.query as Record<string, string | undefined>;
+
+      if (
+        !now ||
+        !localDateTime.test(now) ||
+        !today ||
+        !localDate.test(today) ||
+        !weekStart ||
+        !localDate.test(weekStart) ||
+        !weekEnd ||
+        !localDate.test(weekEnd)
+      ) {
+        return res.status(400).json({ error: "Неверные параметры дат" });
+      }
+
+      const row = sqlite
+        .prepare(
+          `
+          SELECT
+            SUM(CASE WHEN substr(date_time, 1, 10) = @today THEN 1 ELSE 0 END) AS today,
+            SUM(CASE WHEN substr(date_time, 1, 10) BETWEEN @weekStart AND @weekEnd THEN 1 ELSE 0 END) AS week,
+            SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) AS completed,
+            SUM(CASE WHEN status != 'completed' THEN 1 ELSE 0 END) AS in_progress
+          FROM deliveries
+        `,
+        )
+        .get({ today, weekStart, weekEnd }) as Record<string, number | null>;
+
+      const nearest = sqlite
+        .prepare(
+          `
+          SELECT id, order_id AS orderId, date_time AS dateTime
+          FROM deliveries
+          WHERE status != 'completed' AND substr(date_time, 1, 16) >= @now
+          ORDER BY date_time ASC
+          LIMIT 1
+        `,
+        )
+        .get({ now }) as { id: number; orderId: number; dateTime: string } | undefined;
+
+      res.json({
+        today: Number(row?.today ?? 0),
+        week: Number(row?.week ?? 0),
+        completed: Number(row?.completed ?? 0),
+        inProgress: Number(row?.in_progress ?? 0),
+        nearest: nearest ?? null,
+      });
+    } catch (error) {
+      console.error("Error fetching deliveries summary:", error);
+      res.status(500).json({
+        error: "Ошибка сервера",
+        details: error instanceof Error ? error.message : error,
+      });
+    }
+  },
+);
+
 router.get(
   "/calendar",
   authenticate,
@@ -785,7 +853,11 @@ router.get(
           oldRecipientId: item.old_recipient_id ? Number(item.old_recipient_id) : null,
           oldRecipientName: oldRecipientName || "",
           action: item.action,
-          comment: item.comment ?? null,
+          comment: item.comment
+            ? String(item.comment).replace(/ID:\s*(\d+)/, (match: string, id: string) =>
+                Number(id) === Number(item.recipient_id) && recipientName ? recipientName : match,
+              )
+            : null,
           createdAt: item.created_at,
           changedByName: item.changed_by_name?.trim() || null,
         };

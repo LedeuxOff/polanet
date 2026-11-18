@@ -12,7 +12,13 @@ export interface OrdersListQuery extends PaginationParams {
   dateTo?: string;
 }
 
+export interface OrdersStatusStats {
+  counts: Partial<Record<Order["status"], number>>;
+  total: number;
+}
+
 export const ordersApi = {
+  statusStats: () => request<OrdersStatusStats>("/orders/stats/status"),
   list: (query?: OrdersListQuery) => {
     const params = new URLSearchParams();
     if (query?.page) params.set("page", String(query.page));

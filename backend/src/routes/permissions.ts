@@ -76,7 +76,8 @@ router.post(
 
       // Добавляем новые права
       if (permissionCodes.length > 0) {
-        const inserts = permissionCodes.map((code: string) =>
+        const uniqueCodes = [...new Set(permissionCodes as string[])];
+        const inserts = uniqueCodes.map((code: string) =>
           db
             .select({ id: permissions.id })
             .from(permissions)

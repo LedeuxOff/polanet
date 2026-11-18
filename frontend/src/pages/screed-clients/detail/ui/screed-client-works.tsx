@@ -12,8 +12,8 @@ interface Props {
 
 const PAGE_SIZE = 5;
 
-/** Работы клиента (стяжка) — со ссылкой в календарь работ */
-export const ClientWorks = ({ clientId }: Props) => {
+/** Работы клиента стяжки — со ссылкой в календарь */
+export const ScreedClientWorks = ({ clientId }: Props) => {
   const [works, setWorks] = useState<Work[]>([]);
   const [total, setTotal] = useState(0);
   const [limit, setLimit] = useState(PAGE_SIZE);
@@ -56,9 +56,7 @@ export const ClientWorks = ({ clientId }: Props) => {
               search={{ workId: w.id }}
               className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border px-3 py-2 text-sm hover:bg-zinc-50 dark:border-white/20 dark:hover:bg-white/5"
             >
-              <span className="font-medium">
-                {fromDateKey(w.date).toLocaleDateString("ru-RU")}
-              </span>
+              <span className="font-medium">{fromDateKey(w.date).toLocaleDateString("ru-RU")}</span>
               <span
                 className={cn(
                   "rounded-full border px-2 py-0.5 text-xs",

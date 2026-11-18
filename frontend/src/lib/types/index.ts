@@ -11,3 +11,4 @@ export * from "./expense-types";
 export * from "./template-types";
 export * from "./work-types";
 export * from "./worker-types";
+export * from "./screed-client-types";

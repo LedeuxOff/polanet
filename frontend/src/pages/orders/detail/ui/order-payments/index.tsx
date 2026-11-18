@@ -1,19 +1,23 @@
-import { Button } from "@/components/ui/button";
 import { Order } from "@/lib/types";
-import { Dispatch, SetStateAction, useMemo, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from "react";
+import { ReceiptIcon } from "lucide-react";
 import { useOrderPayments } from "./hooks";
 import { useIsMobile } from "@/hooks";
+import { cn } from "@/lib/utils";
 import { PaymentAddMobileModal } from "./ui/payment-add-mobile-modal";
 import { PaymentAddDesktopModal } from "./ui/payment-add-desktop-modal";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { PaymentItemMobile } from "./ui/payment-item-mobile";
 import { PaymentItemDesktop } from "./ui/payment-item-desktop";
-import { PaymentsPagination } from "./ui/payments-pagination";
+import { FinanceSummary } from "./ui/finance-summary";
+import { ListPagination } from "../shared/list-pagination";
 
 interface Props {
   orderId: string;
@@ -21,137 +25,194 @@ interface Props {
   setOrder: Dispatch<SetStateAction<Order | null>>;
 }
 
-const ITEMS_PER_PAGE = 3;
+export interface OrderPaymentsHandle {
+  openIncomeDialog: () => void;
+}
 
-export const OrderPayments = ({ orderId, order, setOrder }: Props) => {
-  const [currentPage, setCurrentPage] = useState(1);
+type IncomeFilter = "all" | "prepayment" | "delivery_payment";
 
-  const isMobile = useIsMobile();
+const filters: { value: IncomeFilter; label: string }[] = [
+  { value: "all", label: "Все" },
+  { value: "prepayment", label: "Предоплаты" },
+  { value: "delivery_payment", label: "Оплаты доставок" },
+];
 
-  const {
-    receivedAmount,
-    pendingAmount,
-    customerDebt,
-    companyDebt,
-    incomes,
-    openIncomeDialog,
-    showIncomeDialog,
-    setShowIncomeDialog,
-    incomeForm,
-    handleAddIncome,
-    error,
-    handleCancelIncome,
-    isAddingIncome,
-  } = useOrderPayments({ orderId, order, setOrder });
+const ITEMS_PER_PAGE = 8;
 
-  const paginatedIncomes = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return incomes.slice(start, start + ITEMS_PER_PAGE);
-  }, [incomes, currentPage]);
+export const OrderPayments = forwardRef<OrderPaymentsHandle, Props>(
+  ({ orderId, order, setOrder }, ref) => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const [filter, setFilter] = useState<IncomeFilter>("all");
 
-  const totalPages = useMemo(() => {
-    return Math.max(1, Math.ceil(incomes.length / ITEMS_PER_PAGE));
-  }, [incomes.length]);
+    const isMobile = useIsMobile();
 
-  return (
-    <>
-      <div className="flex flex-col gap-4">
-        <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
-          <div className="border rounded-2xl shadow-xl p-4">
-            <p className="text-sm text-muted-foreground">Получено средств</p>
-            <p className="text-2xl font-bold text-green-600">{receivedAmount} ₽</p>
-          </div>
-          <div className="border rounded-2xl shadow-xl p-4">
-            <p className="text-sm text-muted-foreground">Ожидает подтверждения</p>
-            <p className="text-2xl font-bold text-yellow-600">{pendingAmount} ₽</p>
-          </div>
-        </div>
+    const {
+      receivedAmount,
+      pendingAmount,
+      customerDebt,
+      companyDebt,
+      incomes,
+      openIncomeDialog,
+      showIncomeDialog,
+      setShowIncomeDialog,
+      incomeForm,
+      handleAddIncome,
+      error,
+      handleCancelIncome,
+      isAddingIncome,
+    } = useOrderPayments({ orderId, order, setOrder });
 
-        <div className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-2"} gap-4`}>
-          <div className="border rounded-2xl shadow-xl p-4">
-            <p className="text-sm text-muted-foreground">Долг клиента</p>
-            <p className="text-2xl font-bold text-destructive">{customerDebt} ₽</p>
-          </div>
-          <div className="border rounded-2xl shadow-xl p-4">
-            <p className="text-sm text-muted-foreground">Долг компании</p>
-            <p className="text-2xl font-bold text-orange-600">{companyDebt} ₽</p>
-          </div>
-          {/* {customerDebt <= 0 && companyDebt <= 0 && (
-            <div className="p-4 border rounded-md bg-green-50 col-span-2">
-              <p className="text-sm text-muted-foreground">Статус расчетов</p>
-              <p className="text-2xl font-bold text-green-600">Все расчеты завершены</p>
-            </div>
-          )} */}
-        </div>
+    useImperativeHandle(ref, () => ({ openIncomeDialog }));
 
-        {/* Доходы */}
-        {incomes.length > 0 && (
-          <div>
-            <Accordion type="single" collapsible className="w-full">
-              <AccordionItem value="incomes">
-                <AccordionTrigger className="text-base">Доходы ({incomes.length})</AccordionTrigger>
-                <AccordionContent>
-                  <div className="flex flex-col gap-4">
-                    {paginatedIncomes.map((income) => {
-                      if (isMobile) return <PaymentItemMobile key={income.id} income={income} />;
+    const sortedIncomes = useMemo(
+      () =>
+        [...incomes].sort(
+          (a, b) => new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime(),
+        ),
+      [incomes],
+    );
 
-                      return <PaymentItemDesktop key={income.id} income={income} />;
-                    })}
-                  </div>
+    const counts = useMemo(
+      () => ({
+        all: incomes.length,
+        prepayment: incomes.filter((i) => i.incomeType === "prepayment").length,
+        delivery_payment: incomes.filter((i) => i.incomeType === "delivery_payment").length,
+      }),
+      [incomes],
+    );
 
-                  {totalPages > 1 && (
-                    <PaymentsPagination
-                      currentPage={currentPage}
-                      setCurrentPage={setCurrentPage}
-                      totalPages={totalPages}
-                    />
+    const filtered = useMemo(
+      () =>
+        filter === "all" ? sortedIncomes : sortedIncomes.filter((i) => i.incomeType === filter),
+      [sortedIncomes, filter],
+    );
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+
+    useEffect(() => {
+      setCurrentPage(1);
+    }, [filter]);
+
+    useEffect(() => {
+      if (currentPage > totalPages) setCurrentPage(totalPages);
+    }, [currentPage, totalPages]);
+
+    const paginatedIncomes = useMemo(() => {
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      return filtered.slice(start, start + ITEMS_PER_PAGE);
+    }, [filtered, currentPage]);
+
+    return (
+      <>
+        <div className="flex flex-col gap-5">
+          <FinanceSummary
+            receivedAmount={receivedAmount}
+            pendingAmount={pendingAmount}
+            customerDebt={customerDebt}
+            companyDebt={companyDebt}
+            isMobile={isMobile}
+          />
+
+          <div className="flex flex-col gap-3">
+            <p className="text-sm font-medium">Доходы</p>
+
+            {incomes.length === 0 ? (
+              <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed px-4 py-10 text-center dark:border-white/20">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/60 text-muted-foreground dark:bg-white/10">
+                  <ReceiptIcon className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="font-medium">Доходов пока нет</p>
+                  <p className="text-sm text-muted-foreground">
+                    Нажмите «Добавить» в нижней панели
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
+                  {filters.map(({ value, label }) => {
+                    const active = filter === value;
+                    const count = counts[value];
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setFilter(value)}
+                        disabled={value !== "all" && count === 0}
+                        className={cn(
+                          "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors disabled:pointer-events-none disabled:opacity-40 dark:border-white/20",
+                          active
+                            ? "border-transparent bg-blue-600 text-white dark:bg-blue-600/60"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground dark:hover:bg-white/10",
+                        )}
+                      >
+                        {label}
+                        <span
+                          className={cn(
+                            "rounded-full px-1.5 text-xs",
+                            active ? "bg-white/20" : "bg-muted dark:bg-white/10",
+                          )}
+                        >
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="divide-y overflow-hidden rounded-2xl border dark:divide-white/10 dark:border-white/20">
+                  {paginatedIncomes.map((income) =>
+                    isMobile ? (
+                      <PaymentItemMobile key={income.id} income={income} />
+                    ) : (
+                      <PaymentItemDesktop key={income.id} income={income} />
+                    ),
                   )}
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+                </div>
+
+                {totalPages > 1 && (
+                  <ListPagination
+                    currentPage={currentPage}
+                    setCurrentPage={setCurrentPage}
+                    totalPages={totalPages}
+                    totalItems={filtered.length}
+                    itemsPerPage={ITEMS_PER_PAGE}
+                    compact={isMobile}
+                  />
+                )}
+              </>
+            )}
           </div>
+        </div>
+
+        {/* Модальное окно добавления дохода */}
+        {isMobile && (
+          <PaymentAddMobileModal
+            showIncomeDialog={showIncomeDialog}
+            setShowIncomeDialog={setShowIncomeDialog}
+            form={incomeForm}
+            handleAddIncome={handleAddIncome}
+            error={error}
+            handleCancelIncome={handleCancelIncome}
+            isAddingIncome={isAddingIncome}
+          />
         )}
 
-        <div className="w-full flex justify-end">
-          <Button
-            type="button"
-            onClick={openIncomeDialog}
-            className="bg-blue-600/80 hover:bg-blue-600 rounded-2xl"
-            disabled={
-              order?.status === "completed" ||
-              order?.status === "cancelled" ||
-              order?.status === "archived"
-            }
-          >
-            Добавить доход
-          </Button>
-        </div>
-      </div>
+        {!isMobile && (
+          <PaymentAddDesktopModal
+            showIncomeDialog={showIncomeDialog}
+            setShowIncomeDialog={setShowIncomeDialog}
+            form={incomeForm}
+            handleAddIncome={handleAddIncome}
+            error={error}
+            handleCancelIncome={handleCancelIncome}
+            isAddingIncome={isAddingIncome}
+          />
+        )}
+      </>
+    );
+  },
+);
 
-      {/* Модальное окно добавления дохода */}
-      {isMobile && (
-        <PaymentAddMobileModal
-          showIncomeDialog={showIncomeDialog}
-          setShowIncomeDialog={setShowIncomeDialog}
-          form={incomeForm}
-          handleAddIncome={handleAddIncome}
-          error={error}
-          handleCancelIncome={handleCancelIncome}
-          isAddingIncome={isAddingIncome}
-        />
-      )}
-
-      {!isMobile && (
-        <PaymentAddDesktopModal
-          showIncomeDialog={showIncomeDialog}
-          setShowIncomeDialog={setShowIncomeDialog}
-          form={incomeForm}
-          handleAddIncome={handleAddIncome}
-          error={error}
-          handleCancelIncome={handleCancelIncome}
-          isAddingIncome={isAddingIncome}
-        />
-      )}
-    </>
-  );
-};
+OrderPayments.displayName = "OrderPayments";

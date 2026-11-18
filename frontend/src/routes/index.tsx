@@ -1,17 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/lib/contexts/auth-context";
 import { useIsMobile } from "@/hooks";
 import { useTabbar } from "@/lib/contexts/tabbar-context";
+import { OrdersStatusSection } from "@/pages/home/orders-status-section";
+import { DeliveriesCalendarSection } from "@/pages/home/deliveries-calendar-section";
 import {
-  CalendarDaysIcon,
-  CreditCardIcon,
-  HeartHandshake,
-  MenuIcon,
-  UsersIcon,
-} from "lucide-react";
+  ClientsSection,
+  EmployeesSection,
+  TransportCardsSection,
+} from "@/pages/home/summary-sections";
+import { MenuIcon } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -35,88 +35,15 @@ function Index() {
         </CardContent>
       </Card>
 
-      <Link to="/users" className="col-span-12 lg:col-span-12">
-        <Card className="rounded-2xl shadow-xl relative overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20">
-          <CardHeader>
-            <CardTitle className="dark:text-slate-100">Сотрудники</CardTitle>
-            <CardDescription className="dark:text-slate-200">
-              Управление сотрудниками системы
-            </CardDescription>
-          </CardHeader>
+      <OrdersStatusSection />
 
-          <div className="absolute top-3 right-3">
-            <div className="relative flex h-20 w-20 items-center justify-center">
-              <div className="absolute inset-0 rounded-full bg-blue-300/30 animate-[pulse-ring-expand_2s_ease-in-out_infinite]" />
-              <div className="absolute inset-0 rounded-full bg-blue-300/20 animate-[pulse-ring-expand_2s_ease-in-out_infinite_1s]" />
-              <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full bg-blue-300/10">
-                <UsersIcon className="h-10 w-10 text-blue-300" />
-              </div>
-            </div>
-          </div>
-        </Card>
-      </Link>
+      <EmployeesSection />
 
-      <Link to="/clients" className="col-span-12 lg:col-span-5">
-        <Card className="rounded-2xl shadow-xl relative overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20">
-          <CardHeader>
-            <CardTitle className="dark:text-slate-100">Клиенты</CardTitle>
-            <CardDescription className="dark:text-slate-200">Просмотр клиентов</CardDescription>
-          </CardHeader>
+      <ClientsSection />
 
-          <div className="absolute top-3 right-3">
-            <div className="relative flex h-20 w-20 items-center justify-center">
-              <div className="absolute inset-0 rounded-full bg-yellow-300/30 animate-[pulse-ring-expand_2s_ease-in-out_infinite]" />
-              <div className="absolute inset-0 rounded-full bg-yellow-300/20 animate-[pulse-ring-expand_2s_ease-in-out_infinite_1s]" />
-              <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full bg-yellow-300/10">
-                <HeartHandshake className="h-10 w-10 text-yellow-300" />
-              </div>
-            </div>
-          </div>
-        </Card>
-      </Link>
+      <TransportCardsSection />
 
-      <Link to="/transport-cards" className="col-span-12 lg:col-span-7">
-        <Card className="rounded-2xl shadow-xl relative overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20">
-          <CardHeader>
-            <CardTitle className="dark:text-slate-100">Топливные карты</CardTitle>
-            <CardDescription className="dark:text-slate-200">
-              Управление топливными картами
-            </CardDescription>
-          </CardHeader>
-
-          <div className="absolute top-3 right-3">
-            <div className="relative flex h-20 w-20 items-center justify-center">
-              <div className="absolute inset-0 rounded-full bg-green-300/30 animate-[pulse-ring-expand_2s_ease-in-out_infinite]" />
-              <div className="absolute inset-0 rounded-full bg-green-300/20 animate-[pulse-ring-expand_2s_ease-in-out_infinite_1s]" />
-              <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full bg-green-300/10">
-                <CreditCardIcon className="h-10 w-10 text-green-300" />
-              </div>
-            </div>
-          </div>
-        </Card>
-      </Link>
-
-      <Link to="/calendar" className="col-span-12">
-        <Card className="rounded-2xl shadow-xl relative overflow-hidden bg-white/10 backdrop-blur-xl border border-white/20">
-          <CardHeader>
-            <CardTitle className="dark:text-slate-100">Календарь доставок</CardTitle>
-            <CardDescription className="dark:text-slate-200 max-w-[80%]">
-              Многофункциональный календарь с возможностью просмотра предстоящих доставок, а так же
-              их создание и редактирование
-            </CardDescription>
-          </CardHeader>
-
-          <div className="absolute top-3 right-3">
-            <div className="relative flex h-20 w-20 items-center justify-center">
-              <div className="absolute inset-0 rounded-full bg-cyan-300/30 animate-[pulse-ring-expand_2s_ease-in-out_infinite]" />
-              <div className="absolute inset-0 rounded-full bg-cyan-300/20 animate-[pulse-ring-expand_2s_ease-in-out_infinite_1s]" />
-              <div className="relative z-10 flex h-20 w-20 items-center justify-center rounded-full bg-cyan-300/10">
-                <CalendarDaysIcon className="h-10 w-10 text-cyan-300" />
-              </div>
-            </div>
-          </div>
-        </Card>
-      </Link>
+      <DeliveriesCalendarSection />
 
       {isMobile && (
         <div

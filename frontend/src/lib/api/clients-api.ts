@@ -6,7 +6,15 @@ export interface ClientsListQuery extends PaginationParams {
   type?: string;
 }
 
+export interface ClientsSummary {
+  total: number;
+  individual: number;
+  legal: number;
+  withOrders: number;
+}
+
 export const clientsApi = {
+  summary: () => request<ClientsSummary>("/clients/stats/summary"),
   list: (query?: ClientsListQuery) => {
     const params = new URLSearchParams();
     if (query?.page) params.set("page", String(query.page));

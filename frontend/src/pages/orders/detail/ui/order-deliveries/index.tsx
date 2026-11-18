@@ -1,20 +1,25 @@
 import { Button } from "@/components/ui/button";
-import { Order } from "@/lib/types";
-import { Dispatch, SetStateAction } from "react";
-import { useOrderDeliveries } from "./hooks";
+import { DeliveryWithIncome, Order } from "@/lib/types";
 import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { useState, useMemo } from "react";
+  Dispatch,
+  SetStateAction,
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from "react";
+import { useOrderDeliveries } from "./hooks";
 import { useIsMobile } from "@/hooks";
+import { cn, getFormattedAmount } from "@/lib/utils";
+import { TruckIcon } from "lucide-react";
 import { AddDeliveryMobileModal } from "./ui/add-delivery-mobile-modal";
 import { AddDeliveryDesktopModal } from "./ui/add-delivery-desktop-modal";
 import { DeliveryDesktopItem } from "./ui/delivery-desktop-item";
 import { DeliveryMobileItem } from "./ui/delivery-mobile-item";
-import { DeliveriesPagination } from "./ui/deliveries-pagination";
+import { CompleteDeliveryModal } from "./ui/complete-delivery-modal";
+import { ListPagination } from "../shared/list-pagination";
+import { getDeliveryAmount } from "./utils";
 
 interface Props {
   orderId: string;
@@ -23,162 +28,227 @@ interface Props {
   disabledByStatus: boolean;
 }
 
-const ITEMS_PER_PAGE = 3;
+const ITEMS_PER_PAGE = 5;
 
-export const OrderDeliveries = ({ orderId, setOrder, order, disabledByStatus }: Props) => {
-  const isMobile = useIsMobile();
-  const {
-    deliveries,
-    error,
-    handleCompleteDelivery,
-    handleCancelDelivery,
-    handleEditDelivery,
-    handleDeleteDelivery,
-    showDeliveryDialog,
-    setShowDeliveryDialog,
-    editingDelivery,
-    handleSaveDelivery,
-    form,
-    drivers,
-    cars,
-    setEditingDelivery,
-    users,
-    completingDelivery,
-  } = useOrderDeliveries({ orderId, setOrder });
+const formatVolume = (value: number) =>
+  new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 2 }).format(value);
 
-  const [currentPage, setCurrentPage] = useState(1);
+export interface OrderDeliveriesHandle {
+  openAddDialog: () => void;
+}
 
-  const totalPages = useMemo(() => {
-    return Math.max(1, Math.ceil(deliveries.length / ITEMS_PER_PAGE));
-  }, [deliveries.length]);
+export const OrderDeliveries = forwardRef<OrderDeliveriesHandle, Props>(
+  ({ orderId, setOrder, order, disabledByStatus }, ref) => {
+    const isMobile = useIsMobile();
+    const {
+      deliveries,
+      error,
+      handleCompleteDelivery,
+      handleCancelDelivery,
+      handleEditDelivery,
+      handleDeleteDelivery,
+      showDeliveryDialog,
+      setShowDeliveryDialog,
+      editingDelivery,
+      handleSaveDelivery,
+      form,
+      drivers,
+      cars,
+      setEditingDelivery,
+      users,
+      completingDelivery,
+      handleCloseCompleteDelivery,
+      handleConfirmCompleteDelivery,
+      handleChangeRecipient,
+      recipientModalMode,
+    } = useOrderDeliveries({ orderId, setOrder });
 
-  const paginatedDeliveries = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return deliveries.slice(start, start + ITEMS_PER_PAGE);
-  }, [deliveries, currentPage]);
+    const [currentPage, setCurrentPage] = useState(1);
 
-  return (
-    <>
-      {deliveries.length === 0 ? (
-        <div className="flex flex-col gap-4">
-          <p className="text-center text-muted-foreground py-8">
-            Нет доставок. Нажмите "Добавить доставку" чтобы создать.
-          </p>
+    const openAddDialog = () => {
+      setShowDeliveryDialog(true);
+      setEditingDelivery(null);
+      form.reset();
+      form.setValue("orderId", Number(orderId));
+    };
 
-          <Button
-            type="button"
-            onClick={() => {
-              setShowDeliveryDialog(true);
-              setEditingDelivery(null);
-              form.reset();
-              form.setValue("orderId", Number(orderId));
-            }}
-            className="bg-blue-600 hover:bg-blue-700"
-            disabled={disabledByStatus}
-          >
-            Добавить доставку
-          </Button>
-        </div>
-      ) : (
-        <div>
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="deliveries">
-              <AccordionTrigger className="text-base">
-                Доставки ({deliveries.length})
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex flex-col gap-4">
-                  {paginatedDeliveries.map((delivery) => {
-                    if (isMobile)
-                      return (
-                        <DeliveryMobileItem
-                          key={delivery.id}
-                          delivery={delivery}
-                          handleCompleteDelivery={() => handleCompleteDelivery(delivery)}
-                          handleEditDelivery={handleEditDelivery}
-                          disabledByStatus={disabledByStatus}
-                          handleDeleteDelivery={handleDeleteDelivery}
-                        />
-                      );
+    useImperativeHandle(ref, () => ({ openAddDialog }));
 
-                    return (
-                      <DeliveryDesktopItem
-                        key={delivery.id}
-                        delivery={delivery}
-                        handleCompleteDelivery={() => handleCompleteDelivery(delivery)}
-                        handleEditDelivery={handleEditDelivery}
-                        disabledByStatus={disabledByStatus}
-                        handleDeleteDelivery={handleDeleteDelivery}
-                      />
-                    );
-                  })}
+    const stats = useMemo(() => {
+      const list = deliveries as DeliveryWithIncome[];
+      const completed = list.filter((d) => d.status === "completed");
+      const deliveredVolume = completed.reduce((sum, d) => sum + (Number(d.volume) || 0), 0);
+      const plannedVolume = list.reduce((sum, d) => sum + (Number(d.volume) || 0), 0);
+      const targetVolume = Number(order?.volume) || plannedVolume;
+      const totalAmount = list.reduce((sum, d) => sum + (Number(getDeliveryAmount(d)) || 0), 0);
+      const progress = targetVolume > 0 ? Math.min(100, (deliveredVolume / targetVolume) * 100) : 0;
 
-                  {totalPages > 1 && (
-                    <DeliveriesPagination
-                      currentPage={currentPage}
-                      setCurrentPage={setCurrentPage}
-                      totalPages={totalPages}
-                    />
-                  )}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-          <div className="w-full flex justify-end mt-4">
-            <Button
-              type="button"
-              onClick={() => {
-                setShowDeliveryDialog(true);
-                setEditingDelivery(null);
-                form.reset();
-                form.setValue("orderId", Number(orderId));
-              }}
-              className="rounded-2xl bg-blue-600/80 hover:bg-blue-600"
-              disabled={
-                order?.status === "completed" ||
-                order?.status === "cancelled" ||
-                order?.status === "archived"
-              }
-            >
-              Добавить доставку
-            </Button>
+      return {
+        total: list.length,
+        completed: completed.length,
+        inProgress: list.length - completed.length,
+        deliveredVolume,
+        targetVolume,
+        totalAmount,
+        progress,
+      };
+    }, [deliveries, order?.volume]);
+
+    const totalPages = useMemo(() => {
+      return Math.max(1, Math.ceil(deliveries.length / ITEMS_PER_PAGE));
+    }, [deliveries.length]);
+
+    useEffect(() => {
+      if (currentPage > totalPages) setCurrentPage(totalPages);
+    }, [currentPage, totalPages]);
+
+    const paginatedDeliveries = useMemo(() => {
+      const start = (currentPage - 1) * ITEMS_PER_PAGE;
+      return deliveries.slice(start, start + ITEMS_PER_PAGE);
+    }, [deliveries, currentPage]);
+
+    return (
+      <>
+        {deliveries.length === 0 ? (
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed px-4 py-10 text-center dark:border-white/20">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/60 text-muted-foreground dark:bg-white/10">
+              <TruckIcon className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="font-medium">Доставок пока нет</p>
+              <p className="text-sm text-muted-foreground">
+                Нажмите «Добавить» в нижней панели
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="flex flex-col gap-4">
+            <div className={cn("grid gap-3", isMobile ? "grid-cols-2" : "grid-cols-3")}>
+              <div className="rounded-2xl border p-3 dark:border-white/20">
+                <p className="text-xs text-muted-foreground">Доставки</p>
+                <p className="text-xl font-bold">
+                  {stats.completed}
+                  <span className="text-base font-normal text-muted-foreground">
+                    {" "}
+                    / {stats.total}
+                  </span>
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {stats.inProgress > 0 ? `в процессе: ${stats.inProgress}` : "все завершены"}
+                </p>
+              </div>
 
-      {/* Модальное мобильное окно добавления/редактирования доставки */}
-      {isMobile && (
-        <AddDeliveryMobileModal
-          showDeliveryDialog={showDeliveryDialog}
-          setShowDeliveryDialog={setShowDeliveryDialog}
-          editingDelivery={editingDelivery}
-          form={form}
-          error={error}
-          handleSaveDelivery={handleSaveDelivery}
+              <div className="rounded-2xl border p-3 dark:border-white/20">
+                <p className="text-xs text-muted-foreground">Сумма доставок</p>
+                <p className="text-xl font-bold">{getFormattedAmount(stats.totalAmount)} ₽</p>
+              </div>
+
+              <div
+                className={cn(
+                  "flex flex-col gap-1.5 rounded-2xl border p-3 dark:border-white/20",
+                  isMobile && "col-span-2",
+                )}
+              >
+                <div className="flex items-baseline justify-between gap-2">
+                  <p className="text-xs text-muted-foreground">Доставлено</p>
+                  <p className="text-xs text-muted-foreground">{Math.round(stats.progress)}%</p>
+                </div>
+                <p className="text-xl font-bold">
+                  {formatVolume(stats.deliveredVolume)}
+                  <span className="text-base font-normal text-muted-foreground">
+                    {" "}
+                    / {formatVolume(stats.targetVolume)} м³
+                  </span>
+                </p>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted dark:bg-white/10">
+                  <div
+                    className="h-full rounded-full bg-green-500 transition-all"
+                    style={{ width: `${stats.progress}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <p className="text-sm font-medium">Список доставок</p>
+
+            <div className="flex flex-col gap-3">
+              {paginatedDeliveries.map((delivery) => {
+                const itemProps = {
+                  delivery: delivery as DeliveryWithIncome,
+                  drivers,
+                  cars,
+                  handleCompleteDelivery: () => handleCompleteDelivery(delivery),
+                  handleChangeRecipient: () => handleChangeRecipient(delivery),
+                  handleEditDelivery,
+                  disabledByStatus,
+                  handleDeleteDelivery,
+                };
+
+                return isMobile ? (
+                  <DeliveryMobileItem key={delivery.id} {...itemProps} />
+                ) : (
+                  <DeliveryDesktopItem key={delivery.id} {...itemProps} />
+                );
+              })}
+            </div>
+
+            {totalPages > 1 && (
+              <ListPagination
+                currentPage={currentPage}
+                setCurrentPage={setCurrentPage}
+                totalPages={totalPages}
+                totalItems={deliveries.length}
+                itemsPerPage={ITEMS_PER_PAGE}
+                compact={isMobile}
+              />
+            )}
+          </div>
+        )}
+
+        {isMobile && (
+          <AddDeliveryMobileModal
+            showDeliveryDialog={showDeliveryDialog}
+            setShowDeliveryDialog={setShowDeliveryDialog}
+            editingDelivery={editingDelivery}
+            form={form}
+            error={error}
+            handleSaveDelivery={handleSaveDelivery}
+            drivers={drivers}
+            cars={cars}
+            handleCancelDelivery={handleCancelDelivery}
+            users={users}
+          />
+        )}
+
+        {!isMobile && (
+          <AddDeliveryDesktopModal
+            showDeliveryDialog={showDeliveryDialog}
+            setShowDeliveryDialog={setShowDeliveryDialog}
+            editingDelivery={editingDelivery}
+            form={form}
+            error={error}
+            handleSaveDelivery={handleSaveDelivery}
+            drivers={drivers}
+            cars={cars}
+            handleCancelDelivery={handleCancelDelivery}
+            users={users}
+          />
+        )}
+
+        <CompleteDeliveryModal
+          isMobile={isMobile}
+          mode={recipientModalMode}
+          delivery={completingDelivery as DeliveryWithIncome | null}
+          onClose={handleCloseCompleteDelivery}
+          onConfirm={handleConfirmCompleteDelivery}
           drivers={drivers}
           cars={cars}
-          handleCancelDelivery={handleCancelDelivery}
           users={users}
-          completingDelivery={completingDelivery}
-        />
-      )}
-
-      {/* Модальное десктоп окно добавления/редактирования доставки */}
-      {!isMobile && (
-        <AddDeliveryDesktopModal
-          showDeliveryDialog={showDeliveryDialog}
-          setShowDeliveryDialog={setShowDeliveryDialog}
-          editingDelivery={editingDelivery}
-          form={form}
           error={error}
-          handleSaveDelivery={handleSaveDelivery}
-          drivers={drivers}
-          cars={cars}
-          handleCancelDelivery={handleCancelDelivery}
-          users={users}
-          completingDelivery={completingDelivery}
         />
-      )}
-    </>
-  );
-};
+      </>
+    );
+  },
+);
+
+OrderDeliveries.displayName = "OrderDeliveries";

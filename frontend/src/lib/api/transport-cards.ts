@@ -12,7 +12,15 @@ export interface TransportCardsListQuery extends PaginationParams {
   cardNumber?: string;
 }
 
+export interface TransportCardsSummary {
+  total: number;
+  active: number;
+  inactive: number;
+  totalExpenses: number;
+}
+
 export const transportCardsApi = {
+  summary: () => request<TransportCardsSummary>("/transport-cards/stats/summary"),
   list: (query?: TransportCardsListQuery) => {
     const params = new URLSearchParams();
     if (query?.page) params.set("page", String(query.page));

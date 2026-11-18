@@ -18,7 +18,13 @@ export interface PaginationResponse<T> {
   };
 }
 
+export interface UsersSummary {
+  total: number;
+  byRole: { id: number; code: string; name: string; count: number }[];
+}
+
 export const usersApi = {
+  summary: () => request<UsersSummary>("/users/stats/summary"),
   list: (params?: PaginationParams) => {
     const queryParams = new URLSearchParams();
     if (params?.page) queryParams.append("page", String(params.page));

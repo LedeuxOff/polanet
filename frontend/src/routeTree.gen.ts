@@ -10,13 +10,13 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorksRouteImport } from './routes/works'
-import { Route as WorkersRouteImport } from './routes/workers'
 import { Route as UsersRouteImport } from './routes/users'
 import { Route as TransportCardsRouteImport } from './routes/transport-cards'
 import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as TeamsRouteImport } from './routes/teams'
 import { Route as SystemLogsRouteImport } from './routes/system-logs'
 import { Route as SystemInfoRouteImport } from './routes/system-info'
+import { Route as ScreedClientsRouteImport } from './routes/screed-clients'
 import { Route as RolesRouteImport } from './routes/roles'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DirectoriesRouteImport } from './routes/directories'
@@ -26,13 +26,13 @@ import { Route as CarsRouteImport } from './routes/cars'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as BackupsRouteImport } from './routes/backups'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as WorkersIndexRouteImport } from './routes/workers/index'
 import { Route as UsersIndexRouteImport } from './routes/users/index'
 import { Route as TransportCardsIndexRouteImport } from './routes/transport-cards/index'
 import { Route as TemplatesIndexRouteImport } from './routes/templates/index'
 import { Route as TeamsIndexRouteImport } from './routes/teams/index'
 import { Route as SystemLogsIndexRouteImport } from './routes/system-logs/index'
 import { Route as SystemInfoIndexRouteImport } from './routes/system-info/index'
+import { Route as ScreedClientsIndexRouteImport } from './routes/screed-clients/index'
 import { Route as RolesIndexRouteImport } from './routes/roles/index'
 import { Route as OrdersIndexRouteImport } from './routes/orders/index'
 import { Route as MoneyStatisticIndexRouteImport } from './routes/money-statistic/index'
@@ -40,14 +40,14 @@ import { Route as DevelopersIndexRouteImport } from './routes/developers/index'
 import { Route as ClientsIndexRouteImport } from './routes/clients/index'
 import { Route as CarsIndexRouteImport } from './routes/cars/index'
 import { Route as BackupsIndexRouteImport } from './routes/backups/index'
-import { Route as WorkersNewRouteImport } from './routes/workers/new'
-import { Route as WorkersWorkerIdRouteImport } from './routes/workers/$workerId'
 import { Route as UsersNewRouteImport } from './routes/users/new'
 import { Route as UsersUserIdRouteImport } from './routes/users/$userId'
 import { Route as TransportCardsNewRouteImport } from './routes/transport-cards/new'
 import { Route as TransportCardsCardIdRouteImport } from './routes/transport-cards/$cardId'
 import { Route as TeamsNewRouteImport } from './routes/teams/new'
 import { Route as TeamsTeamIdRouteImport } from './routes/teams/$teamId'
+import { Route as ScreedClientsNewRouteImport } from './routes/screed-clients/new'
+import { Route as ScreedClientsScreedClientIdRouteImport } from './routes/screed-clients/$screedClientId'
 import { Route as RolesNewRouteImport } from './routes/roles/new'
 import { Route as RolesRoleIdRouteImport } from './routes/roles/$roleId'
 import { Route as OrdersNewRouteImport } from './routes/orders/new'
@@ -62,11 +62,6 @@ import { Route as CarsCarIdRouteImport } from './routes/cars/$carId'
 const WorksRoute = WorksRouteImport.update({
   id: '/works',
   path: '/works',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const WorkersRoute = WorkersRouteImport.update({
-  id: '/workers',
-  path: '/workers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UsersRoute = UsersRouteImport.update({
@@ -97,6 +92,11 @@ const SystemLogsRoute = SystemLogsRouteImport.update({
 const SystemInfoRoute = SystemInfoRouteImport.update({
   id: '/system-info',
   path: '/system-info',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ScreedClientsRoute = ScreedClientsRouteImport.update({
+  id: '/screed-clients',
+  path: '/screed-clients',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RolesRoute = RolesRouteImport.update({
@@ -144,11 +144,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const WorkersIndexRoute = WorkersIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => WorkersRoute,
-} as any)
 const UsersIndexRoute = UsersIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -178,6 +173,11 @@ const SystemInfoIndexRoute = SystemInfoIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => SystemInfoRoute,
+} as any)
+const ScreedClientsIndexRoute = ScreedClientsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ScreedClientsRoute,
 } as any)
 const RolesIndexRoute = RolesIndexRouteImport.update({
   id: '/',
@@ -214,16 +214,6 @@ const BackupsIndexRoute = BackupsIndexRouteImport.update({
   path: '/',
   getParentRoute: () => BackupsRoute,
 } as any)
-const WorkersNewRoute = WorkersNewRouteImport.update({
-  id: '/new',
-  path: '/new',
-  getParentRoute: () => WorkersRoute,
-} as any)
-const WorkersWorkerIdRoute = WorkersWorkerIdRouteImport.update({
-  id: '/$workerId',
-  path: '/$workerId',
-  getParentRoute: () => WorkersRoute,
-} as any)
 const UsersNewRoute = UsersNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -254,6 +244,17 @@ const TeamsTeamIdRoute = TeamsTeamIdRouteImport.update({
   path: '/$teamId',
   getParentRoute: () => TeamsRoute,
 } as any)
+const ScreedClientsNewRoute = ScreedClientsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => ScreedClientsRoute,
+} as any)
+const ScreedClientsScreedClientIdRoute =
+  ScreedClientsScreedClientIdRouteImport.update({
+    id: '/$screedClientId',
+    path: '/$screedClientId',
+    getParentRoute: () => ScreedClientsRoute,
+  } as any)
 const RolesNewRoute = RolesNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -315,13 +316,13 @@ export interface FileRoutesByFullPath {
   '/directories': typeof DirectoriesRoute
   '/login': typeof LoginRoute
   '/roles': typeof RolesRouteWithChildren
+  '/screed-clients': typeof ScreedClientsRouteWithChildren
   '/system-info': typeof SystemInfoRouteWithChildren
   '/system-logs': typeof SystemLogsRouteWithChildren
   '/teams': typeof TeamsRouteWithChildren
   '/templates': typeof TemplatesRouteWithChildren
   '/transport-cards': typeof TransportCardsRouteWithChildren
   '/users': typeof UsersRouteWithChildren
-  '/workers': typeof WorkersRouteWithChildren
   '/works': typeof WorksRoute
   '/cars/$carId': typeof CarsCarIdRoute
   '/cars/new': typeof CarsNewRoute
@@ -333,14 +334,14 @@ export interface FileRoutesByFullPath {
   '/orders/new': typeof OrdersNewRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
   '/roles/new': typeof RolesNewRoute
+  '/screed-clients/$screedClientId': typeof ScreedClientsScreedClientIdRoute
+  '/screed-clients/new': typeof ScreedClientsNewRoute
   '/teams/$teamId': typeof TeamsTeamIdRoute
   '/teams/new': typeof TeamsNewRoute
   '/transport-cards/$cardId': typeof TransportCardsCardIdRoute
   '/transport-cards/new': typeof TransportCardsNewRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/users/new': typeof UsersNewRoute
-  '/workers/$workerId': typeof WorkersWorkerIdRoute
-  '/workers/new': typeof WorkersNewRoute
   '/backups/': typeof BackupsIndexRoute
   '/cars/': typeof CarsIndexRoute
   '/clients/': typeof ClientsIndexRoute
@@ -348,13 +349,13 @@ export interface FileRoutesByFullPath {
   '/money-statistic/': typeof MoneyStatisticIndexRoute
   '/orders/': typeof OrdersIndexRoute
   '/roles/': typeof RolesIndexRoute
+  '/screed-clients/': typeof ScreedClientsIndexRoute
   '/system-info/': typeof SystemInfoIndexRoute
   '/system-logs/': typeof SystemLogsIndexRoute
   '/teams/': typeof TeamsIndexRoute
   '/templates/': typeof TemplatesIndexRoute
   '/transport-cards/': typeof TransportCardsIndexRoute
   '/users/': typeof UsersIndexRoute
-  '/workers/': typeof WorkersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -373,14 +374,14 @@ export interface FileRoutesByTo {
   '/orders/new': typeof OrdersNewRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
   '/roles/new': typeof RolesNewRoute
+  '/screed-clients/$screedClientId': typeof ScreedClientsScreedClientIdRoute
+  '/screed-clients/new': typeof ScreedClientsNewRoute
   '/teams/$teamId': typeof TeamsTeamIdRoute
   '/teams/new': typeof TeamsNewRoute
   '/transport-cards/$cardId': typeof TransportCardsCardIdRoute
   '/transport-cards/new': typeof TransportCardsNewRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/users/new': typeof UsersNewRoute
-  '/workers/$workerId': typeof WorkersWorkerIdRoute
-  '/workers/new': typeof WorkersNewRoute
   '/backups': typeof BackupsIndexRoute
   '/cars': typeof CarsIndexRoute
   '/clients': typeof ClientsIndexRoute
@@ -388,13 +389,13 @@ export interface FileRoutesByTo {
   '/money-statistic': typeof MoneyStatisticIndexRoute
   '/orders': typeof OrdersIndexRoute
   '/roles': typeof RolesIndexRoute
+  '/screed-clients': typeof ScreedClientsIndexRoute
   '/system-info': typeof SystemInfoIndexRoute
   '/system-logs': typeof SystemLogsIndexRoute
   '/teams': typeof TeamsIndexRoute
   '/templates': typeof TemplatesIndexRoute
   '/transport-cards': typeof TransportCardsIndexRoute
   '/users': typeof UsersIndexRoute
-  '/workers': typeof WorkersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -407,13 +408,13 @@ export interface FileRoutesById {
   '/directories': typeof DirectoriesRoute
   '/login': typeof LoginRoute
   '/roles': typeof RolesRouteWithChildren
+  '/screed-clients': typeof ScreedClientsRouteWithChildren
   '/system-info': typeof SystemInfoRouteWithChildren
   '/system-logs': typeof SystemLogsRouteWithChildren
   '/teams': typeof TeamsRouteWithChildren
   '/templates': typeof TemplatesRouteWithChildren
   '/transport-cards': typeof TransportCardsRouteWithChildren
   '/users': typeof UsersRouteWithChildren
-  '/workers': typeof WorkersRouteWithChildren
   '/works': typeof WorksRoute
   '/cars/$carId': typeof CarsCarIdRoute
   '/cars/new': typeof CarsNewRoute
@@ -425,14 +426,14 @@ export interface FileRoutesById {
   '/orders/new': typeof OrdersNewRoute
   '/roles/$roleId': typeof RolesRoleIdRoute
   '/roles/new': typeof RolesNewRoute
+  '/screed-clients/$screedClientId': typeof ScreedClientsScreedClientIdRoute
+  '/screed-clients/new': typeof ScreedClientsNewRoute
   '/teams/$teamId': typeof TeamsTeamIdRoute
   '/teams/new': typeof TeamsNewRoute
   '/transport-cards/$cardId': typeof TransportCardsCardIdRoute
   '/transport-cards/new': typeof TransportCardsNewRoute
   '/users/$userId': typeof UsersUserIdRoute
   '/users/new': typeof UsersNewRoute
-  '/workers/$workerId': typeof WorkersWorkerIdRoute
-  '/workers/new': typeof WorkersNewRoute
   '/backups/': typeof BackupsIndexRoute
   '/cars/': typeof CarsIndexRoute
   '/clients/': typeof ClientsIndexRoute
@@ -440,13 +441,13 @@ export interface FileRoutesById {
   '/money-statistic/': typeof MoneyStatisticIndexRoute
   '/orders/': typeof OrdersIndexRoute
   '/roles/': typeof RolesIndexRoute
+  '/screed-clients/': typeof ScreedClientsIndexRoute
   '/system-info/': typeof SystemInfoIndexRoute
   '/system-logs/': typeof SystemLogsIndexRoute
   '/teams/': typeof TeamsIndexRoute
   '/templates/': typeof TemplatesIndexRoute
   '/transport-cards/': typeof TransportCardsIndexRoute
   '/users/': typeof UsersIndexRoute
-  '/workers/': typeof WorkersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -460,13 +461,13 @@ export interface FileRouteTypes {
     | '/directories'
     | '/login'
     | '/roles'
+    | '/screed-clients'
     | '/system-info'
     | '/system-logs'
     | '/teams'
     | '/templates'
     | '/transport-cards'
     | '/users'
-    | '/workers'
     | '/works'
     | '/cars/$carId'
     | '/cars/new'
@@ -478,14 +479,14 @@ export interface FileRouteTypes {
     | '/orders/new'
     | '/roles/$roleId'
     | '/roles/new'
+    | '/screed-clients/$screedClientId'
+    | '/screed-clients/new'
     | '/teams/$teamId'
     | '/teams/new'
     | '/transport-cards/$cardId'
     | '/transport-cards/new'
     | '/users/$userId'
     | '/users/new'
-    | '/workers/$workerId'
-    | '/workers/new'
     | '/backups/'
     | '/cars/'
     | '/clients/'
@@ -493,13 +494,13 @@ export interface FileRouteTypes {
     | '/money-statistic/'
     | '/orders/'
     | '/roles/'
+    | '/screed-clients/'
     | '/system-info/'
     | '/system-logs/'
     | '/teams/'
     | '/templates/'
     | '/transport-cards/'
     | '/users/'
-    | '/workers/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -518,14 +519,14 @@ export interface FileRouteTypes {
     | '/orders/new'
     | '/roles/$roleId'
     | '/roles/new'
+    | '/screed-clients/$screedClientId'
+    | '/screed-clients/new'
     | '/teams/$teamId'
     | '/teams/new'
     | '/transport-cards/$cardId'
     | '/transport-cards/new'
     | '/users/$userId'
     | '/users/new'
-    | '/workers/$workerId'
-    | '/workers/new'
     | '/backups'
     | '/cars'
     | '/clients'
@@ -533,13 +534,13 @@ export interface FileRouteTypes {
     | '/money-statistic'
     | '/orders'
     | '/roles'
+    | '/screed-clients'
     | '/system-info'
     | '/system-logs'
     | '/teams'
     | '/templates'
     | '/transport-cards'
     | '/users'
-    | '/workers'
   id:
     | '__root__'
     | '/'
@@ -551,13 +552,13 @@ export interface FileRouteTypes {
     | '/directories'
     | '/login'
     | '/roles'
+    | '/screed-clients'
     | '/system-info'
     | '/system-logs'
     | '/teams'
     | '/templates'
     | '/transport-cards'
     | '/users'
-    | '/workers'
     | '/works'
     | '/cars/$carId'
     | '/cars/new'
@@ -569,14 +570,14 @@ export interface FileRouteTypes {
     | '/orders/new'
     | '/roles/$roleId'
     | '/roles/new'
+    | '/screed-clients/$screedClientId'
+    | '/screed-clients/new'
     | '/teams/$teamId'
     | '/teams/new'
     | '/transport-cards/$cardId'
     | '/transport-cards/new'
     | '/users/$userId'
     | '/users/new'
-    | '/workers/$workerId'
-    | '/workers/new'
     | '/backups/'
     | '/cars/'
     | '/clients/'
@@ -584,13 +585,13 @@ export interface FileRouteTypes {
     | '/money-statistic/'
     | '/orders/'
     | '/roles/'
+    | '/screed-clients/'
     | '/system-info/'
     | '/system-logs/'
     | '/teams/'
     | '/templates/'
     | '/transport-cards/'
     | '/users/'
-    | '/workers/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -603,13 +604,13 @@ export interface RootRouteChildren {
   DirectoriesRoute: typeof DirectoriesRoute
   LoginRoute: typeof LoginRoute
   RolesRoute: typeof RolesRouteWithChildren
+  ScreedClientsRoute: typeof ScreedClientsRouteWithChildren
   SystemInfoRoute: typeof SystemInfoRouteWithChildren
   SystemLogsRoute: typeof SystemLogsRouteWithChildren
   TeamsRoute: typeof TeamsRouteWithChildren
   TemplatesRoute: typeof TemplatesRouteWithChildren
   TransportCardsRoute: typeof TransportCardsRouteWithChildren
   UsersRoute: typeof UsersRouteWithChildren
-  WorkersRoute: typeof WorkersRouteWithChildren
   WorksRoute: typeof WorksRoute
   ClientsClientIdRoute: typeof ClientsClientIdRoute
   ClientsNewRoute: typeof ClientsNewRoute
@@ -627,13 +628,6 @@ declare module '@tanstack/react-router' {
       path: '/works'
       fullPath: '/works'
       preLoaderRoute: typeof WorksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/workers': {
-      id: '/workers'
-      path: '/workers'
-      fullPath: '/workers'
-      preLoaderRoute: typeof WorkersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/users': {
@@ -676,6 +670,13 @@ declare module '@tanstack/react-router' {
       path: '/system-info'
       fullPath: '/system-info'
       preLoaderRoute: typeof SystemInfoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/screed-clients': {
+      id: '/screed-clients'
+      path: '/screed-clients'
+      fullPath: '/screed-clients'
+      preLoaderRoute: typeof ScreedClientsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/roles': {
@@ -741,13 +742,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/workers/': {
-      id: '/workers/'
-      path: '/'
-      fullPath: '/workers/'
-      preLoaderRoute: typeof WorkersIndexRouteImport
-      parentRoute: typeof WorkersRoute
-    }
     '/users/': {
       id: '/users/'
       path: '/'
@@ -789,6 +783,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/system-info/'
       preLoaderRoute: typeof SystemInfoIndexRouteImport
       parentRoute: typeof SystemInfoRoute
+    }
+    '/screed-clients/': {
+      id: '/screed-clients/'
+      path: '/'
+      fullPath: '/screed-clients/'
+      preLoaderRoute: typeof ScreedClientsIndexRouteImport
+      parentRoute: typeof ScreedClientsRoute
     }
     '/roles/': {
       id: '/roles/'
@@ -839,20 +840,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BackupsIndexRouteImport
       parentRoute: typeof BackupsRoute
     }
-    '/workers/new': {
-      id: '/workers/new'
-      path: '/new'
-      fullPath: '/workers/new'
-      preLoaderRoute: typeof WorkersNewRouteImport
-      parentRoute: typeof WorkersRoute
-    }
-    '/workers/$workerId': {
-      id: '/workers/$workerId'
-      path: '/$workerId'
-      fullPath: '/workers/$workerId'
-      preLoaderRoute: typeof WorkersWorkerIdRouteImport
-      parentRoute: typeof WorkersRoute
-    }
     '/users/new': {
       id: '/users/new'
       path: '/new'
@@ -894,6 +881,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/teams/$teamId'
       preLoaderRoute: typeof TeamsTeamIdRouteImport
       parentRoute: typeof TeamsRoute
+    }
+    '/screed-clients/new': {
+      id: '/screed-clients/new'
+      path: '/new'
+      fullPath: '/screed-clients/new'
+      preLoaderRoute: typeof ScreedClientsNewRouteImport
+      parentRoute: typeof ScreedClientsRoute
+    }
+    '/screed-clients/$screedClientId': {
+      id: '/screed-clients/$screedClientId'
+      path: '/$screedClientId'
+      fullPath: '/screed-clients/$screedClientId'
+      preLoaderRoute: typeof ScreedClientsScreedClientIdRouteImport
+      parentRoute: typeof ScreedClientsRoute
     }
     '/roles/new': {
       id: '/roles/new'
@@ -1023,6 +1024,22 @@ const RolesRouteChildren: RolesRouteChildren = {
 
 const RolesRouteWithChildren = RolesRoute._addFileChildren(RolesRouteChildren)
 
+interface ScreedClientsRouteChildren {
+  ScreedClientsScreedClientIdRoute: typeof ScreedClientsScreedClientIdRoute
+  ScreedClientsNewRoute: typeof ScreedClientsNewRoute
+  ScreedClientsIndexRoute: typeof ScreedClientsIndexRoute
+}
+
+const ScreedClientsRouteChildren: ScreedClientsRouteChildren = {
+  ScreedClientsScreedClientIdRoute: ScreedClientsScreedClientIdRoute,
+  ScreedClientsNewRoute: ScreedClientsNewRoute,
+  ScreedClientsIndexRoute: ScreedClientsIndexRoute,
+}
+
+const ScreedClientsRouteWithChildren = ScreedClientsRoute._addFileChildren(
+  ScreedClientsRouteChildren,
+)
+
 interface SystemInfoRouteChildren {
   SystemInfoIndexRoute: typeof SystemInfoIndexRoute
 }
@@ -1103,21 +1120,6 @@ const UsersRouteChildren: UsersRouteChildren = {
 
 const UsersRouteWithChildren = UsersRoute._addFileChildren(UsersRouteChildren)
 
-interface WorkersRouteChildren {
-  WorkersWorkerIdRoute: typeof WorkersWorkerIdRoute
-  WorkersNewRoute: typeof WorkersNewRoute
-  WorkersIndexRoute: typeof WorkersIndexRoute
-}
-
-const WorkersRouteChildren: WorkersRouteChildren = {
-  WorkersWorkerIdRoute: WorkersWorkerIdRoute,
-  WorkersNewRoute: WorkersNewRoute,
-  WorkersIndexRoute: WorkersIndexRoute,
-}
-
-const WorkersRouteWithChildren =
-  WorkersRoute._addFileChildren(WorkersRouteChildren)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BackupsRoute: BackupsRouteWithChildren,
@@ -1128,13 +1130,13 @@ const rootRouteChildren: RootRouteChildren = {
   DirectoriesRoute: DirectoriesRoute,
   LoginRoute: LoginRoute,
   RolesRoute: RolesRouteWithChildren,
+  ScreedClientsRoute: ScreedClientsRouteWithChildren,
   SystemInfoRoute: SystemInfoRouteWithChildren,
   SystemLogsRoute: SystemLogsRouteWithChildren,
   TeamsRoute: TeamsRouteWithChildren,
   TemplatesRoute: TemplatesRouteWithChildren,
   TransportCardsRoute: TransportCardsRouteWithChildren,
   UsersRoute: UsersRouteWithChildren,
-  WorkersRoute: WorkersRouteWithChildren,
   WorksRoute: WorksRoute,
   ClientsClientIdRoute: ClientsClientIdRoute,
   ClientsNewRoute: ClientsNewRoute,

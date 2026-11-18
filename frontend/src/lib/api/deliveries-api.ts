@@ -7,7 +7,17 @@ import {
   RecipientHistory,
 } from "../types/delivery-types";
 
+export interface DeliveriesSummary {
+  today: number;
+  week: number;
+  completed: number;
+  inProgress: number;
+  nearest: { id: number; orderId: number; dateTime: string } | null;
+}
+
 export const deliveriesApi = {
+  summary: (params: { now: string; today: string; weekStart: string; weekEnd: string }) =>
+    request<DeliveriesSummary>(`/deliveries/stats/summary?${new URLSearchParams(params)}`),
   list: (orderId: number) => request<DeliveryWithIncome[]>(`/deliveries/order/${orderId}`),
   get: (id: number) => request<DeliveryWithIncome>(`/deliveries/${id}`),
   create: (data: CreateDeliveryInput) =>
